@@ -16,13 +16,13 @@ namespace TwitchChatCoroutines
     public partial class Form1 : Form
     {
         private string botUsername = "tSparkles".ToLower();
-        private string oauth = "oauth:3rr9k6dz0iyd96km5ymhizad60xf0o";
+        private string oauth = Password.oauth;
         private string channelToJoin = "";
 
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("sans-serif", 10f);
+        private Font font = new Font("Comic Sans MS", 10f);
         private int pixelsToMove = 16;
         private Color outlineColor;
         private Color textColor = Color.White;
@@ -504,7 +504,7 @@ namespace TwitchChatCoroutines
                             int secondIndex = ints[i].Item2;
                             string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
                             string theId = s.Substring(0, start);
-                            string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\"", "backslassh") + ".png";
+                            string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh") + ".png";
                             if (!File.Exists(path))
                             {
                                 client.DownloadFile(new Uri("http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0"), path);
@@ -624,7 +624,7 @@ namespace TwitchChatCoroutines
                             if (f)
                                 break;
                         }
-                        int rightborder = comparison.GetTextSize().Width + comparison.Location.X + pb.Size.Width + border;
+                        int rightborder = comparison.GetTextSize().Width + comparison.Location.X + border;
                         lastLocation = rightborder > Width ? border : comparison.Right;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
