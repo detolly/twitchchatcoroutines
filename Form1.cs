@@ -573,7 +573,8 @@ namespace TwitchChatCoroutines
                                 upTillNow += args[i];
                                 if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + border + pb.Size.Width > Width)
                                 {
-                                    if (i == 0 && TextRenderer.MeasureText(args[i], font).Width + comparison.Location.X + border + pb.Size.Width > Width)
+                                    var a = TextRenderer.MeasureText(args[i], font).Width;
+                                    if (a + comparison.Location.X + border + pb.Size.Width > Width)
                                     {
                                         f = true;
                                         break;
@@ -633,7 +634,7 @@ namespace TwitchChatCoroutines
                         stringCompare += args[i];
                         if (TextRenderer.MeasureText(stringCompare, font).Width > Width - labelToCompare.Location.X - border)
                         {
-                            if (i == 0 && TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - border)
+                            if (TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - border)
                                 break;
                             yoffset += labelToCompare.Height;
                             TwitchLabel l = new TwitchLabel();
