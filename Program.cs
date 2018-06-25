@@ -33,7 +33,7 @@ namespace TwitchChatCoroutines
                 CoroutineManager.Interval();
                 Thread.Sleep(1);
                 count++;
-                if (count % 1000 == 0)
+                if (count % 30000 == 0)
                 {
                     GC.Collect();
                     count = 8;
