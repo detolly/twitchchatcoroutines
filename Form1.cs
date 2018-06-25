@@ -22,7 +22,7 @@ namespace TwitchChatCoroutines
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("Comic Sans MS", 10f);
+        private Font font = new Font("Segoe UI", 10f);
         private int pixelsToMove = 16;
         private Color outlineColor;
         private Color textColor = Color.White;
@@ -31,9 +31,10 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
+        private Image splitter = Properties.Resources.Splitter;
+
         bool finished = true;
         int quickness = 1;
-
 
         Random r = new Random();
 
@@ -84,7 +85,7 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
-            outlineColor = (Color)cc.ConvertFromString("#111111");
+            outlineColor = (Color)cc.ConvertFromString("#222222");
             var d = new askChannel();
             d.ShowDialog();
             channelToJoin = d.theChannel;
@@ -407,23 +408,7 @@ namespace TwitchChatCoroutines
 
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
-            if (m.oneMessage != null)
-            {
-                TwitchLabel l = new TwitchLabel();
-                l.Text = m.oneMessage;
-                l.MaximumSize = new Size(Width - 2 * 20, 0);
-                l.AutoSize = true;
-                l.Font = font;
-                l.ForeColor = textColor;
-                Controls.Add(l);
-                l.Width = Width;
-                l.Location = new Point(-Width, Height - 40 - 10 - l.Size.Height);
-                currentChatMessages.Add(m);
-                finished = false;
-                StartLateCoroutine(moveLabels(m));
-                return l;
-            }
-            else
+            if (m.oneMessage == null)
             {
                 // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
                 //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
@@ -572,7 +557,6 @@ namespace TwitchChatCoroutines
                         {
                             var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";
-                            string alsoUse = "";
                             for (int i = 0; i < args.Count; i++)
                             {
                                 string old = upTillNow;
@@ -694,7 +678,12 @@ namespace TwitchChatCoroutines
                     }
                 }
                 int highest = 0;
-                int lowest = 0;
+                int lowest = 1000;
+                PictureBox splitterbox = new PictureBox();
+                splitterbox.Image = splitter;
+                splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
+                splitterbox.Size = new Size(Width+10, 1);
+                p.Controls.Add(splitterbox);
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
                     if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
@@ -706,12 +695,12 @@ namespace TwitchChatCoroutines
                 {
                     p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
                 }
-                p.Size = new Size(Width, highest - lowest);
+                p.Size = new Size(Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28));;
                 m.panel = p;
                 m.emotes = emoteBoxes;
                 m.messages = labelsToAdd;
                 m.username = userNameLabel;
-                p.Location = new Point(-Width, Height - 40 - 10 - p.Size.Height);
+                p.Location = new Point(-Width, Height - p.Size.Height - 50);
                 currentChatMessages.Add(m);
             }
 
