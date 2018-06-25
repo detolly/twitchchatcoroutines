@@ -580,7 +580,7 @@ namespace TwitchChatCoroutines
                                 if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + border + pb.Size.Width > Width)
                                 {
                                     var a = TextRenderer.MeasureText(args[i], font).Width;
-                                    if (a + comparison.Location.X + border + pb.Size.Width > Width)
+                                    if (a + userNameLabel.Right + border + pb.Size.Width > Width)
                                     {
                                         string current = "";
                                         for (int x = 0; x < args[i].Length; x++)
