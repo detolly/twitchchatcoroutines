@@ -24,7 +24,7 @@ namespace TwitchChatCoroutines
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
         private Font font = new Font("sans-serif", 10f);
         private int pixelsToMove = 16;
-        private Color outlineColor = Color.Black;
+        private Color outlineColor;
         private Color textColor = Color.White;
 
         private SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
@@ -84,6 +84,7 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
+            outlineColor = (Color)cc.ConvertFromString("#111111");
             var d = new askChannel();
             d.ShowDialog();
             channelToJoin = d.theChannel;
@@ -255,6 +256,10 @@ namespace TwitchChatCoroutines
             for (int i = 0; i < toRemove.Count; i++)
             {
                 currentChatMessages.Remove(toRemove[i]);
+                for(int x = 0; x < toRemove[i].panel.Controls.Count; x++)
+                {
+                    toRemove[i].panel.Controls[x].Dispose();
+                }
                 Controls.Remove(toRemove[i].panel);
                 toRemove[i].panel.Dispose();
                 //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
@@ -585,7 +590,8 @@ namespace TwitchChatCoroutines
                                             if (TextRenderer.MeasureText(current, font).Width + comparison.Location.X + border + pb.Size.Width > Width)
                                             {
                                                 x--;
-                                                args.Insert(i+1, args[i].Substring(x));
+                                                x = x < 0 ? 0 : x;
+                                                args.Insert(i+1, args[i].Substring(x < 0 ? 0 : x));
                                                 args[i] = args[i].Substring(0, x);
                                                 old = args[i];
                                                 i++;
@@ -618,7 +624,7 @@ namespace TwitchChatCoroutines
                             if (f)
                                 break;
                         }
-                        int rightborder = comparison.Right + pb.Size.Width + border;
+                        int rightborder = comparison.GetTextSize().Width + comparison.Location.X + pb.Size.Width + border;
                         lastLocation = rightborder > Width ? border : comparison.Right;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
@@ -658,7 +664,8 @@ namespace TwitchChatCoroutines
                                     if (TextRenderer.MeasureText(current, font).Width + labelToCompare.Location.X + border > Width)
                                     {
                                         x--;
-                                        args.Insert(i + 1, args[i].Substring(x));
+                                        x = x < 0 ? 0 : x;
+                                        args.Insert(i + 1, args[i].Substring(x < 0 ? 0 : x));
                                         args[i] = args[i].Substring(0, x);
                                         old = args[i];
                                         i++;
