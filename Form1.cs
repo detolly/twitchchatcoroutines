@@ -542,7 +542,6 @@ namespace TwitchChatCoroutines
                 int nextStart = 0;
                 int lastLocation = userNameLabel.Right;
                 bool first = true;
-                int biggest = 0;
                 int yoffset = 0;
 
                 foreach (var pbandInt in emoteBoxes)
@@ -556,7 +555,7 @@ namespace TwitchChatCoroutines
                         first = false;
                     }
                     thel.Font = font;
-                    thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : Color.White;
+                    thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                     thel.Text += text.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
                     TwitchLabel comparison = thel;
                     if (thel.Text != "" || thel.Text != " ")
@@ -572,9 +571,9 @@ namespace TwitchChatCoroutines
                             {
                                 string old = upTillNow;
                                 upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + 5 + pb.Size.Width > Width)
+                                if (i == 0 && TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + 5 + pb.Size.Width > Width)
                                 {
-                                    if (args.Length == 1 && TextRenderer.MeasureText(args[i], font).Width + comparison.Location.X + 5 + pb.Size.Width > Width)
+                                    if (TextRenderer.MeasureText(args[i], font).Width + comparison.Location.X + 5 + pb.Size.Width > Width)
                                     {
                                         f = true;
                                         break;
@@ -583,7 +582,7 @@ namespace TwitchChatCoroutines
                                     yoffset += Math.Max(pb.Height, comparison.Height);
                                     TwitchLabel newLabel = new TwitchLabel();
                                     newLabel.Font = font;
-                                    newLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : Color.White;
+                                    newLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                                     p.Controls.Add(newLabel);
                                     newLabel.Location = new Point(5, userNameLabel.Location.Y + yoffset);
                                     comparison = newLabel;
@@ -611,13 +610,11 @@ namespace TwitchChatCoroutines
                     }
                     nextStart = ints.Item2 + 1;
                     pb.Location = new Point(lastLocation, userNameLabel.Location.Y + Math.Max(userNameLabel.Size.Height / 2, pb.Size.Height / 2) - Math.Min(userNameLabel.Size.Height / 2, pb.Size.Height / 2) + yoffset);
-                    if (pb.Size.Height > biggest)
-                        biggest = pb.Size.Height;
                     lastLocation = pb.Right;
                     p.Controls.Add(pb);
                 }
                 TwitchLabel lastLabel = new TwitchLabel();
-                lastLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : Color.White;
+                lastLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                 lastLabel.Font = font;
                 lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
                 string theT = text.Substring(nextStart, text.Length - nextStart);
@@ -636,7 +633,7 @@ namespace TwitchChatCoroutines
                         stringCompare += args[i];
                         if (TextRenderer.MeasureText(stringCompare, font).Width > Width - labelToCompare.Location.X - 5)
                         {
-                            if (args.Length == 1 && TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - 5)
+                            if (i == 0 && TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - 5)
                                 break;
                             yoffset += labelToCompare.Height + 2;
                             TwitchLabel l = new TwitchLabel();
@@ -644,7 +641,7 @@ namespace TwitchChatCoroutines
                             p.Controls.Add(l);
                             l.Location = new Point(border, lastLabel.Location.Y + yoffset);
                             l.Font = font;
-                            l.ForeColor = Color.White;
+                            l.ForeColor = textColor;
                             i--;
                             stringCompare = "";
                             labelsToAdd.Add(l);
