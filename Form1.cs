@@ -22,7 +22,7 @@ namespace TwitchChatCoroutines
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("sans-serif", 16f);
+        private Font font = new Font("sans-serif", 12f);
         private int pixelsToMove = 16;
         private Color outlineColor = Color.Black;
         private Color textColor = Color.White;
@@ -610,7 +610,7 @@ namespace TwitchChatCoroutines
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
-                    pb.Location = new Point(lastLocation, userNameLabel.Location.Y + Math.Max(userNameLabel.Size.Height / 2, pb.Size.Height / 2) - Math.Min(userNameLabel.Size.Height / 2, pb.Size.Height / 2) + yoffset);
+                    pb.Location = new Point(lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
                     lastLocation = pb.Right;
                     p.Controls.Add(pb);
                 }
