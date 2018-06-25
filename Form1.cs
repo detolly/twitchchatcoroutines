@@ -22,7 +22,7 @@ namespace TwitchChatCoroutines
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("sans-serif", 12f);
+        private Font font = new Font("sans-serif", 10f);
         private int pixelsToMove = 16;
         private Color outlineColor = Color.Black;
         private Color textColor = Color.White;
@@ -565,9 +565,10 @@ namespace TwitchChatCoroutines
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
                         while (comparison.Right > Width - 5 - pb.Size.Width)
                         {
-                            string[] args = thel.Text.Split(' ');
+                            var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";
-                            for (int i = 0; i < args.Length; i++)
+                            string alsoUse = "";
+                            for (int i = 0; i < args.Count; i++)
                             {
                                 string old = upTillNow;
                                 upTillNow += args[i];
@@ -576,8 +577,21 @@ namespace TwitchChatCoroutines
                                     var a = TextRenderer.MeasureText(args[i], font).Width;
                                     if (a + comparison.Location.X + border + pb.Size.Width > Width)
                                     {
-                                        f = true;
-                                        break;
+                                        string current = "";
+                                        for (int x = 0; x < args[i].Length; x++)
+                                        {
+                                            string anotherold = current;
+                                            current += args[i][x];
+                                            if (TextRenderer.MeasureText(current, font).Width + comparison.Location.X + border + pb.Size.Width > Width)
+                                            {
+                                                x--;
+                                                args.Insert(i+1, args[i].Substring(x));
+                                                args[i] = args[i].Substring(0, x);
+                                                old = args[i];
+                                                i++;
+                                                break;
+                                            }
+                                        }
                                     }
                                     comparison.Text = old;
                                     yoffset += Math.Max(pb.Height, comparison.Height);
@@ -596,7 +610,7 @@ namespace TwitchChatCoroutines
                                 {
                                     upTillNow += " ";
                                 }
-                                if (i == args.Length - 1)
+                                if (i == args.Count - 1)
                                 {
                                     comparison.Text = upTillNow.Substring(0, upTillNow.Length-1);
                                 }
@@ -626,16 +640,32 @@ namespace TwitchChatCoroutines
                     lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y);
                     labelsToAdd.Add(lastLabel);
                     TwitchLabel labelToCompare = lastLabel;
-                    var args = lastLabel.Text.Split(' ');
+                    var args = new List<string>(lastLabel.Text.Split(' '));
                     string stringCompare = "";
-                    for (int i = 0; i < args.Length; i++)
+                    for (int i = 0; i < args.Count; i++)
                     {
                         string old = stringCompare;
                         stringCompare += args[i];
                         if (TextRenderer.MeasureText(stringCompare, font).Width > Width - labelToCompare.Location.X - border)
                         {
                             if (TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - border)
-                                break;
+                            {
+                                string current = "";
+                                for (int x = 0; x < args[i].Length; x++)
+                                {
+                                    string anotherold = current;
+                                    current += args[i][x];
+                                    if (TextRenderer.MeasureText(current, font).Width + labelToCompare.Location.X + border > Width)
+                                    {
+                                        x--;
+                                        args.Insert(i + 1, args[i].Substring(x));
+                                        args[i] = args[i].Substring(0, x);
+                                        old = args[i];
+                                        i++;
+                                        break;
+                                    }
+                                }
+                            }
                             yoffset += labelToCompare.Height;
                             TwitchLabel l = new TwitchLabel();
                             labelToCompare.Text = old;
@@ -652,7 +682,7 @@ namespace TwitchChatCoroutines
                         {
                             stringCompare += " ";
                         }
-                        if (i == args.Length - 1)
+                        if (i == args.Count - 1)
                             labelToCompare.Text = stringCompare;
                     }
                 }
