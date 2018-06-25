@@ -22,7 +22,7 @@ namespace TwitchChatCoroutines
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("Segoe UI", 16f);
+        private Font font = new Font("sans-serif", 16f);
         private int pixelsToMove = 16;
         private Color outlineColor = Color.Black;
         private Color textColor = Color.White;
@@ -203,8 +203,8 @@ namespace TwitchChatCoroutines
             while (greetings.panel.Location.X < 2)
             {
                 //move
-                //greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
-                greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
+                //greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
                 yield return new WaitForMilliseconds(5);
             }
             yield break;
@@ -441,33 +441,27 @@ namespace TwitchChatCoroutines
                             iss.ints = ints;
                             emoteBoxes.Add(start, iss);
                         }
-                        else if (cachedBTTVEmotes.ContainsKey(a))
-                        {
-                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
-                            int stop = start + a.Length - 1;
-                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                            lastLoc = stop;
-                            PictureBox pb = new PictureBox();
-                            pb.Image = cachedBTTVEmotes[a];
-                            pb.SizeMode = PictureBoxSizeMode.AutoSize;
-                            PictureBoxAndInts iss = new PictureBoxAndInts();
-                            iss.pb = pb;
-                            iss.ints = ints;
-                            emoteBoxes.Add(start, iss);
-                        }
                         else if (cachedFFZEmotes.ContainsKey(a))
                         {
-                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
+                            string useString = a;
+                            int lookForBeginning;
+                            int lookForStop;
+                            int start = m.twitchMessage.message.IndexOf(useString, lastLoc);
+                            lookForBeginning = start - 1;
                             int stop = start + a.Length - 1;
-                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                            lastLoc = stop;
-                            PictureBox pb = new PictureBox();
-                            pb.Image = cachedFFZEmotes[a];
-                            pb.SizeMode = PictureBoxSizeMode.AutoSize;
-                            PictureBoxAndInts iss = new PictureBoxAndInts();
-                            iss.pb = pb;
-                            iss.ints = ints;
-                            emoteBoxes.Add(start, iss);
+                            lookForStop = stop + 1;
+                            if (lookForBeginning >= 0 || lookForStop < m.twitchMessage.message.Length || m.twitchMessage.message.Split(' ').Length == 1)
+                            {
+                                Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                                lastLoc = stop;
+                                PictureBox pb = new PictureBox();
+                                pb.Image = cachedFFZEmotes[a];
+                                pb.SizeMode = PictureBoxSizeMode.AutoSize;
+                                PictureBoxAndInts iss = new PictureBoxAndInts();
+                                iss.pb = pb;
+                                iss.ints = ints;
+                                emoteBoxes.Add(start, iss);
+                            }
                         }
                     }
                 List<PictureBox> badgges = new List<PictureBox>();
@@ -523,14 +517,20 @@ namespace TwitchChatCoroutines
                             b.Image = image;
                             iss.pb = b;
                             iss.ints = ints[i];
-                            emoteBoxes.Add(firstIndex, iss);
+                            try
+                            {
+                                emoteBoxes.Add(firstIndex, iss);
+                            }
+                            catch { }
                         }
                     }
                 }
                 int tStart = 5;
                 int border = 3;
+                bool exists = false;
                 foreach (var s in badgges)
                 {
+                    exists = true;
                     s.Location = new Point(tStart, 10);
                     tStart += s.Size.Width + border;
                 }
@@ -539,7 +539,7 @@ namespace TwitchChatCoroutines
                 userNameLabel.Font = font;
                 p.Controls.Add(userNameLabel);
                 userNameLabel.Text = m.twitchMessage.display_name;
-                userNameLabel.Location = new Point(tStart + border, 10 + (badgges[0] != null ? badgges[0].Size.Height/2-userNameLabel.Size.Height/2 : 0));
+                userNameLabel.Location = new Point(tStart + border, 10 + (exists ? badgges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
                 userNameLabel.ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color);
                 string text = m.twitchMessage.message;
 
@@ -572,11 +572,11 @@ namespace TwitchChatCoroutines
                         {
                             string[] args = thel.Text.Split(' ');
                             string upTillNow = "";
-                            for(int i = 0; i < args.Length; i++)
+                            for (int i = 0; i < args.Length; i++)
                             {
                                 string old = upTillNow;
                                 upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow, font).Width + comparison.Location.X + 3 * border + pb.Size.Width > Width)
+                                if (TextRenderer.MeasureText(upTillNow, font).Width + comparison.Location.X + 4 * border + 2 * pb.Size.Width > Width)
                                 {
                                     if (TextRenderer.MeasureText(args[i], font).Width > Width - comparison.Location.X - border)
                                     {
@@ -602,24 +602,19 @@ namespace TwitchChatCoroutines
                                 }
                                 if (i == args.Length - 1)
                                 {
-                                    comparison.Text = upTillNow;
-                                    if (comparison.Text == "" || comparison.Text == " ")
-                                    {
-                                        labelsToAdd.Remove(comparison);
-                                        p.Controls.Remove(comparison);
-                                    }
+                                    comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
                                 }
                             }
                             if (f)
                                 break;
                         }
-                        int rightborder = comparison.Right + pb.Size.Width + border;
-                        lastLocation =  rightborder > Width ? border : comparison.Right;
+                        int rightborder = comparison.Right + pb.Size.Width + 2 * border;
+                        lastLocation = rightborder > Width ? border : comparison.Right;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
-                    pb.Location = new Point(lastLocation, userNameLabel.Location.Y + Math.Max(userNameLabel.Size.Height/2, pb.Size.Height/2) - Math.Min(userNameLabel.Size.Height / 2, pb.Size.Height / 2)  + yoffset);
+                    pb.Location = new Point(lastLocation, userNameLabel.Location.Y + Math.Max(userNameLabel.Size.Height / 2, pb.Size.Height / 2) - Math.Min(userNameLabel.Size.Height / 2, pb.Size.Height / 2) + yoffset);
                     if (pb.Size.Height > biggest)
                         biggest = pb.Size.Height;
                     lastLocation = pb.Right;
@@ -639,13 +634,13 @@ namespace TwitchChatCoroutines
                     TwitchLabel labelToCompare = lastLabel;
                     var args = lastLabel.Text.Split(' ');
                     string stringCompare = "";
-                    for(int i = 0; i < args.Length; i++)
+                    for (int i = 0; i < args.Length; i++)
                     {
                         string old = stringCompare;
                         stringCompare += args[i];
                         if (TextRenderer.MeasureText(stringCompare, font).Width > Width - labelToCompare.Location.X - 3 * border)
                         {
-                            if (TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - 3* border)
+                            if (TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - 3 * border)
                                 break;
                             yoffset += labelToCompare.Height + 2;
                             TwitchLabel l = new TwitchLabel();
@@ -658,7 +653,8 @@ namespace TwitchChatCoroutines
                             stringCompare = "";
                             labelsToAdd.Add(l);
                             labelToCompare = l;
-                        } else
+                        }
+                        else
                         {
                             stringCompare += " ";
                         }
