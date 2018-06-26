@@ -11,13 +11,19 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
+using TwitchChatCoroutines.ClassesAndStructs;
+
 namespace TwitchChatCoroutines
 {
     public partial class ChatForm : Form
     {
+        private CoroutineManager coroutineManager = new CoroutineManager();
+
         private string botUsername = "tSparkles".ToLower();
         private string oauth = Password.oauth;
         private string channelToJoin = "";
+
+        private bool finished = false;
 
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
@@ -31,9 +37,8 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
-        private Image splitter = Properties.Resources.Splitter;
-
-        bool finished = true;
+        private Image splitter = Properties.Resources.splitter;
+        
         int quickness = 1;
         private int emoteSpacing = 2;
 
@@ -89,22 +94,15 @@ namespace TwitchChatCoroutines
             }
         }
 
-        public ChatForm()
+        public ChatForm(string Schannel)
         {
             InitializeComponent();
+            coroutineManager.Init();
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
             outlineColor = (Color)cc.ConvertFromString("#111111");
-            var d = new askChannel();
-            d.ShowDialog();
-            channelToJoin = d.theChannel;
-            if (channelToJoin == "" || channelToJoin == null)
-            {
-                Close();
-                hasClosed = true;
-                return;
-            }
+            channelToJoin = Schannel;
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
@@ -148,7 +146,7 @@ namespace TwitchChatCoroutines
             channelId = channelInformationJson.data[0].id;
             channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display");
 
-            StartCoroutine(save());
+            coroutineManager.StartCoroutine(save());
 
             if (useBTTV)
             {
@@ -233,26 +231,9 @@ namespace TwitchChatCoroutines
         {
             while (greetings.panel.Location.X < 2)
             {
-                //move
-                //greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
                 greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
                 yield return new WaitForMilliseconds(5);
             }
-            yield break;
-        }
-
-        IEnumerator removeChatLine(Label greetings)
-        {
-            throw new NotImplementedException();
-            while (greetings.Location.X > -greetings.Size.Width - 20)
-            {
-                //move 
-                greetings.Location = new Point((int)(greetings.Location.X - (1 + Math.Abs(greetings.Location.X * 1.1f))), greetings.Location.Y);
-                yield return new WaitForMilliseconds(5);
-            }
-            //currentChatMessages.Remove(greetings);
-            Controls.Remove(greetings);
-            greetings.Dispose();
             yield break;
         }
 
@@ -260,7 +241,7 @@ namespace TwitchChatCoroutines
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
-            StartLateCoroutine(enterChatLine(exclude));
+            coroutineManager.StartLateCoroutine(enterChatLine(exclude));
             pixelsToMove = exclude.panel.Size.Height;
             quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
 
@@ -277,7 +258,7 @@ namespace TwitchChatCoroutines
             for (int i = 0; i < toRemove.Count; i++)
             {
                 currentChatMessages.Remove(toRemove[i]);
-                for(int x = 0; x < toRemove[i].panel.Controls.Count; x++)
+                for (int x = 0; x < toRemove[i].panel.Controls.Count; x++)
                 {
                     toRemove[i].panel.Controls[x].Dispose();
                 }
@@ -301,6 +282,7 @@ namespace TwitchChatCoroutines
 
         public void CustomUpdate()
         {
+            coroutineManager.Interval();
             if (!twitchClient.Connected)
             {
                 Connect();
@@ -341,7 +323,7 @@ namespace TwitchChatCoroutines
                     //MakeAndInsertLabel(m).ForeColor = Color.Green;
                 }
             }
-            if (finished && stringsToBeAdded.Count > 0)
+            if (stringsToBeAdded.Count > 0)
             {
                 MakeAndInsertLabel(stringsToBeAdded.Dequeue());
             }
@@ -722,9 +704,8 @@ namespace TwitchChatCoroutines
                 p.Location = new Point(-Width, Height - p.Size.Height - 50);
                 currentChatMessages.Add(m);
             }
-
             finished = false;
-            StartLateCoroutine(moveLabels(m));
+            coroutineManager.StartCoroutine(moveLabels(m));
             return null;
         }
 

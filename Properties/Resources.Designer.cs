@@ -63,9 +63,9 @@ namespace TwitchChatCoroutines.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Splitter {
+        internal static System.Drawing.Bitmap splitter {
             get {
-                object obj = ResourceManager.GetObject("Splitter", resourceCulture);
+                object obj = ResourceManager.GetObject("splitter", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace TwitchChatCoroutines.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Splitter2 {
+        internal static System.Drawing.Bitmap splitter2 {
             get {
-                object obj = ResourceManager.GetObject("Splitter2", resourceCulture);
+                object obj = ResourceManager.GetObject("splitter2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

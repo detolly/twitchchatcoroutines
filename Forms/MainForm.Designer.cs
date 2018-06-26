@@ -1,6 +1,6 @@
-﻿namespace TwitchChatCoroutines
+﻿namespace TwitchChatCoroutines.Forms
 {
-    partial class askChannel
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -36,40 +36,43 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 65);
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(26, 38);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(174, 13);
+            this.label1.Size = new System.Drawing.Size(150, 21);
             this.label1.TabIndex = 0;
-            this.label1.Text = "What channel to connect to mr gay";
+            this.label1.Text = "Enter channel name:";
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(192, 62);
+            this.textBox1.Location = new System.Drawing.Point(172, 41);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(192, 20);
+            this.textBox1.Size = new System.Drawing.Size(160, 20);
             this.textBox1.TabIndex = 1;
+            this.textBox1.Text = "forsen";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(75, 90);
+            this.button1.Location = new System.Drawing.Point(338, 41);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 2;
-            this.button1.Text = "click";
+            this.button1.Text = "Open Chat";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // askChannel
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(386, 141);
+            this.ClientSize = new System.Drawing.Size(459, 88);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Name = "askChannel";
-            this.Text = "askChannel";
+            this.Name = "MainForm";
+            this.Text = "MainForm";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

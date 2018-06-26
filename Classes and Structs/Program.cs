@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections;
 using System.Windows.Forms;
 using System.Threading;
 using CoroutineSystem;
-using System.Diagnostics;
+
+using TwitchChatCoroutines.Forms;
 
 namespace TwitchChatCoroutines
 {
     static class Program
     {
-        internal static ChatForm mainForm;
+        internal static MainForm mainForm;
         internal static uint count = 0;
-        
 
         /// <summary>
         /// The main entry point for the application.
@@ -22,15 +20,12 @@ namespace TwitchChatCoroutines
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            CoroutineManager.Init();
-            mainForm = new ChatForm();
+            mainForm = new MainForm();
             if (!mainForm.IsDisposed) mainForm.Show();
             while (true)
             {
                 if (mainForm.hasClosed) break;
                 Application.DoEvents();
-                mainForm.CustomUpdate();
-                CoroutineManager.Interval();
                 Thread.Sleep(1);
                 count++;
                 if (count % 30000 == 0)
