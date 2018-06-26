@@ -238,21 +238,16 @@ namespace TwitchChatCoroutines
 
             StartLateCoroutine(enterChatLine(exclude));
             pixelsToMove = exclude.panel.Size.Height;
+            quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
 
-            for (int k = 0; k < pixelsToMove; k += quickness)
+            for (int i = 0; i < currentChatMessages.Count; i++)
             {
-                if (k < 0) break;
-                quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
-                for (int i = 0; i < currentChatMessages.Count; i++)
-                {
-                    if (currentChatMessages[i].messages == exclude.messages) continue;
-                    int border = -currentChatMessages[i].panel.Size.Height - 5;
-                    pixelsToMove = exclude.panel.Size.Height;
-                    currentChatMessages[i].panel.Location = new Point(currentChatMessages[i].panel.Location.X, currentChatMessages[i].panel.Location.Y - (k > pixelsToMove ? k - pixelsToMove : quickness));
-                    if (currentChatMessages[i].panel.Location.Y < border)
-                        toRemove.Add(currentChatMessages[i]);
-                    yield return new WaitForMilliseconds(1);
-                }
+                if (currentChatMessages[i].messages == exclude.messages) continue;
+                int border = -currentChatMessages[i].panel.Size.Height - 5;
+                pixelsToMove = exclude.panel.Size.Height;
+                currentChatMessages[i].panel.Location = new Point(currentChatMessages[i].panel.Location.X, currentChatMessages[i].panel.Location.Y - pixelsToMove);
+                if (currentChatMessages[i].panel.Location.Y < border)
+                    toRemove.Add(currentChatMessages[i]);
             }
 
             for (int i = 0; i < toRemove.Count; i++)
@@ -572,7 +567,7 @@ namespace TwitchChatCoroutines
                                             {
                                                 x--;
                                                 x = x < 0 ? 0 : x;
-                                                args.Insert(i+1, args[i].Substring(x < 0 ? 0 : x));
+                                                args.Insert(i+1, args[i].Substring(x));
                                                 args[i] = args[i].Substring(0, x);
                                                 old = args[i];
                                                 i++;
@@ -635,7 +630,7 @@ namespace TwitchChatCoroutines
                         stringCompare += args[i];
                         if (TextRenderer.MeasureText(stringCompare, font).Width > Width - labelToCompare.Location.X - border)
                         {
-                            if (TextRenderer.MeasureText(args[i], font).Width > Width - labelToCompare.Location.X - border)
+                            if (TextRenderer.MeasureText(args[i], font).Width > Width - border)
                             {
                                 string current = "";
                                 for (int x = 0; x < args[i].Length; x++)
@@ -646,7 +641,7 @@ namespace TwitchChatCoroutines
                                     {
                                         x--;
                                         x = x < 0 ? 0 : x;
-                                        args.Insert(i + 1, args[i].Substring(x < 0 ? 0 : x));
+                                        args.Insert(i + 1, args[i].Substring(x));
                                         args[i] = args[i].Substring(0, x);
                                         old = args[i];
                                         i++;
