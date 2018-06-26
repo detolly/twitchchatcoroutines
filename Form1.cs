@@ -13,7 +13,7 @@ using System.Net;
 
 namespace TwitchChatCoroutines
 {
-    public partial class Form1 : Form
+    public partial class ChatForm : Form
     {
         private string botUsername = "tSparkles".ToLower();
         private string oauth = Password.oauth;
@@ -80,7 +80,16 @@ namespace TwitchChatCoroutines
             return JsonConvert.DeserializeObject<dynamic>(client.DownloadString(url));
         }
 
-        public Form1()
+        IEnumerator save()
+        {
+            while(true)
+            {
+                File.WriteAllText("settings.txt", "Height:" + Height + "; Width:" + Width + ";");
+                yield return new WaitForSeconds(10);
+            }
+        }
+
+        public ChatForm()
         {
             InitializeComponent();
             Directory.CreateDirectory("./emotes/BetterTTV");
@@ -99,7 +108,20 @@ namespace TwitchChatCoroutines
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
-            Height = SystemInformation.PrimaryMonitorSize.Height - 150;
+            int h = SystemInformation.PrimaryMonitorSize.Height - 150;
+            int w = Width;
+            if (File.Exists("settings.txt"))
+            {
+                string settings = File.ReadAllText("settings.txt");
+                int hstart = settings.IndexOf("Height:") + "Height:".Length;
+                int hstop = settings.IndexOf(";", hstart);
+                int wstart = settings.IndexOf("Width:", hstop) + "Width:".Length;
+                int wstop = settings.IndexOf(";", wstart);
+                h = int.Parse(settings.Substring(hstart, hstop - hstart));
+                w = int.Parse(settings.Substring(wstart, wstop - wstart));
+            }
+            Height = h;
+            Width = w;
             client = new WebClient();
             client.Headers.Add("Client-ID", client_id);
             badgeJson = jsonGet("https://badges.twitch.tv/v1/badges/global/display").badge_sets;
@@ -125,6 +147,8 @@ namespace TwitchChatCoroutines
             channelInformationJson = jsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin);
             channelId = channelInformationJson.data[0].id;
             channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display");
+
+            StartCoroutine(save());
 
             if (useBTTV)
             {
@@ -691,6 +715,7 @@ namespace TwitchChatCoroutines
                 }
                 p.Size = new Size(Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28));;
                 m.panel = p;
+                m.splitter = splitterbox;
                 m.emotes = emoteBoxes;
                 m.messages = labelsToAdd;
                 m.username = userNameLabel;

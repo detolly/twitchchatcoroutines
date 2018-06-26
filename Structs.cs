@@ -23,7 +23,7 @@ namespace TwitchChatCoroutines
         public string message;
     }
 
-    internal struct MessageControl
+    internal class MessageControl
     {
         public SortedList<int, PictureBoxAndInts> emotes;
         public List<Label> messages;
@@ -34,6 +34,7 @@ namespace TwitchChatCoroutines
 
         public TwitchMessage twitchMessage;
         public string oneMessage;
+        public PictureBox splitter;
     }
 
     internal struct PictureBoxAndInts

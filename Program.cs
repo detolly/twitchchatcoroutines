@@ -10,7 +10,7 @@ namespace TwitchChatCoroutines
 {
     static class Program
     {
-        internal static Form1 mainForm;
+        internal static ChatForm mainForm;
         internal static uint count = 0;
         
 
@@ -23,7 +23,7 @@ namespace TwitchChatCoroutines
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             CoroutineManager.Init();
-            mainForm = new Form1();
+            mainForm = new ChatForm();
             if (!mainForm.IsDisposed) mainForm.Show();
             while (true)
             {
