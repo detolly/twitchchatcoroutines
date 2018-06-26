@@ -601,7 +601,7 @@ namespace TwitchChatCoroutines
                                 break;
                         }
                         int rightborder = comparison.GetTextSize().Width + comparison.Location.X + border;
-                        lastLocation = rightborder > Width ? border : rightborder;
+                        lastLocation = rightborder > Width ? border : rightborder - border;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
                     }
