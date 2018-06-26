@@ -20,14 +20,12 @@ namespace TwitchChatCoroutines
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            CoroutineManager.Init();
             mainForm = new MainForm();
             if (!mainForm.IsDisposed) mainForm.Show();
             while (true)
             {
                 if (mainForm.hasClosed) break;
                 Application.DoEvents();
-                CoroutineManager.Interval();
                 Thread.Sleep(1);
                 count++;
                 if (count % 30000 == 0)

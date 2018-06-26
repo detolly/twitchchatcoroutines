@@ -4,17 +4,17 @@ using System.Collections.Generic;
 
 namespace CoroutineSystem
 {
-    static class CoroutineManager
+    class CoroutineManager
     {
         #region Declarations
         #region Variables
         #region Privates
 
-        private static List<IEnumerator> currentCoroutines;
-        private static List<IEnumerator> endlessCoroutines;
-        private static List<IEnumerator> lateCoroutines;
-        private static List<IEnumerator> toRemove;
-        private static List<Tuple<IEnumerator, IEnumerator>> listOfAfter;
+        private List<IEnumerator> currentCoroutines;
+        private List<IEnumerator> endlessCoroutines;
+        private List<IEnumerator> lateCoroutines;
+        private List<IEnumerator> toRemove;
+        private List<Tuple<IEnumerator, IEnumerator>> listOfAfter;
 
         #endregion
         #endregion
@@ -30,7 +30,7 @@ namespace CoroutineSystem
 
         #region Logic
         #region Public
-        public static void Interval()
+        public void Interval()
         {
             List<int> ints = new List<int>();
             foreach(var current in currentCoroutines)
@@ -76,22 +76,22 @@ namespace CoroutineSystem
             }
         }
 
-        public static void StartCoroutineAfterCoroutine(IEnumerator method, IEnumerator methodtoStartAfter)
+        public void StartCoroutineAfterCoroutine(IEnumerator method, IEnumerator methodtoStartAfter)
         {
             listOfAfter.Add(new Tuple<IEnumerator, IEnumerator>(method, methodtoStartAfter));
         }
 
-        public static void StopAllCoroutines()
+        public void StopAllCoroutines()
         {
             currentCoroutines.Clear();
         }
 
-        public static void StartCoroutine(IEnumerator method)
+        public void StartCoroutine(IEnumerator method)
         {
             currentCoroutines.Add(method);
         }
 
-        public static void StartLateCoroutine(IEnumerator method)
+        public void StartLateCoroutine(IEnumerator method)
         {
             lateCoroutines.Add(method);
         }
@@ -99,7 +99,7 @@ namespace CoroutineSystem
         #endregion
 
         #region Init
-        public static void Init()
+        public void Init()
         {
             currentCoroutines = new List<IEnumerator>();
             lateCoroutines = new List<IEnumerator>();

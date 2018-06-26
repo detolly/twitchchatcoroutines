@@ -17,9 +17,13 @@ namespace TwitchChatCoroutines
 {
     public partial class ChatForm : Form
     {
+        private CoroutineManager coroutineManager = new CoroutineManager();
+
         private string botUsername = "tSparkles".ToLower();
         private string oauth = Password.oauth;
         private string channelToJoin = "";
+
+        private bool finished = false;
 
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
@@ -93,6 +97,7 @@ namespace TwitchChatCoroutines
         public ChatForm(string Schannel)
         {
             InitializeComponent();
+            coroutineManager.Init();
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
@@ -141,7 +146,7 @@ namespace TwitchChatCoroutines
             channelId = channelInformationJson.data[0].id;
             channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display");
 
-            StartCoroutine(save());
+            coroutineManager.StartCoroutine(save());
 
             if (useBTTV)
             {
@@ -222,16 +227,21 @@ namespace TwitchChatCoroutines
             }
         }
 
-        void enterChatLine(MessageControl greetings)
+        IEnumerator enterChatLine(MessageControl greetings)
         {
-            greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
+            while (greetings.panel.Location.X < 2)
+            {
+                greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                yield return new WaitForMilliseconds(5);
+            }
+            yield break;
         }
 
-        void moveLabels(MessageControl exclude)
+        IEnumerator moveLabels(MessageControl exclude)
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
-            enterChatLine(exclude);
+            coroutineManager.StartLateCoroutine(enterChatLine(exclude));
             pixelsToMove = exclude.panel.Size.Height;
             quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
 
@@ -248,7 +258,7 @@ namespace TwitchChatCoroutines
             for (int i = 0; i < toRemove.Count; i++)
             {
                 currentChatMessages.Remove(toRemove[i]);
-                for(int x = 0; x < toRemove[i].panel.Controls.Count; x++)
+                for (int x = 0; x < toRemove[i].panel.Controls.Count; x++)
                 {
                     toRemove[i].panel.Controls[x].Dispose();
                 }
@@ -256,6 +266,8 @@ namespace TwitchChatCoroutines
                 toRemove[i].panel.Dispose();
                 //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
             }
+            finished = true;
+            yield break;
         }
 
         public string ReplaceFirst(string text, string search, string replace)
@@ -270,6 +282,7 @@ namespace TwitchChatCoroutines
 
         public void CustomUpdate()
         {
+            coroutineManager.Interval();
             if (!twitchClient.Connected)
             {
                 Connect();
@@ -691,8 +704,8 @@ namespace TwitchChatCoroutines
                 p.Location = new Point(-Width, Height - p.Size.Height - 50);
                 currentChatMessages.Add(m);
             }
-            
-            moveLabels(m);
+            finished = false;
+            coroutineManager.StartCoroutine(moveLabels(m));
             return null;
         }
 
