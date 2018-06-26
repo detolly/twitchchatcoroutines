@@ -606,7 +606,9 @@ namespace TwitchChatCoroutines
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
-                    pb.Location = new Point(lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
+                    int theOr = lastLocation + 2* pb.Size.Width + emoteSpacing + border;
+                    yoffset += theOr > Width ? pb.Size.Height : 0;
+                    pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
                     lastLocation = pb.Right + emoteSpacing;
                     p.Controls.Add(pb);
                 }
