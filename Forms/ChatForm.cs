@@ -30,10 +30,37 @@ namespace TwitchChatCoroutines
         private int pixelsToMove = 16;
         private Color outlineColor;
         private Color textColor = Color.White;
-
-        private SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
-        private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
-        private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
+        
+        private SortedList<string, Image> cachedBTTVEmotes {
+            get {
+                return Program.mainForm.cachedBTTVEmotes;
+            } set
+            {
+                Program.mainForm.cachedBTTVEmotes = value;
+            }
+        }
+        private SortedList<string, Image> cachedFFZEmotes
+        {
+            get
+            {
+                return Program.mainForm.cachedFFZEmotes;
+            }
+            set
+            {
+                Program.mainForm.cachedFFZEmotes = value;
+            }
+        }
+        private SortedList<string, Image> cachedTwitchEmotes
+        {
+            get
+            {
+                return Program.mainForm.cachedTwitchEmotes;
+            }
+            set
+            {
+                Program.mainForm.cachedTwitchEmotes = value;
+            }
+        }
 
         private Image splitter = Properties.Resources.splitter;
         
@@ -119,7 +146,7 @@ namespace TwitchChatCoroutines
                 int wstart = settings.IndexOf("Width:", hstop) + "Width:".Length;
                 int wstop = settings.IndexOf(";", wstart);
                 h = int.Parse(settings.Substring(hstart, hstop - hstart));
-                w = int.Parse(settings.Substring(wstart, wstop - wstart));
+                w = Screen.PrimaryScreen.Bounds.Width / 4; //int.Parse(settings.Substring(wstart, wstop - wstart));
             }
             Height = h;
             Width = w;

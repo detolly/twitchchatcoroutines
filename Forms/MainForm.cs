@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -11,6 +12,10 @@ namespace TwitchChatCoroutines.Forms
         static List<ChatForm> chatforms = new List<ChatForm>();
         static List<ChatForm> toRemove = new List<ChatForm>();
         Dictionary<ChatForm, Thread> threads = new Dictionary<ChatForm, Thread>();
+
+        public SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
+        public SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
+        public SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
         public string channel;
 
