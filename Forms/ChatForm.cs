@@ -23,8 +23,6 @@ namespace TwitchChatCoroutines
         private string oauth = Password.oauth;
         private string channelToJoin = "";
 
-        private bool finished = false;
-
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
@@ -89,7 +87,10 @@ namespace TwitchChatCoroutines
         {
             while(true)
             {
-                File.WriteAllText("settings.txt", "Height:" + Height + "; Width:" + Width + ";");
+                try
+                {
+                    File.WriteAllText("settings.txt", "Height:" + Height + "; Width:" + Width + ";");
+                } catch { }
                 yield return new WaitForSeconds(10);
             }
         }
@@ -233,7 +234,8 @@ namespace TwitchChatCoroutines
         {
             while (greetings.panel.Location.X < 2)
             {
-                greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
+                //greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
                 yield return new WaitForMilliseconds(5);
             }
             yield break;
@@ -268,7 +270,6 @@ namespace TwitchChatCoroutines
                 toRemove[i].panel.Dispose();
                 //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
             }
-            finished = true;
             yield break;
         }
 
@@ -489,7 +490,7 @@ namespace TwitchChatCoroutines
                             int secondIndex = ints[i].Item2;
                             string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
                             string theId = s.Substring(0, start);
-                            string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh") + ".png";
+                            string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh").Replace("|", "whatbigaiI") + ".png";
                             if (!File.Exists(path))
                             {
                                 client.DownloadFile(new Uri("http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0"), path);
@@ -706,7 +707,6 @@ namespace TwitchChatCoroutines
                 p.Location = new Point(-Width, Height - p.Size.Height - 50);
                 currentChatMessages.Add(m);
             }
-            finished = false;
             coroutineManager.StartCoroutine(moveLabels(m));
             return null;
         }
