@@ -97,8 +97,9 @@ namespace TwitchChatCoroutines
         public ChatForm(string Schannel)
         {
             InitializeComponent();
-            FormBorderStyle = FormBorderStyle.None;
+            //FormBorderStyle = FormBorderStyle.None;
             coroutineManager.Init();
+            Text = Schannel;
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
