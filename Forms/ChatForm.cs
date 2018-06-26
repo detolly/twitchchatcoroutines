@@ -34,8 +34,7 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
         private Image splitter = Properties.Resources.splitter;
-
-        bool finished = true;
+        
         int quickness = 1;
         private int emoteSpacing = 2;
 
@@ -99,12 +98,6 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/Twitch");
             outlineColor = (Color)cc.ConvertFromString("#111111");
             channelToJoin = Schannel;
-            if (channelToJoin == "" || channelToJoin == null)
-            {
-                Close();
-                hasClosed = true;
-                return;
-            }
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
@@ -229,38 +222,16 @@ namespace TwitchChatCoroutines
             }
         }
 
-        IEnumerator enterChatLine(MessageControl greetings)
+        void enterChatLine(MessageControl greetings)
         {
-            while (greetings.panel.Location.X < 2)
-            {
-                //move
-                //greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
-                greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
-                yield return new WaitForMilliseconds(5);
-            }
-            yield break;
+            greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
         }
 
-        IEnumerator removeChatLine(Label greetings)
-        {
-            throw new NotImplementedException();
-            while (greetings.Location.X > -greetings.Size.Width - 20)
-            {
-                //move 
-                greetings.Location = new Point((int)(greetings.Location.X - (1 + Math.Abs(greetings.Location.X * 1.1f))), greetings.Location.Y);
-                yield return new WaitForMilliseconds(5);
-            }
-            //currentChatMessages.Remove(greetings);
-            Controls.Remove(greetings);
-            greetings.Dispose();
-            yield break;
-        }
-
-        IEnumerator moveLabels(MessageControl exclude)
+        void moveLabels(MessageControl exclude)
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
-            StartLateCoroutine(enterChatLine(exclude));
+            enterChatLine(exclude);
             pixelsToMove = exclude.panel.Size.Height;
             quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
 
@@ -285,8 +256,6 @@ namespace TwitchChatCoroutines
                 toRemove[i].panel.Dispose();
                 //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
             }
-            finished = true;
-            yield break;
         }
 
         public string ReplaceFirst(string text, string search, string replace)
@@ -341,7 +310,7 @@ namespace TwitchChatCoroutines
                     //MakeAndInsertLabel(m).ForeColor = Color.Green;
                 }
             }
-            if (finished && stringsToBeAdded.Count > 0)
+            if (stringsToBeAdded.Count > 0)
             {
                 MakeAndInsertLabel(stringsToBeAdded.Dequeue());
             }
@@ -722,9 +691,8 @@ namespace TwitchChatCoroutines
                 p.Location = new Point(-Width, Height - p.Size.Height - 50);
                 currentChatMessages.Add(m);
             }
-
-            finished = false;
-            StartLateCoroutine(moveLabels(m));
+            
+            moveLabels(m);
             return null;
         }
 

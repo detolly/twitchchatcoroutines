@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
-        List<ChatForm> chatforms = new List<ChatForm>();
-        List<ChatForm> toRemove = new List<ChatForm>();
+        static List<ChatForm> chatforms = new List<ChatForm>();
+        static List<ChatForm> toRemove = new List<ChatForm>();
+        Dictionary<ChatForm, Thread> threads = new Dictionary<ChatForm, Thread>();
+
+        public string channel;
 
         public bool hasClosed
         {
@@ -25,26 +23,24 @@ namespace TwitchChatCoroutines.Forms
             InitializeComponent();
         }
 
-        public void CustomUpdate()
-        {
-            for (int i = 0; i < chatforms.Count; i++)
-            {
-                if (chatforms[i].hasClosed)
-                    toRemove.Add(chatforms[i]);
-                chatforms[i].CustomUpdate();
-            }
-            for (int i = 0; i < toRemove.Count; i++)
-            {
-                chatforms.Remove(toRemove[i]);
-            }
-            toRemove.Clear();
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            var a = new ChatForm(textBox1.Text);
-            chatforms.Add(a);
-            a.Show();
+            channel = textBox1.Text;
+            Thread t = new Thread(() =>
+            {
+                var text = Program.mainForm.channel;
+                var a = new ChatForm(text);
+                a.Show();
+                while (true)
+                {
+                    if (a.hasClosed)
+                        break;
+                    Application.DoEvents();
+                    a.CustomUpdate();
+                    Thread.Sleep(1);
+                }
+            });
+            t.Start();
             textBox1.Text = "";
         }
 

@@ -27,7 +27,6 @@ namespace TwitchChatCoroutines
             {
                 if (mainForm.hasClosed) break;
                 Application.DoEvents();
-                mainForm.CustomUpdate();
                 CoroutineManager.Interval();
                 Thread.Sleep(1);
                 count++;
