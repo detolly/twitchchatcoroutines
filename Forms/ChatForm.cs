@@ -40,7 +40,7 @@ namespace TwitchChatCoroutines
         private Image splitter = Properties.Resources.splitter;
         
         int quickness = 1;
-        private int emoteSpacing = 2;
+        private int emoteSpacing = 0;
 
         Random r = new Random();
 
@@ -553,7 +553,7 @@ namespace TwitchChatCoroutines
                         bool f = false;
                         p.Controls.Add(thel);
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                        while (comparison.Right > Width - border - pb.Size.Width)
+                        while (comparison.Right > Width - border)
                         {
                             var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";
@@ -561,10 +561,10 @@ namespace TwitchChatCoroutines
                             {
                                 string old = upTillNow;
                                 upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + border + pb.Size.Width > Width)
+                                if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X > Width - border)
                                 {
                                     var a = TextRenderer.MeasureText(args[i], font).Width;
-                                    if (a + userNameLabel.Right + border + pb.Size.Width > Width)
+                                    if (a + userNameLabel.Right + border > Width)
                                     {
                                         string current = "";
                                         for (int x = 0; x < args[i].Length; x++)
@@ -608,14 +608,14 @@ namespace TwitchChatCoroutines
                             if (f)
                                 break;
                         }
-                        int rightborder = comparison.GetTextSize().Width + comparison.Location.X + border;
-                        lastLocation = rightborder > Width ? border : rightborder - border;
+                        int rightborder = comparison.Right + pb.Width;
+                        lastLocation = rightborder > Width ? border : rightborder - pb.Width;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
-                    int theOr = lastLocation + 2* pb.Size.Width + emoteSpacing + border;
-                    yoffset += theOr > Width ? pb.Size.Height : 0;
+                    int theOr = lastLocation + (int)(pb.Size.Width * 1.5f) + border;
+                    yoffset += theOr > Width ? Math.Max(28, comparison.Height) : 0;
                     pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
                     lastLocation = pb.Right + emoteSpacing;
                     p.Controls.Add(pb);
