@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
+using TwitchChatCoroutines.ClassesAndStructs;
+
 namespace TwitchChatCoroutines
 {
     public partial class ChatForm : Form
@@ -31,7 +33,7 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
-        private Image splitter = Properties.Resources.Splitter;
+        private Image splitter = Properties.Resources.splitter;
 
         bool finished = true;
         int quickness = 1;
@@ -89,16 +91,14 @@ namespace TwitchChatCoroutines
             }
         }
 
-        public ChatForm()
+        public ChatForm(string Schannel)
         {
             InitializeComponent();
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
             outlineColor = (Color)cc.ConvertFromString("#111111");
-            var d = new askChannel();
-            d.ShowDialog();
-            channelToJoin = d.theChannel;
+            channelToJoin = Schannel;
             if (channelToJoin == "" || channelToJoin == null)
             {
                 Close();
