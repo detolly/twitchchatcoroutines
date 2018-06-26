@@ -35,6 +35,7 @@ namespace TwitchChatCoroutines
 
         bool finished = true;
         int quickness = 1;
+        private int emoteSpacing = 2;
 
         Random r = new Random();
 
@@ -85,7 +86,7 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
-            outlineColor = (Color)cc.ConvertFromString("#222222");
+            outlineColor = (Color)cc.ConvertFromString("#111111");
             var d = new askChannel();
             d.ShowDialog();
             channelToJoin = d.theChannel;
@@ -209,8 +210,8 @@ namespace TwitchChatCoroutines
             while (greetings.panel.Location.X < 2)
             {
                 //move
-                greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
-                //greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                //greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
+                greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
                 yield return new WaitForMilliseconds(5);
             }
             yield break;
@@ -309,10 +310,6 @@ namespace TwitchChatCoroutines
                         isAction = true;
                     }
                     user.message = extractedMessage;
-                    if (!finished)
-                    {
-                        temporaryThing = 2 * (temporaryThing + 1);
-                    }
                     MessageControl m = new MessageControl();
                     m.twitchMessage = user;
                     m.isAction = isAction;
@@ -548,12 +545,12 @@ namespace TwitchChatCoroutines
                     thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                     thel.Text += text.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
                     TwitchLabel comparison = thel;
-                    if (thel.Text != "" || thel.Text != " ")
+                    if (thel.Text != "" && thel.Text != " ")
                     {
                         bool f = false;
                         p.Controls.Add(thel);
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                        while (comparison.Right > Width - 5 - pb.Size.Width)
+                        while (comparison.Right > Width - border - pb.Size.Width)
                         {
                             var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";
@@ -609,13 +606,13 @@ namespace TwitchChatCoroutines
                                 break;
                         }
                         int rightborder = comparison.GetTextSize().Width + comparison.Location.X + border;
-                        lastLocation = rightborder > Width ? border : comparison.Right;
+                        lastLocation = rightborder > Width ? border : rightborder;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
                     pb.Location = new Point(lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
-                    lastLocation = pb.Right;
+                    lastLocation = pb.Right + emoteSpacing;
                     p.Controls.Add(pb);
                 }
                 TwitchLabel lastLabel = new TwitchLabel();
