@@ -2,3 +2,6 @@ Password.cs
 bin/
 /bin
 ./bin
+./obj
+obj/
+/obj
