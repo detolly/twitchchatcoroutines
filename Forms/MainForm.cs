@@ -5,17 +5,22 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
+using TwitchChatCoroutines.ClassesAndStructs;
+
 namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
         static List<ChatForm> chatforms = new List<ChatForm>();
         static List<ChatForm> toRemove = new List<ChatForm>();
-        Dictionary<ChatForm, Thread> threads = new Dictionary<ChatForm, Thread>();
 
         public SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
+
+        public static ChatFormSettings chatFormSetting;
+
+        public static Font defaultFont = new Font("Segoe UI", 10f);
 
         public string channel;
 
@@ -27,15 +32,22 @@ namespace TwitchChatCoroutines.Forms
         public MainForm()
         {
             InitializeComponent();
+            label3.Text = defaultFont.Name + ", " + defaultFont.Size;
+            chatFormSetting = new ChatFormSettings();
+            chatFormSetting.font = defaultFont;
+            chatFormSetting.emoteSpacing = 0;
+            chatFormSetting.animations = false;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            channel = textBox1.Text;
+            chatFormSetting.animations = checkBox1.Checked;
+            chatFormSetting.emoteSpacing = (int)numericUpDown1.Value;
+            chatFormSetting.channel = textBox1.Text;
             Thread t = new Thread(() =>
             {
-                var text = Program.mainForm.channel;
-                var a = new ChatForm(text);
+                var settings = chatFormSetting;
+                var a = new ChatForm(settings);
                 a.Show();
                 Stopwatch w = new Stopwatch();
                 while (true)
@@ -59,6 +71,13 @@ namespace TwitchChatCoroutines.Forms
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             hasClosed = true;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            fontDialog1.ShowDialog();
+            chatFormSetting.font = fontDialog1.Font;
+            label3.Text = fontDialog1.Font.Name + ", " + fontDialog1.Font.Size;
         }
     }
 }

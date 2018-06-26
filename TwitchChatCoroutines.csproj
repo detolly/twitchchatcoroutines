@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes and Structs\ChatFormSettings.cs" />
     <Compile Include="Classes and Structs\MessageControl.cs" />
     <Compile Include="Classes and Structs\PictureBoxAndInts.cs" />
     <Compile Include="Classes and Structs\TwitchLabel.cs">

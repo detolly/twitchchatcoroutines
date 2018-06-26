@@ -26,36 +26,17 @@ namespace TwitchChatCoroutines
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
-        private Font font = new Font("Segoe UI", 10f);
-        private int pixelsToMove = 16;
+        private Font font;
+        private int pixelsToMove;
         private Color outlineColor;
         private Color textColor = Color.White;
 
-        private SortedList<string, Image> cachedBTTVEmotes
-        {
-            get;
-                //return Program.mainForm.cachedBTTVEmotes;
-            set;
-                //Program.mainForm.cachedBTTVEmotes = value
-        }
-        private SortedList<string, Image> cachedFFZEmotes
-        {
-            get;
-                //return Program.mainForm.cachedFFZEmotes;
-            set;
-                //Program.mainForm.cachedFFZEmotes = value;
-        }
-        private SortedList<string, Image> cachedTwitchEmotes
-        {
-            get;
-                //return Program.mainForm.cachedTwitchEmotes;
-            set;
-                //Program.mainForm.cachedTwitchEmotes = value;
-        }
+        private SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
+        private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
+        private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
         private Image splitter = Properties.Resources.splitter;
-
-        int quickness = 1;
+        
         private int emoteSpacing = 0;
 
         Random r = new Random();
@@ -79,6 +60,8 @@ namespace TwitchChatCoroutines
 
         private bool useFFZ = true;
         private bool useBTTV = true;
+
+        private bool doAnimations = false;
 
         private string channelId;
 
@@ -114,17 +97,20 @@ namespace TwitchChatCoroutines
             }
         }
 
-        public ChatForm(string Schannel)
+        public ChatForm(ChatFormSettings chatFormSettings)
         {
             InitializeComponent();
             //FormBorderStyle = FormBorderStyle.None;
             coroutineManager.Init();
-            Text = Schannel;
+            Text = chatFormSettings.channel;
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
             outlineColor = (Color)cc.ConvertFromString("#111111");
-            channelToJoin = Schannel;
+            channelToJoin = chatFormSettings.channel;
+            Font = chatFormSettings.font;
+            doAnimations = chatFormSettings.animations;
+            emoteSpacing = chatFormSettings.emoteSpacing;
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
@@ -266,8 +252,10 @@ namespace TwitchChatCoroutines
         {
             while (greetings.panel.Location.X < 2)
             {
-                greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
-                //greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                if (!doAnimations)
+                    greetings.panel.Location = new Point(2, greetings.panel.Location.Y);
+                else if (doAnimations)
+                    greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
                 yield return new WaitForMilliseconds(5);
             }
             yield break;
@@ -279,7 +267,6 @@ namespace TwitchChatCoroutines
 
             coroutineManager.StartLateCoroutine(enterChatLine(exclude));
             pixelsToMove = exclude.panel.Size.Height;
-            quickness = Math.Min(pixelsToMove, pixelsToMovee(pixelsToMove) + temporaryThing);
 
             for (int i = 0; i < currentChatMessages.Count; i++)
             {
@@ -722,7 +709,7 @@ namespace TwitchChatCoroutines
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
                     if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
-                        highest = p.Controls[i].Size.Height + p.Controls[i].Location.Y;
+                        highest = p.Controls[i].Bottom;
                     if (p.Controls[i].Location.Y < lowest)
                         lowest = p.Controls[i].Location.Y;
                 }
