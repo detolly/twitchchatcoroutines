@@ -30,40 +30,31 @@ namespace TwitchChatCoroutines
         private int pixelsToMove = 16;
         private Color outlineColor;
         private Color textColor = Color.White;
-        
-        private SortedList<string, Image> cachedBTTVEmotes {
-            get {
-                return Program.mainForm.cachedBTTVEmotes;
-            } set
-            {
-                Program.mainForm.cachedBTTVEmotes = value;
-            }
+
+        private SortedList<string, Image> cachedBTTVEmotes
+        {
+            get;
+                //return Program.mainForm.cachedBTTVEmotes;
+            set;
+                //Program.mainForm.cachedBTTVEmotes = value
         }
         private SortedList<string, Image> cachedFFZEmotes
         {
-            get
-            {
-                return Program.mainForm.cachedFFZEmotes;
-            }
-            set
-            {
-                Program.mainForm.cachedFFZEmotes = value;
-            }
+            get;
+                //return Program.mainForm.cachedFFZEmotes;
+            set;
+                //Program.mainForm.cachedFFZEmotes = value;
         }
         private SortedList<string, Image> cachedTwitchEmotes
         {
-            get
-            {
-                return Program.mainForm.cachedTwitchEmotes;
-            }
-            set
-            {
-                Program.mainForm.cachedTwitchEmotes = value;
-            }
+            get;
+                //return Program.mainForm.cachedTwitchEmotes;
+            set;
+                //Program.mainForm.cachedTwitchEmotes = value;
         }
 
         private Image splitter = Properties.Resources.splitter;
-        
+
         int quickness = 1;
         private int emoteSpacing = 0;
 
@@ -112,12 +103,13 @@ namespace TwitchChatCoroutines
 
         IEnumerator save()
         {
-            while(true)
+            while (true)
             {
                 try
                 {
                     File.WriteAllText("settings.txt", "Height:" + Height + "; Width:" + Width + ";");
-                } catch { }
+                }
+                catch { }
                 yield return new WaitForSeconds(10);
             }
         }
@@ -191,7 +183,11 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
-                    cachedBTTVEmotes.Add(code, image);
+                    try
+                    {
+                        cachedBTTVEmotes.Add(code, image);
+                    }
+                    catch { }
                 }
             }
             if (useBTTV)
@@ -207,7 +203,11 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
-                    cachedBTTVEmotes.Add(code, image);
+                    try
+                    {
+                        cachedBTTVEmotes.Add(code, image);
+                    }
+                    catch { }
                 }
             }
             if (useFFZ)
@@ -221,7 +221,11 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri(url), path);
                     Image image = Image.FromFile(path);
-                    cachedFFZEmotes.Add(code, image);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
                 }
             }
             Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> strings = badgeJson.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
@@ -253,7 +257,8 @@ namespace TwitchChatCoroutines
                 try
                 {
                     badges.Add(entry.Key, dict);
-                } catch { }
+                }
+                catch { }
             }
         }
 
@@ -545,7 +550,7 @@ namespace TwitchChatCoroutines
                 foreach (var s in badgges)
                 {
                     exists = true;
-                    s.Location = new Point(tStart+border, 10);
+                    s.Location = new Point(tStart + border, 10);
                     tStart += s.Size.Width + border;
                 }
                 TwitchLabel userNameLabel = new TwitchLabel();
@@ -603,7 +608,7 @@ namespace TwitchChatCoroutines
                                             {
                                                 x--;
                                                 x = x < 0 ? 0 : x;
-                                                args.Insert(i+1, args[i].Substring(x));
+                                                args.Insert(i + 1, args[i].Substring(x));
                                                 args[i] = args[i].Substring(0, x);
                                                 old = args[i];
                                                 i++;
@@ -630,7 +635,7 @@ namespace TwitchChatCoroutines
                                 }
                                 if (i == args.Count - 1)
                                 {
-                                    comparison.Text = upTillNow.Substring(0, upTillNow.Length-1);
+                                    comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
                                 }
                             }
                             if (f)
@@ -712,7 +717,7 @@ namespace TwitchChatCoroutines
                 PictureBox splitterbox = new PictureBox();
                 splitterbox.Image = splitter;
                 splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                splitterbox.Size = new Size(2*Width+10, 1);
+                splitterbox.Size = new Size(2 * Width + 10, 1);
                 p.Controls.Add(splitterbox);
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
@@ -725,7 +730,7 @@ namespace TwitchChatCoroutines
                 {
                     p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
                 }
-                p.Size = new Size(2*Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28));;
+                p.Size = new Size(2 * Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28)); ;
                 m.panel = p;
                 m.splitter = splitterbox;
                 m.emotes = emoteBoxes;
