@@ -97,6 +97,7 @@ namespace TwitchChatCoroutines
         public ChatForm(string Schannel)
         {
             InitializeComponent();
+            FormBorderStyle = FormBorderStyle.None;
             coroutineManager.Init();
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
@@ -682,7 +683,7 @@ namespace TwitchChatCoroutines
                 PictureBox splitterbox = new PictureBox();
                 splitterbox.Image = splitter;
                 splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                splitterbox.Size = new Size(Width+10, 1);
+                splitterbox.Size = new Size(2*Width+10, 1);
                 p.Controls.Add(splitterbox);
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
@@ -695,7 +696,7 @@ namespace TwitchChatCoroutines
                 {
                     p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
                 }
-                p.Size = new Size(Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28));;
+                p.Size = new Size(2*Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28));;
                 m.panel = p;
                 m.splitter = splitterbox;
                 m.emotes = emoteBoxes;
