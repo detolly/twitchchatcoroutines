@@ -55,12 +55,6 @@
     <Compile Include="Classes and Structs\TwitchLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Forms\askChannel.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\askChannel.Designer.cs">
-      <DependentUpon>askChannel.cs</DependentUpon>
-    </Compile>
     <Compile Include="Classes and Structs\Coroutines.cs" />
     <Compile Include="Forms\ChatForm.cs">
       <SubType>Form</SubType>
@@ -78,9 +72,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes and Structs\TwitchMessage.cs" />
-    <EmbeddedResource Include="Forms\askChannel.resx">
-      <DependentUpon>askChannel.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ChatForm.resx">
       <DependentUpon>ChatForm.cs</DependentUpon>
     </EmbeddedResource>
