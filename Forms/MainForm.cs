@@ -25,7 +25,7 @@ namespace TwitchChatCoroutines.Forms
 
         public static ChatFormSettings[] chatFormSettings;
 
-        public static Font defaultFont = new Font("Segoe UI", 10f);
+        public static Font defaultFont = new Font("Segoe UI", 9.75f);
 
         public string channel;
         int selectedIndex = 0;

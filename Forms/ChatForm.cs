@@ -658,7 +658,7 @@ namespace TwitchChatCoroutines
                                 break;
                         }
                         int rightborder = comparison.Right + pb.Width;
-                        lastLocation = rightborder > Width ? border : rightborder - pb.Width;
+                        lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
                         yoffset += rightborder > Width ? pb.Size.Height : 0;
                         labelsToAdd.Add(thel);
                     }
