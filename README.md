@@ -1,6 +1,10 @@
-# twitchchatcoroutines
-A desktop c# twitch chat application. Supports BTTV, FrankerFaceZ or whatever it's called, and emote caching/storing. 
+# Twitch Chat Coroutines
 
-# How to download
+![latest]
+
+## Description
+A desktop c# twitch chat application, made with Unity Syntax Coroutines, hence the name. Supports BTTV, FrankerFaceZ or whatever it's called, and emote caching/storing. 
+
+## Downloading
 
 Check [this page](https://github.com/detolly/twitchchatcoroutines/releases). 
