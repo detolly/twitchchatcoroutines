@@ -3,4 +3,4 @@ A desktop c# twitch chat application. Supports BTTV, FrankerFaceZ or whatever it
 
 # How to download
 
-Check [this page](https://github.com/detolly/twitchchatcoroutines/wiki/Downloads). 
+Check [this page](https://github.com/detolly/twitchchatcoroutines/releases). 
