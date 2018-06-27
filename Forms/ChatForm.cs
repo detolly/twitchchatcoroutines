@@ -108,7 +108,7 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/Twitch");
             outlineColor = (Color)cc.ConvertFromString("#111111");
             channelToJoin = chatFormSettings.channel;
-            Font = chatFormSettings.font;
+            font = chatFormSettings.font;
             doAnimations = chatFormSettings.animations;
             emoteSpacing = chatFormSettings.emoteSpacing;
             badges = new SortedList<string, Dictionary<string, string>>();
@@ -320,7 +320,7 @@ namespace TwitchChatCoroutines
                 {
                     SendRawMessage("PONG :tmi.twitch.tv");
                 }
-                if (rawLine.Contains("PRIVMSG"))
+                else if (rawLine.Contains("PRIVMSG"))
                 {
                     TwitchMessage user = GetTwitchMessage(rawLine);
                     string username = user.display_name; //GetUsername(rawLine);
@@ -338,11 +338,22 @@ namespace TwitchChatCoroutines
                     m.isAction = isAction;
                     stringsToBeAdded.Enqueue(m);
                 }
-                else
+                else if (rawLine.Contains("CLEARCHAT"))
                 {
-                    MessageControl m = new MessageControl();
-                    m.oneMessage = rawLine;
-                    //MakeAndInsertLabel(m).ForeColor = Color.Green;
+                    int start = rawLine.IndexOf(":", rawLine.IndexOf("CLEARCHAT"))+1;
+                    int stop = rawLine.IndexOf(" ", start);
+                    string user = rawLine.Substring(start, rawLine.Length - start);
+                    Font f = font;
+                    f = new Font(f, FontStyle.Strikeout);
+                    foreach (MessageControl m in currentChatMessages)
+                    {
+                        if (m.twitchMessage.display_name.ToLower() == user.ToLower())
+                            foreach (Label l in m.messages)
+                            {
+                                l.Font = f;
+                                l.ForeColor = Color.Gray;
+                            }
+                    }
                 }
             }
             if (stringsToBeAdded.Count > 0)
@@ -771,7 +782,7 @@ namespace TwitchChatCoroutines
 
             writer.WriteLine("JOIN #" + channelToJoin.ToLower());
             writer.WriteLine("CAP REQ :twitch.tv/tags");
-            //writer.WriteLine("CAP REQ :twitch.tv/commands");
+            writer.WriteLine("CAP REQ :twitch.tv/commands");
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
