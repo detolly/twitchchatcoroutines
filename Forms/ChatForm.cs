@@ -63,6 +63,8 @@ namespace TwitchChatCoroutines
 
         private bool doAnimations = false;
 
+        private ChatFormSettings chatFormSettings;
+
         private string channelId;
 
         //private dynamic FFZEmotesJson;
@@ -97,21 +99,36 @@ namespace TwitchChatCoroutines
             }
         }
 
+        void ChangedEvent(object o, EventArgs e)
+        {
+            outlineColor = chatFormSettings.BackgroundColor;
+            BackColor = outlineColor;
+            textColor = chatFormSettings.ForegroundColor;
+            font = chatFormSettings.Font;
+            doAnimations = chatFormSettings.Animations;
+            emoteSpacing = chatFormSettings.EmoteSpacing;
+        }
+
         public ChatForm(ChatFormSettings chatFormSettings)
         {
             InitializeComponent();
-            //FormBorderStyle = FormBorderStyle.None;
             coroutineManager.Init();
-            Text = chatFormSettings.channel;
+            Text = chatFormSettings.Channel;
+
+            this.chatFormSettings = chatFormSettings;
+
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
-            outlineColor = chatFormSettings.backgroundColor;
-            textColor = chatFormSettings.foregroundColor;
-            channelToJoin = chatFormSettings.channel;
-            font = chatFormSettings.font;
-            doAnimations = chatFormSettings.animations;
-            emoteSpacing = chatFormSettings.emoteSpacing;
+
+            outlineColor = chatFormSettings.BackgroundColor;
+            textColor = chatFormSettings.ForegroundColor;
+            channelToJoin = chatFormSettings.Channel;
+            font = chatFormSettings.Font;
+            doAnimations = chatFormSettings.Animations;
+            emoteSpacing = chatFormSettings.EmoteSpacing;
+            chatFormSettings.changed += ChangedEvent;
+
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
