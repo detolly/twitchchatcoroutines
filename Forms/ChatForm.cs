@@ -23,13 +23,15 @@ namespace TwitchChatCoroutines
         private string oauth = Password.oauth;
         private string channelToJoin = "";
 
+        private ColorConverter cc = new ColorConverter();
+
         private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
         private Font font;
         private int pixelsToMove;
         private Color outlineColor;
-        private Color textColor = Color.White;
+        private Color textColor;
 
         private SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
         private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
@@ -40,8 +42,6 @@ namespace TwitchChatCoroutines
         private int emoteSpacing = 0;
 
         Random r = new Random();
-
-        private ColorConverter cc = new ColorConverter();
 
         private List<MessageControl> currentChatMessages = new List<MessageControl>();
         private int temporaryThing = 0;
@@ -106,7 +106,8 @@ namespace TwitchChatCoroutines
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
             Directory.CreateDirectory("./emotes/Twitch");
-            outlineColor = (Color)cc.ConvertFromString("#111111");
+            outlineColor = chatFormSettings.backgroundColor;
+            textColor = chatFormSettings.foregroundColor;
             channelToJoin = chatFormSettings.channel;
             font = chatFormSettings.font;
             doAnimations = chatFormSettings.animations;

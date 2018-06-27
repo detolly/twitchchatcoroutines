@@ -18,6 +18,8 @@ namespace TwitchChatCoroutines.Forms
         public SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
+        private ColorConverter cc = new ColorConverter();
+
         public static ChatFormSettings chatFormSetting;
 
         public static Font defaultFont = new Font("Segoe UI", 10f);
@@ -44,6 +46,8 @@ namespace TwitchChatCoroutines.Forms
             chatFormSetting.animations = checkBox1.Checked;
             chatFormSetting.emoteSpacing = (int)numericUpDown1.Value;
             chatFormSetting.channel = textBox1.Text;
+            chatFormSetting.foregroundColor = (Color)cc.ConvertFromString(textBox3.Text);
+            chatFormSetting.backgroundColor = (Color)cc.ConvertFromString(textBox2.Text);
             Thread t = new Thread(() =>
             {
                 var settings = chatFormSetting;

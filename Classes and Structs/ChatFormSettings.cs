@@ -9,5 +9,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public int emoteSpacing;
         public bool animations;
         public string channel;
+        public Color backgroundColor;
+        public Color foregroundColor;
     }
 }
