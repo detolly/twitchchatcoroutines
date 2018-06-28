@@ -53,6 +53,8 @@
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.radioButton6 = new System.Windows.Forms.RadioButton();
+            this.label3 = new System.Windows.Forms.Label();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Emotespacing)).BeginInit();
             this.SuspendLayout();
             // 
@@ -152,7 +154,7 @@
             // AnimationsCheckBox
             // 
             this.AnimationsCheckBox.AutoSize = true;
-            this.AnimationsCheckBox.Location = new System.Drawing.Point(121, 72);
+            this.AnimationsCheckBox.Location = new System.Drawing.Point(121, 73);
             this.AnimationsCheckBox.Name = "AnimationsCheckBox";
             this.AnimationsCheckBox.Size = new System.Drawing.Size(15, 14);
             this.AnimationsCheckBox.TabIndex = 9;
@@ -285,11 +287,32 @@
             this.radioButton6.UseVisualStyleBackColor = true;
             this.radioButton6.CheckedChanged += new System.EventHandler(this.radioButton_CheckedChanged);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(287, 100);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(50, 13);
+            this.label3.TabIndex = 22;
+            this.label3.Text = "(in pixels)";
+            // 
+            // button5
+            // 
+            this.button5.Enabled = false;
+            this.button5.Location = new System.Drawing.Point(283, 68);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 23;
+            this.button5.Text = "Settings";
+            this.button5.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(505, 180);
+            this.Controls.Add(this.button5);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.radioButton6);
             this.Controls.Add(this.radioButton5);
             this.Controls.Add(this.radioButton4);
@@ -349,5 +372,7 @@
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.RadioButton radioButton5;
         private System.Windows.Forms.RadioButton radioButton6;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button button5;
     }
 }

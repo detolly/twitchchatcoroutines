@@ -609,7 +609,7 @@ namespace TwitchChatCoroutines
                         bool f = false;
                         p.Controls.Add(thel);
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                        while (comparison.Right > Width - 2 * border)
+                        while (comparison.Right > Width - border)
                         {
                             var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";

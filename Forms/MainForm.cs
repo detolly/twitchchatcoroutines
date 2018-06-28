@@ -18,7 +18,7 @@ namespace TwitchChatCoroutines.Forms
         public SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
-        int amountOfThings = 6;
+        int amountOfThings = 0;
         public RadioButton[] radios;
 
         private ColorConverter cc = new ColorConverter();
@@ -39,7 +39,6 @@ namespace TwitchChatCoroutines.Forms
         {
             InitializeComponent();
             Fontlabel.Text = defaultFont.Name + ", " + defaultFont.Size;
-            chatFormSettings = new ChatFormSettings[amountOfThings];
             radios = new RadioButton[] {
                 radioButton1,
                 radioButton2,
@@ -48,6 +47,8 @@ namespace TwitchChatCoroutines.Forms
                 radioButton5,
                 radioButton6
             };
+            amountOfThings = radios.Length;
+            chatFormSettings = new ChatFormSettings[amountOfThings];
             for (int i = 0; i < amountOfThings; i++)
             {
                 chatFormSettings[i] = Default();
