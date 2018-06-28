@@ -617,7 +617,7 @@ namespace TwitchChatCoroutines
                             {
                                 string old = upTillNow;
                                 upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow + " ", font).Width + comparison.Location.X + border + 2*TextRenderer.MeasureText(".", font).Width > Width)
+                                if (TextRenderer.MeasureText(upTillNow, font).Width + comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2 > Width)
                                 {
                                     var a = TextRenderer.MeasureText(args[i], font).Width;
                                     if (a + 2 * border > Width)
