@@ -720,7 +720,7 @@ namespace TwitchChatCoroutines
                             p.Controls.Add(l);
                             l.Location = new Point(border, lastLabel.Location.Y + yoffset);
                             l.Font = font;
-                            l.ForeColor = textColor;
+                            l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                             i--;
                             stringCompare = "";
                             labelsToAdd.Add(l);
