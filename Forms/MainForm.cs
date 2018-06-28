@@ -62,7 +62,7 @@ namespace TwitchChatCoroutines.Forms
             settings.BackgroundColor = (Color)cc.ConvertFromString("#111111");
             settings.Animations = false;
             settings.Font = defaultFont;
-            settings.EmoteSpacing = 0;
+            settings.EmoteSpacing = 3;
             settings.Channel = "forsen";
             settings.Animations = false;
             return settings;

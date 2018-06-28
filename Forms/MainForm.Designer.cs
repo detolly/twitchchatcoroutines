@@ -140,6 +140,11 @@
             this.Emotespacing.Name = "Emotespacing";
             this.Emotespacing.Size = new System.Drawing.Size(160, 20);
             this.Emotespacing.TabIndex = 6;
+            this.Emotespacing.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
             this.Emotespacing.ValueChanged += new System.EventHandler(this.Emotespacing_ValueChanged);
             // 
             // label5

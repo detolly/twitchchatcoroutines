@@ -606,7 +606,10 @@ namespace TwitchChatCoroutines
                     TwitchLabel comparison = thel;
                     if (thel.Text != "" && thel.Text != " ")
                     {
-                        bool f = false;
+                        if (thel.Text[0] == ' ')
+                            thel.Text = thel.Text.Substring(1);
+                        if (thel.Text[thel.Text.Length - 1] == ' ')
+                            thel.Text = thel.Text.Substring(0, thel.Text.Length - 1);
                         p.Controls.Add(thel);
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
                         int startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
@@ -662,8 +665,6 @@ namespace TwitchChatCoroutines
                                     comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
                                 }
                             }
-                            if (f)
-                                break;
                         }
                         int rightborder = comparison.Right + pb.Width;
                         lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
@@ -685,6 +686,8 @@ namespace TwitchChatCoroutines
                 lastLabel.Text = first ? ": " + theT : theT;
                 if (first || theT.Length > 0)
                 {
+                    if (lastLabel.Text[0] == ' ')
+                        lastLabel.Text = lastLabel.Text.Substring(1);
                     p.Controls.Add(lastLabel);
                     lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
                     labelsToAdd.Add(lastLabel);
