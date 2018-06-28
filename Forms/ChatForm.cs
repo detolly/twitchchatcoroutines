@@ -684,7 +684,7 @@ namespace TwitchChatCoroutines
                 if (first || theT.Length > 0)
                 {
                     p.Controls.Add(lastLabel);
-                    lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y);
+                    lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
                     labelsToAdd.Add(lastLabel);
                     TwitchLabel labelToCompare = lastLabel;
                     var args = new List<string>(lastLabel.Text.Split(' '));
