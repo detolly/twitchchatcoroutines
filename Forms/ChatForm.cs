@@ -718,7 +718,7 @@ namespace TwitchChatCoroutines
                             TwitchLabel l = new TwitchLabel();
                             labelToCompare.Text = old;
                             p.Controls.Add(l);
-                            l.Location = new Point(border, lastLabel.Location.Y + yoffset);
+                            l.Location = new Point(border, userNameLabel.Location.Y + yoffset);
                             l.Font = font;
                             l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                             i--;
