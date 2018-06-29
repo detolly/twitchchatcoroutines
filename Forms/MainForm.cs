@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -11,6 +12,8 @@ namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
+        private string version = "v0.2-alpha-g";
+
         static List<ChatForm> chatforms = new List<ChatForm>();
         static List<ChatForm> toRemove = new List<ChatForm>();
 
@@ -38,6 +41,19 @@ namespace TwitchChatCoroutines.Forms
         public MainForm()
         {
             InitializeComponent();
+            using (WebClient client = new WebClient())
+            {
+                string v = client.DownloadString("http://blog.detolly.no/version.txt");
+                if (v != version)
+                {
+                    DialogResult result = MessageBox.Show("New update available. \nNew update version: " + v + "\n Want to update?", "Update", MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                    {
+                        Process.Start("AutoUpdater.exe", "--url=\"http://blog.detolly.no/TwitchChat-" + v + ".zip");
+                        Process.GetCurrentProcess().Kill();
+                    }
+                }
+            }
             Fontlabel.Text = defaultFont.Name + ", " + defaultFont.Size;
             radios = new RadioButton[] {
                 radioButton1,
@@ -65,6 +81,7 @@ namespace TwitchChatCoroutines.Forms
             settings.EmoteSpacing = 3;
             settings.Channel = "forsen";
             settings.Animations = false;
+            settings.Splitter = true;
             return settings;
         }
 
@@ -157,6 +174,11 @@ namespace TwitchChatCoroutines.Forms
         private void Emotespacing_ValueChanged(object sender, EventArgs e)
         {
             chatFormSettings[selectedIndex].EmoteSpacing = (int)Emotespacing.Value;
+        }
+
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
+        {
+            chatFormSettings[selectedIndex].Splitter = checkBox1.Checked;
         }
     }
 }

@@ -63,6 +63,7 @@ namespace TwitchChatCoroutines
         private int border = 5;
 
         private bool doAnimations = false;
+        private bool doSplitter = false;
 
         private ChatFormSettings chatFormSettings;
 
@@ -107,6 +108,7 @@ namespace TwitchChatCoroutines
             textColor = chatFormSettings.ForegroundColor;
             font = chatFormSettings.Font;
             doAnimations = chatFormSettings.Animations;
+            doSplitter = chatFormSettings.Splitter;
             emoteSpacing = chatFormSettings.EmoteSpacing;
         }
 
@@ -702,7 +704,7 @@ namespace TwitchChatCoroutines
                         if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width)
                         {
                             var a = TextRenderer.MeasureText(args[i], font).Width;
-                            if (a + 2 * border > Width)
+                            if (a + 2 * border + startingLoc > Width)
                             {
                                 string current = "";
                                 for (int x = 0; x < args[i].Length; x++)
@@ -742,11 +744,15 @@ namespace TwitchChatCoroutines
                 }
                 int highest = 0;
                 int lowest = 1000;
-                PictureBox splitterbox = new PictureBox();
-                splitterbox.Image = splitter;
-                splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                p.Controls.Add(splitterbox);
-                splitterbox.Size = new Size(Width - 5 * border, 1);
+                PictureBox splitterbox = null;
+                if (doSplitter)
+                {
+                    splitterbox = new PictureBox();
+                    splitterbox.Image = splitter;
+                    splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
+                    p.Controls.Add(splitterbox);
+                    splitterbox.Size = new Size(Width - 5 * border, 1);
+                }
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
                     if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
@@ -758,7 +764,7 @@ namespace TwitchChatCoroutines
                 {
                     p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
                 }
-                p.Size = new Size(Width, Math.Max(highest - lowest + splitterbox.Size.Height, 28)); ;
+                p.Size = new Size(Width, Math.Max(highest - lowest + (splitterbox == null ? 5 : splitterbox.Size.Height), 28)); ;
                 m.panel = p;
                 m.splitter = splitterbox;
                 m.emotes = emoteBoxes;

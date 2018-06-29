@@ -15,6 +15,8 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public int EmoteSpacing { get { return emoteSpacing; } set {  emoteSpacing = value; changed?.Invoke(this, new EventArgs()); } }
         private bool animations;
         public bool Animations { get { return animations; } set {  animations = value; changed?.Invoke(this, new EventArgs()); } }
+        private bool splitter;
+        public bool Splitter { get { return splitter; } set { splitter = value; changed?.Invoke(this, new EventArgs()); } }
         private string channel;
         public string Channel { get { return channel; } set {  channel = value; changed?.Invoke(this, new EventArgs()); } }
         private Color backgroundColor;
