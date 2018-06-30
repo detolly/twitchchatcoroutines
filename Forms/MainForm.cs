@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
@@ -12,7 +13,7 @@ namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
-        private string version = "v0.2-alpha-g";
+        private string version = "v0.3-alpha-a";
 
         static List<ChatForm> chatforms = new List<ChatForm>();
         static List<ChatForm> toRemove = new List<ChatForm>();
@@ -41,6 +42,15 @@ namespace TwitchChatCoroutines.Forms
         public MainForm()
         {
             InitializeComponent();
+            if (Directory.Exists("./.AutoUpdater"))
+            {
+                string fileName = "./.AutoUpdater/AutoUpdater.exe";
+                File.Delete("./AutoUpdater.exe");
+                File.Copy(fileName, "./AutoUpdater.exe");
+                File.Delete(fileName);
+                Directory.Delete("./.AutoUpdater");
+                MessageBox.Show("Update Complete!");
+            }
             using (WebClient client = new WebClient())
             {
                 string v = client.DownloadString("http://blog.detolly.no/version.txt");
