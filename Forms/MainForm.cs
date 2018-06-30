@@ -53,7 +53,15 @@ namespace TwitchChatCoroutines.Forms
             }
             using (WebClient client = new WebClient())
             {
-                string v = client.DownloadString("http://blog.detolly.no/version.txt");
+                string v = "";
+                try
+                {
+                    v = client.DownloadString("http://blog.detolly.no/version.txt");
+                } catch
+                {
+                    v = version;
+                    MessageBox.Show("Internet connection not present. Please connect to the internet to use this application.");
+                }
                 if (v != version)
                 {
                     DialogResult result = MessageBox.Show("New update available. \nNew update version: " + v + "\n Want to update?", "Update", MessageBoxButtons.YesNo);
