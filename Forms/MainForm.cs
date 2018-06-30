@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -6,7 +7,6 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
-
 using TwitchChatCoroutines.ClassesAndStructs;
 
 namespace TwitchChatCoroutines.Forms
@@ -21,6 +21,8 @@ namespace TwitchChatCoroutines.Forms
         public SortedList<string, Image> cachedBTTVEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         public SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
+
+        public static TwitchSettings generalSettings;
 
         int amountOfThings = 0;
         public RadioButton[] radios;
@@ -42,6 +44,8 @@ namespace TwitchChatCoroutines.Forms
         public MainForm()
         {
             InitializeComponent();
+            CheckGeneralSettings();
+            generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
             if (Directory.Exists("./.AutoUpdater"))
             {
                 string fileName = "./.AutoUpdater/AutoUpdater.exe";
@@ -86,6 +90,23 @@ namespace TwitchChatCoroutines.Forms
             for (int i = 0; i < amountOfThings; i++)
             {
                 chatFormSettings[i] = Default();
+            }
+        }
+
+        private void CheckGeneralSettings()
+        {
+            if (!System.IO.File.Exists("settings.json"))
+            {
+                var a = JsonConvert.DeserializeObject<dynamic>(@"
+{general: {
+twitchEmoteCaching: true,
+bttvEmoteCaching: true,
+ffzEmoteCaching: true,
+emotesCachine: true
+}}");
+                var o = JsonConvert.SerializeObject(a);
+                System.IO.File.WriteAllText("settings.json", o);
+                Thread.Sleep(50);
             }
         }
 
@@ -197,6 +218,16 @@ namespace TwitchChatCoroutines.Forms
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
             chatFormSettings[selectedIndex].Splitter = checkBox1.Checked;
+        }
+
+        private void generalToolStripMenuItem_Click(object sender, EventArgs e2)
+        {
+            SettingsForm a = new SettingsForm();
+            a.saved += (o, e) =>
+            {
+                generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
+            };
+            a.Show();
         }
     }
 }

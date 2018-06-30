@@ -548,18 +548,28 @@ namespace TwitchChatCoroutines
                             int secondIndex = ints[i].Item2;
                             string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
                             string theId = s.Substring(0, start);
-                            string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh").Replace("|", "whatbigaiI") + ".png";
-                            if (!File.Exists(path))
-                            {
-                                client.DownloadFile(new Uri("http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0"), path);
-                            }
-                            Image image = Image.FromFile(path);
-                            if (!cachedTwitchEmotes.ContainsKey(code))
-                                cachedTwitchEmotes.Add(code, image);
+                            string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
                             PictureBox b = new PictureBox();
+                            if (Forms.MainForm.generalSettings.twitchEmoteCaching)
+                            {
+                                string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh").Replace("|", "whatbigaiI") + ".png";
+                                if (!File.Exists(path))
+                                {
+                                    client.DownloadFile(theUrl, path);
+                                }
+                                Image image = Image.FromFile(path);
+                                if (!cachedTwitchEmotes.ContainsKey(code))
+                                    cachedTwitchEmotes.Add(code, image);
+                                b.Image = image;
+                                b.SizeMode = PictureBoxSizeMode.AutoSize;
+                            }
+                            if (!Forms.MainForm.generalSettings.twitchEmoteCaching)
+                            {
+                                b.ImageLocation = theUrl;
+                                b.Size = new Size(28, 28);
+                                b.SizeMode = PictureBoxSizeMode.StretchImage;
+                            }
                             PictureBoxAndInts iss = new PictureBoxAndInts();
-                            b.SizeMode = PictureBoxSizeMode.AutoSize;
-                            b.Image = image;
                             iss.pb = b;
                             iss.ints = ints[i];
                             try
