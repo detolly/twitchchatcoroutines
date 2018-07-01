@@ -206,7 +206,7 @@ namespace TwitchChatCoroutines
                     string emote = entry.id;
                     string code = entry.code;
                     string imageType = entry.imageType;
-                    string path = "./emotes/BetterTTV/BTTV" + code.Replace(":", "") + "." + imageType;
+                    string path = "./emotes/BetterTTV/BTTV" + emote + "." + imageType;
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
@@ -224,7 +224,7 @@ namespace TwitchChatCoroutines
                 {
                     string code = entry.name;
                     string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
-                    string path = "./emotes/FFZ/FFZ" + code.Replace(":", "") + ".png";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri(url), path);
                     Image image = Image.FromFile(path);
@@ -552,7 +552,7 @@ namespace TwitchChatCoroutines
                             PictureBox b = new PictureBox();
                             if (Forms.MainForm.generalSettings.twitchEmoteCaching)
                             {
-                                string path = "./emotes/Twitch/Twitch" + code.Replace(":", "coalon").Replace("<", "lesssthan").Replace(">", "greatterthan").Replace("/", "slassh").Replace("\\", "backslassh").Replace("|", "whatbigaiI") + ".png";
+                                string path = "./emotes/Twitch/Twitch" + theId + ".png";
                                 if (!File.Exists(path))
                                 {
                                     client.DownloadFile(theUrl, path);

@@ -13,7 +13,7 @@ namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
-        private string version = "v0.3-alpha-a";
+        private string version = "v0.3-alpha-c";
 
         static List<ChatForm> chatforms = new List<ChatForm>();
         static List<ChatForm> toRemove = new List<ChatForm>();
