@@ -102,7 +102,7 @@ namespace TwitchChatCoroutines.Forms
 twitchEmoteCaching: true,
 bttvEmoteCaching: true,
 ffzEmoteCaching: true,
-emotesCachine: true
+emotesCaching: true
 }}");
                 var o = JsonConvert.SerializeObject(a);
                 System.IO.File.WriteAllText("settings.json", o);
@@ -155,6 +155,8 @@ emotesCachine: true
                     w.Reset();
                     Thread.Sleep(1);
                 }
+                a.Dispose();
+                GC.Collect();
                 chatFormSettings[index] = Default();
                 radios[index].Invoke((MethodInvoker)(() => radios[index].Text = "Empty"));
                 if (radios[index].Checked)
