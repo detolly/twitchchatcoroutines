@@ -22,6 +22,9 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         private Color backgroundColor;
         public Color BackgroundColor { get { return backgroundColor; } set { backgroundColor = value; changed?.Invoke(this, new EventArgs()); } }
         private Color foregroundColor;
+        private int panelBorder;
+        public int PanelBorder { get { return panelBorder; } set { panelBorder = value; changed?.Invoke(this, new EventArgs()); } }
+
         public Color ForegroundColor { get { return foregroundColor; } set { foregroundColor = value; changed?.Invoke(this, new EventArgs()); } }
     }
 }

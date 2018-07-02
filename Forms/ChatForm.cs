@@ -23,7 +23,7 @@ namespace TwitchChatCoroutines
         private string oauth = Password.oauth;
         private string channelToJoin = "";
 
-        private int panelBorder = 5;
+        private int panelBorder = 15;
 
         private ColorConverter cc = new ColorConverter();
 
@@ -110,6 +110,7 @@ namespace TwitchChatCoroutines
             textColor = chatFormSettings.ForegroundColor;
             font = chatFormSettings.Font;
             doAnimations = chatFormSettings.Animations;
+            panelBorder = chatFormSettings.PanelBorder;
             if (doSplitter != chatFormSettings.Splitter)
             {
                 doSplitter = chatFormSettings.Splitter;
@@ -773,9 +774,8 @@ namespace TwitchChatCoroutines
                 splitterbox = new PictureBox();
                 splitterbox.Image = splitter;
                 splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                p.Controls.Add(splitterbox);
                 splitterbox.Size = new Size(Width - 5 * border, 1);
-                splitterbox.Location = new Point(border, userNameLabel.Location.Y - panelBorder - userNameLabel.Size.Height / 2);
+                Control lowestC = null;
                 if (!doSplitter)
                     splitterbox.Visible = false;
                 for (int i = 0; i < p.Controls.Count; i++)
@@ -783,18 +783,24 @@ namespace TwitchChatCoroutines
                     if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
                         highest = p.Controls[i].Bottom;
                     if (p.Controls[i].Location.Y < lowest)
+                    {
+                        lowestC = p.Controls[i];
                         lowest = p.Controls[i].Location.Y;
+                    }
                 }
+                p.Size = new Size(Width, highest - lowest + panelBorder);
+                splitterbox.Location = new Point(border, lowestC.Location.Y - panelBorder);
+                p.Controls.Add(splitterbox);
+                lowest = splitterbox.Top;
                 for (int i = 0; i < p.Controls.Count; i++)
                 {
                     p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
                 }
-                p.Size = new Size(Width, highest - lowest);
                 if (panelBorder != 0)
                     foreach (Control c in p.Controls)
                     {
                         if (c == splitterbox) continue;
-                        c.Location = new Point(c.Location.X, c.Location.Y - panelBorder);
+                        c.Location = new Point(c.Location.X, c.Location.Y - panelBorder/2);
                     }
                 m.panel = p;
                 m.splitter = splitterbox;

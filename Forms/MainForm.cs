@@ -118,6 +118,7 @@ emotesCaching: true
             settings.Animations = false;
             settings.Font = defaultFont;
             settings.EmoteSpacing = 3;
+            settings.PanelBorder = 15;
             settings.Channel = "forsen";
             settings.Animations = false;
             settings.Splitter = true;
@@ -230,6 +231,11 @@ emotesCaching: true
                 generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
             };
             a.Show();
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            chatFormSettings[selectedIndex].PanelBorder = (int)numericUpDown1.Value;
         }
     }
 }
