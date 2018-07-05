@@ -8,7 +8,10 @@ namespace TwitchChatCoroutines.ClassesAndStructs
     {
         protected override void OnHandleCreated(EventArgs e)
         {
-            base.OnHandleCreated(e);
+            try
+            {
+                base.OnHandleCreated(e);
+            } catch { }
             AutoSize = false;
         }
 

@@ -40,12 +40,14 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
         private Image splitter = Properties.Resources.splitter;
-        
+
         private int emoteSpacing = 0;
 
         Random r = new Random();
 
         private List<MessageControl> currentChatMessages = new List<MessageControl>();
+        private List<TwitchMessage> allTwitchMessages = new List<TwitchMessage>();
+
         private int temporaryThing = 0;
 
         public bool hasClosed = false;
@@ -56,6 +58,9 @@ namespace TwitchChatCoroutines
 
         private dynamic bttvEmotesJson;
         private dynamic bttvChannelEmotesJson;
+        private dynamic FFZEmotesJson;
+        private dynamic FFZChannelEmotesJson;
+
         private dynamic badgeJson;
         private dynamic channelBadgeJson;
         private dynamic channelInformationJson;
@@ -71,8 +76,6 @@ namespace TwitchChatCoroutines
 
         private string channelId;
 
-        //private dynamic FFZEmotesJson;
-        private dynamic FFZChannelEmotesJson;
 
         private SortedList<string, Dictionary<string, string>> badges;
 
@@ -118,7 +121,10 @@ namespace TwitchChatCoroutines
                     Invoke((MethodInvoker)(() =>
                     {
                         foreach (MessageControl m in currentChatMessages)
-                            m.splitter.Invoke((MethodInvoker)(() => m.splitter.Visible = doSplitter));
+                            m.splitter.Invoke((MethodInvoker)(() =>
+                            {
+                                m.splitter.Visible = doSplitter;
+                            }));
                     }));
             }
             emoteSpacing = chatFormSettings.EmoteSpacing;
@@ -178,6 +184,7 @@ namespace TwitchChatCoroutines
             {
                 FFZChannelEmotesJson = jsonGet("https://api.frankerfacez.com/v1/room/" + channelToJoin);
                 FFZChannelEmotesJson = FFZChannelEmotesJson.sets[(string)(FFZChannelEmotesJson.room.set)].emoticons;
+                FFZEmotesJson = jsonGet("https://api.frankerfacez.com/v1/set/global");
             }
             catch
             {
@@ -246,6 +253,21 @@ namespace TwitchChatCoroutines
                     }
                     catch { }
                 }
+                var temporary4 = JArray.FromObject(FFZEmotesJson.sets["3"].emoticons);
+                foreach (var entry in temporary4)
+                {
+                    string code = entry.name;
+                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri(url), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
             }
             Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> strings = badgeJson.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
             foreach (var entry in strings)
@@ -283,15 +305,15 @@ namespace TwitchChatCoroutines
 
         IEnumerator enterChatLine(MessageControl greetings)
         {
-            while (greetings.panel.Location.X < border)
+            while (greetings.panel.Location.X < 0)
             {
                 if (!doAnimations)
-                    greetings.panel.Location = new Point(border, greetings.panel.Location.Y);
+                    greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
                 else if (doAnimations)
                 {
-                    if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > border)
+                    if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
                     {
-                        greetings.panel.Location = new Point(border, greetings.panel.Location.Y);
+                        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
                         continue;
                     }
                     greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
@@ -318,7 +340,7 @@ namespace TwitchChatCoroutines
                     toRemove.Add(currentChatMessages[i]);
             }
 
-            if (toRemove.Count > 0)
+            if (toRemove.Count > 0 && IsHandleCreated)
                 toRemove[0].panel.Invoke((MethodInvoker)(() =>
                 {
                     for (int i = 0; i < toRemove.Count; i++)
@@ -384,7 +406,7 @@ namespace TwitchChatCoroutines
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
                 {
-                    int start = rawLine.IndexOf(":", rawLine.IndexOf("CLEARCHAT"))+1;
+                    int start = rawLine.IndexOf(":", rawLine.IndexOf("CLEARCHAT")) + 1;
                     int stop = rawLine.IndexOf(" ", start);
                     string user = rawLine.Substring(start, rawLine.Length - start);
                     Font f = font;
@@ -641,7 +663,7 @@ namespace TwitchChatCoroutines
                         p.Controls.Add(thel);
                         thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
                         int startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                        if (TextRenderer.MeasureText(comparison.Text, font).Width + startingLoc > Width)
+                        if (TextRenderer.MeasureText(comparison.Text, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                         {
                             var args = new List<string>(thel.Text.Split(' '));
                             string upTillNow = "";
@@ -650,17 +672,17 @@ namespace TwitchChatCoroutines
                                 startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
                                 string old = upTillNow;
                                 upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow, font).Width + startingLoc > Width)
+                                if (TextRenderer.MeasureText(upTillNow, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                                 {
                                     var a = TextRenderer.MeasureText(args[i], font).Width;
-                                    if (a + 2 * border > Width)
+                                    if (a + 2 * border > Width - vScrollBar1.Width)
                                     {
                                         string current = "";
                                         for (int x = 0; x < args[i].Length; x++)
                                         {
                                             string anotherold = current;
                                             current += args[i][x];
-                                            if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width)
+                                            if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                                             {
                                                 x = x < 0 ? 0 : x;
                                                 args.Insert(i + 1, args[i].Substring(x));
@@ -696,7 +718,7 @@ namespace TwitchChatCoroutines
                         }
                         int rightborder = comparison.Right + pb.Width;
                         lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
-                        yoffset += rightborder > Width ? Math.Max(28, comparison.Height): 0;
+                        yoffset += rightborder > Width ? Math.Max(28, comparison.Height) : 0;
                         labelsToAdd.Add(thel);
                     }
                     nextStart = ints.Item2 + 1;
@@ -710,7 +732,7 @@ namespace TwitchChatCoroutines
                 lastLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                 lastLabel.Font = font;
                 lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
-                string theT = text.Substring(nextStart > text.Length ? text.Length-1 : nextStart, (text.Length - nextStart < 0) ? 0 : text.Length - nextStart);
+                string theT = text.Substring(nextStart > text.Length ? text.Length - 1 : nextStart, (text.Length - nextStart < 0) ? 0 : text.Length - nextStart);
                 lastLabel.Text = first ? ": " + theT : theT;
                 if (first || theT.Length > 0)
                 {
@@ -727,17 +749,17 @@ namespace TwitchChatCoroutines
                         int startingLoc = labelToCompare.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
                         string old = stringCompare;
                         stringCompare += args[i];
-                        if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width)
+                        if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                         {
                             var a = TextRenderer.MeasureText(args[i], font).Width;
-                            if (a + 2 * border + startingLoc > Width)
+                            if (a + 2 * border + startingLoc > Width - vScrollBar1.Width)
                             {
                                 string current = "";
                                 for (int x = 0; x < args[i].Length; x++)
                                 {
                                     string anotherold = current;
                                     current += args[i][x];
-                                    if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width)
+                                    if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                                     {
                                         x = x < 0 ? 0 : x;
                                         args.Insert(i + 1, args[i].Substring(x));
@@ -774,7 +796,7 @@ namespace TwitchChatCoroutines
                 splitterbox = new PictureBox();
                 splitterbox.Image = splitter;
                 splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                splitterbox.Size = new Size(Width - 5 * border, 1);
+                splitterbox.Size = new Size(Width, 1);
                 Control lowestC = null;
                 if (!doSplitter)
                     splitterbox.Visible = false;
@@ -789,7 +811,7 @@ namespace TwitchChatCoroutines
                     }
                 }
                 p.Size = new Size(Width, highest - lowest + panelBorder);
-                splitterbox.Location = new Point(border, lowestC.Location.Y - panelBorder);
+                splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
                 p.Controls.Add(splitterbox);
                 lowest = splitterbox.Top;
                 for (int i = 0; i < p.Controls.Count; i++)
@@ -800,7 +822,7 @@ namespace TwitchChatCoroutines
                     foreach (Control c in p.Controls)
                     {
                         if (c == splitterbox) continue;
-                        c.Location = new Point(c.Location.X, c.Location.Y - panelBorder/2);
+                        c.Location = new Point(c.Location.X, c.Location.Y - panelBorder / 2);
                     }
                 m.panel = p;
                 m.splitter = splitterbox;
@@ -808,6 +830,7 @@ namespace TwitchChatCoroutines
                 m.messages = labelsToAdd;
                 m.username = userNameLabel;
                 p.Location = new Point(-Width, Height - p.Size.Height - 50);
+                //allTwitchMessages.Add(m.twitchMessage);
                 currentChatMessages.Add(m);
             }
             coroutineManager.StartCoroutine(moveLabels(m));
@@ -860,6 +883,12 @@ namespace TwitchChatCoroutines
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             hasClosed = true;
+        }
+
+        private void ChatForm_SizeChanged(object sender, EventArgs e)
+        {
+            foreach (MessageControl m in currentChatMessages)
+                m.splitter.Size = new Size(Width, m.splitter.Size.Height);
         }
     }
 }
