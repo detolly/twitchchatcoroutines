@@ -48,8 +48,6 @@ namespace TwitchChatCoroutines
         private List<MessageControl> currentChatMessages = new List<MessageControl>();
         private List<TwitchMessage> allTwitchMessages = new List<TwitchMessage>();
 
-        private int temporaryThing = 0;
-
         public bool hasClosed = false;
 
         private TcpClient twitchClient = new TcpClient();
@@ -75,7 +73,6 @@ namespace TwitchChatCoroutines
         private ChatFormSettings chatFormSettings;
 
         private string channelId;
-
 
         private SortedList<string, Dictionary<string, string>> badges;
 
@@ -425,10 +422,6 @@ namespace TwitchChatCoroutines
             if (stringsToBeAdded.Count > 0)
             {
                 MakeAndInsertLabel(stringsToBeAdded.Dequeue());
-            }
-            else if (stringsToBeAdded.Count == 0)
-            {
-                temporaryThing = 0;
             }
         }
 
