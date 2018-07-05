@@ -61,7 +61,8 @@ namespace TwitchChatCoroutines.Forms
                 try
                 {
                     v = client.DownloadString("http://blog.detolly.no/version.txt");
-                } catch
+                }
+                catch
                 {
                     v = version;
                     MessageBox.Show("Internet connection not present. Please connect to the internet to use this application.");
@@ -91,6 +92,11 @@ namespace TwitchChatCoroutines.Forms
             {
                 chatFormSettings[i] = Default();
             }
+            foreach (var s in (ChatModes[])Enum.GetValues(typeof(ChatModes)))
+            {
+                comboBox1.Items.Add(s);
+            }
+            comboBox1.SelectedIndex = 0;
         }
 
         private void CheckGeneralSettings()
@@ -112,16 +118,18 @@ emotesCaching: true
 
         ChatFormSettings Default()
         {
-            ChatFormSettings settings = new ChatFormSettings();
-            settings.ForegroundColor = (Color)cc.ConvertFromString("#FFFFFF");
-            settings.BackgroundColor = (Color)cc.ConvertFromString("#111111");
-            settings.Animations = false;
-            settings.Font = defaultFont;
-            settings.EmoteSpacing = 3;
-            settings.PanelBorder = 15;
-            settings.Channel = "forsen";
-            settings.Animations = false;
-            settings.Splitter = true;
+            ChatFormSettings settings = new ChatFormSettings
+            {
+                ForegroundColor = (Color)cc.ConvertFromString("#FFFFFF"),
+                BackgroundColor = (Color)cc.ConvertFromString("#111111"),
+                Animations = false,
+                ChatMode = new ChatMode(),
+                Font = defaultFont,
+                EmoteSpacing = 3,
+                PanelBorder = 15,
+                Channel = "forsen",
+                Splitter = true
+            };
             return settings;
         }
 
@@ -228,7 +236,7 @@ emotesCaching: true
             SettingsForm a = new SettingsForm();
             a.saved += (o, e) =>
             {
-                generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
+                generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json")));
             };
             a.Show();
         }
@@ -236,6 +244,11 @@ emotesCaching: true
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             chatFormSettings[selectedIndex].PanelBorder = (int)numericUpDown1.Value;
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            chatFormSettings[selectedIndex].ChatMode.currentIndex = comboBox1.SelectedIndex;
         }
     }
 }

@@ -145,7 +145,7 @@ namespace TwitchChatCoroutines
             font = chatFormSettings.Font;
             doAnimations = chatFormSettings.Animations;
             emoteSpacing = chatFormSettings.EmoteSpacing;
-            chatFormSettings.changed += ChangedEvent;
+            chatFormSettings.Changed += ChangedEvent;
 
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
@@ -396,9 +396,11 @@ namespace TwitchChatCoroutines
                         isAction = true;
                     }
                     user.message = extractedMessage;
-                    MessageControl m = new MessageControl();
-                    m.twitchMessage = user;
-                    m.isAction = isAction;
+                    MessageControl m = new MessageControl
+                    {
+                        twitchMessage = user,
+                        isAction = isAction
+                    };
                     stringsToBeAdded.Enqueue(m);
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
@@ -498,334 +500,347 @@ namespace TwitchChatCoroutines
 
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
-            if (m.oneMessage == null)
+            // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
+            //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
+            SortedList<int, PictureBoxAndInts> emoteBoxes = new SortedList<int, PictureBoxAndInts>();
+            List<TwitchLabel> labelsToAdd = new List<TwitchLabel>();
+            Panel p = new Panel();
+            Controls.Add(p);
+            string[] array = m.twitchMessage.message.Split(' ');
+            int lastLoc = 0;
+            if (useFFZ || useBTTV)
+                foreach (string a in array)
+                {
+                    if (cachedBTTVEmotes.ContainsKey(a))
+                    {
+                        int start = m.twitchMessage.message.IndexOf(a, lastLoc);
+                        int stop = start + a.Length - 1;
+                        Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                        lastLoc = stop;
+                        PictureBox pb = new PictureBox
+                        {
+                            Image = cachedBTTVEmotes[a],
+                            SizeMode = PictureBoxSizeMode.AutoSize
+                        };
+                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        {
+                            pb = pb,
+                            ints = ints
+                        };
+                        emoteBoxes.Add(start, iss);
+                    }
+                    else if (cachedFFZEmotes.ContainsKey(a))
+                    {
+                        int start = m.twitchMessage.message.IndexOf(a, lastLoc);
+                        int stop = start + a.Length - 1;
+                        Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                        lastLoc = stop;
+                        PictureBox pb = new PictureBox
+                        {
+                            Image = cachedFFZEmotes[a],
+                            SizeMode = PictureBoxSizeMode.AutoSize
+                        };
+                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        {
+                            pb = pb,
+                            ints = ints
+                        };
+                        emoteBoxes.Add(start, iss);
+                    }
+                }
+            List<PictureBox> badgges = new List<PictureBox>();
+            string[] tBadges = m.twitchMessage.badges.Split(',');
+            if (tBadges[0] != null)
             {
-                // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
-                //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
-                SortedList<int, PictureBoxAndInts> emoteBoxes = new SortedList<int, PictureBoxAndInts>();
-                List<TwitchLabel> labelsToAdd = new List<TwitchLabel>();
-                Panel p = new Panel();
-                Controls.Add(p);
-                string[] array = m.twitchMessage.message.Split(' ');
-                int lastLoc = 0;
-                if (useFFZ || useBTTV)
-                    foreach (string a in array)
-                    {
-                        if (cachedBTTVEmotes.ContainsKey(a))
-                        {
-                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
-                            int stop = start + a.Length - 1;
-                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                            lastLoc = stop;
-                            PictureBox pb = new PictureBox();
-                            pb.Image = cachedBTTVEmotes[a];
-                            pb.SizeMode = PictureBoxSizeMode.AutoSize;
-                            PictureBoxAndInts iss = new PictureBoxAndInts();
-                            iss.pb = pb;
-                            iss.ints = ints;
-                            emoteBoxes.Add(start, iss);
-                        }
-                        else if (cachedFFZEmotes.ContainsKey(a))
-                        {
-                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
-                            int stop = start + a.Length - 1;
-                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                            lastLoc = stop;
-                            PictureBox pb = new PictureBox();
-                            pb.Image = cachedFFZEmotes[a];
-                            pb.SizeMode = PictureBoxSizeMode.AutoSize;
-                            PictureBoxAndInts iss = new PictureBoxAndInts();
-                            iss.pb = pb;
-                            iss.ints = ints;
-                            emoteBoxes.Add(start, iss);
-                        }
-                    }
-                List<PictureBox> badgges = new List<PictureBox>();
-                string[] tBadges = m.twitchMessage.badges.Split(',');
-                if (tBadges[0] != null)
+                foreach (string s in tBadges)
                 {
-                    foreach (string s in tBadges)
+                    string[] parts = s.Split('/');
+                    if (badges.ContainsKey(parts[0]))
                     {
-                        string[] parts = s.Split('/');
-                        if (badges.ContainsKey(parts[0]))
-                        {
-                            PictureBox box = new PictureBox();
-                            p.Controls.Add(box);
-                            box.ImageLocation = badges[parts[0]][parts[1]];
-                            box.Size = new Size(18, 18);
-                            badgges.Add(box);
-                        }
+                        PictureBox box = new PictureBox();
+                        p.Controls.Add(box);
+                        box.ImageLocation = badges[parts[0]][parts[1]];
+                        box.Size = new Size(18, 18);
+                        badgges.Add(box);
                     }
                 }
-                string[] emotes = m.twitchMessage.emotes.Split('/');
-                if (emotes[0] != "")
+            }
+            string[] emotes = m.twitchMessage.emotes.Split('/');
+            if (emotes[0] != "")
+            {
+                foreach (string s in emotes)
                 {
-                    foreach (string s in emotes)
+                    int start = s.IndexOf(":");
+                    string onePart = s.Substring(start + 1);
+                    List<Tuple<int, int>> ints = new List<Tuple<int, int>>();
+                    string[] indexes = onePart.Split(',');
+                    foreach (string a in indexes)
                     {
-                        int start = s.IndexOf(":");
-                        string onePart = s.Substring(start + 1);
-                        List<Tuple<int, int>> ints = new List<Tuple<int, int>>();
-                        string[] indexes = onePart.Split(',');
-                        foreach (string a in indexes)
-                        {
-                            string[] e = a.Split('-');
-                            Tuple<int, int> t = new Tuple<int, int>(int.Parse(e[0]), int.Parse(e[1]));
-                            ints.Add(t);
-                        }
+                        string[] e = a.Split('-');
+                        Tuple<int, int> t = new Tuple<int, int>(int.Parse(e[0]), int.Parse(e[1]));
+                        ints.Add(t);
+                    }
 
-                        for (int i = 0; i < ints.Count; i++)
+                    for (int i = 0; i < ints.Count; i++)
+                    {
+                        int firstIndex = ints[i].Item1;
+                        int secondIndex = ints[i].Item2;
+                        string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
+                        string theId = s.Substring(0, start);
+                        string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
+                        PictureBox b = new PictureBox();
+                        if (Forms.MainForm.generalSettings.twitchEmoteCaching)
                         {
-                            int firstIndex = ints[i].Item1;
-                            int secondIndex = ints[i].Item2;
-                            string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
-                            string theId = s.Substring(0, start);
-                            string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
-                            PictureBox b = new PictureBox();
-                            if (Forms.MainForm.generalSettings.twitchEmoteCaching)
+                            string path = "./emotes/Twitch/Twitch" + theId + ".png";
+                            if (!File.Exists(path))
                             {
-                                string path = "./emotes/Twitch/Twitch" + theId + ".png";
-                                if (!File.Exists(path))
+                                client.DownloadFile(theUrl, path);
+                            }
+                            Image image = Image.FromFile(path);
+                            if (!cachedTwitchEmotes.ContainsKey(code))
+                                cachedTwitchEmotes.Add(code, image);
+                            b.Image = image;
+                            b.SizeMode = PictureBoxSizeMode.AutoSize;
+                        }
+                        if (!Forms.MainForm.generalSettings.twitchEmoteCaching)
+                        {
+                            b.ImageLocation = theUrl;
+                            b.Size = new Size(28, 28);
+                            b.SizeMode = PictureBoxSizeMode.StretchImage;
+                        }
+                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        {
+                            pb = b,
+                            ints = ints[i]
+                        };
+                        try
+                        {
+                            emoteBoxes.Add(firstIndex, iss);
+                        }
+                        catch { }
+                    }
+                }
+            }
+            int tStart = 0;
+            bool exists = false;
+            foreach (var s in badgges)
+            {
+                exists = true;
+                s.Location = new Point(tStart + border, 100);
+                tStart += s.Size.Width + border;
+            }
+            TwitchLabel userNameLabel = new TwitchLabel(this);
+            userNameLabel.MaximumSize = new Size(Width - 20 - userNameLabel.Size.Width, 0);
+            userNameLabel.Font = font;
+            p.Controls.Add(userNameLabel);
+            userNameLabel.Text = m.twitchMessage.display_name;
+            userNameLabel.Location = new Point(tStart + border, 100 + (exists ? badgges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
+            userNameLabel.ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color);
+            string text = m.twitchMessage.message;
+
+            int nextStart = 0;
+            int lastLocation = userNameLabel.Right;
+            bool first = true;
+            int yoffset = 0;
+
+            foreach (var pbandInt in emoteBoxes)
+            {
+                Tuple<int, int> ints = pbandInt.Value.ints;
+                PictureBox pb = pbandInt.Value.pb;
+                TwitchLabel thel = new TwitchLabel(this);
+                if (first)
+                {
+                    thel.Text = ": ";
+                    first = false;
+                }
+                thel.Font = font;
+                thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
+                thel.Text += text.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
+                TwitchLabel comparison = thel;
+                if (thel.Text != "" && thel.Text != " ")
+                {
+                    if (thel.Text[0] == ' ')
+                        thel.Text = thel.Text.Substring(1);
+                    if (thel.Text[thel.Text.Length - 1] == ' ')
+                        thel.Text = thel.Text.Substring(0, thel.Text.Length - 1);
+                    p.Controls.Add(thel);
+                    thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
+                    int startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
+                    if (TextRenderer.MeasureText(comparison.Text, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
+                    {
+                        var args = new List<string>(thel.Text.Split(' '));
+                        string upTillNow = "";
+                        for (int i = 0; i < args.Count; i++)
+                        {
+                            startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
+                            string old = upTillNow;
+                            upTillNow += args[i];
+                            if (TextRenderer.MeasureText(upTillNow, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
+                            {
+                                var a = TextRenderer.MeasureText(args[i], font).Width;
+                                if (a + 2 * border > Width - vScrollBar1.Width)
                                 {
-                                    client.DownloadFile(theUrl, path);
-                                }
-                                Image image = Image.FromFile(path);
-                                if (!cachedTwitchEmotes.ContainsKey(code))
-                                    cachedTwitchEmotes.Add(code, image);
-                                b.Image = image;
-                                b.SizeMode = PictureBoxSizeMode.AutoSize;
-                            }
-                            if (!Forms.MainForm.generalSettings.twitchEmoteCaching)
-                            {
-                                b.ImageLocation = theUrl;
-                                b.Size = new Size(28, 28);
-                                b.SizeMode = PictureBoxSizeMode.StretchImage;
-                            }
-                            PictureBoxAndInts iss = new PictureBoxAndInts();
-                            iss.pb = b;
-                            iss.ints = ints[i];
-                            try
-                            {
-                                emoteBoxes.Add(firstIndex, iss);
-                            }
-                            catch { }
-                        }
-                    }
-                }
-                int tStart = 0;
-                bool exists = false;
-                foreach (var s in badgges)
-                {
-                    exists = true;
-                    s.Location = new Point(tStart + border, 100);
-                    tStart += s.Size.Width + border;
-                }
-                TwitchLabel userNameLabel = new TwitchLabel(this);
-                userNameLabel.MaximumSize = new Size(Width - 20 - userNameLabel.Size.Width, 0);
-                userNameLabel.Font = font;
-                p.Controls.Add(userNameLabel);
-                userNameLabel.Text = m.twitchMessage.display_name;
-                userNameLabel.Location = new Point(tStart + border, 100 + (exists ? badgges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
-                userNameLabel.ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color);
-                string text = m.twitchMessage.message;
-
-                int nextStart = 0;
-                int lastLocation = userNameLabel.Right;
-                bool first = true;
-                int yoffset = 0;
-
-                foreach (var pbandInt in emoteBoxes)
-                {
-                    Tuple<int, int> ints = pbandInt.Value.ints;
-                    PictureBox pb = pbandInt.Value.pb;
-                    TwitchLabel thel = new TwitchLabel(this);
-                    if (first)
-                    {
-                        thel.Text = ": ";
-                        first = false;
-                    }
-                    thel.Font = font;
-                    thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                    thel.Text += text.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
-                    TwitchLabel comparison = thel;
-                    if (thel.Text != "" && thel.Text != " ")
-                    {
-                        if (thel.Text[0] == ' ')
-                            thel.Text = thel.Text.Substring(1);
-                        if (thel.Text[thel.Text.Length - 1] == ' ')
-                            thel.Text = thel.Text.Substring(0, thel.Text.Length - 1);
-                        p.Controls.Add(thel);
-                        thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                        int startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                        if (TextRenderer.MeasureText(comparison.Text, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                        {
-                            var args = new List<string>(thel.Text.Split(' '));
-                            string upTillNow = "";
-                            for (int i = 0; i < args.Count; i++)
-                            {
-                                startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                                string old = upTillNow;
-                                upTillNow += args[i];
-                                if (TextRenderer.MeasureText(upTillNow, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                                {
-                                    var a = TextRenderer.MeasureText(args[i], font).Width;
-                                    if (a + 2 * border > Width - vScrollBar1.Width)
+                                    string current = "";
+                                    for (int x = 0; x < args[i].Length; x++)
                                     {
-                                        string current = "";
-                                        for (int x = 0; x < args[i].Length; x++)
+                                        string anotherold = current;
+                                        current += args[i][x];
+                                        if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                                         {
-                                            string anotherold = current;
-                                            current += args[i][x];
-                                            if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                                            {
-                                                x = x < 0 ? 0 : x;
-                                                args.Insert(i + 1, args[i].Substring(x));
-                                                args[i] = args[i].Substring(0, x);
-                                                old += anotherold;
-                                                i++;
-                                                break;
-                                            }
+                                            x = x < 0 ? 0 : x;
+                                            args.Insert(i + 1, args[i].Substring(x));
+                                            args[i] = args[i].Substring(0, x);
+                                            old += anotherold;
+                                            i++;
+                                            break;
                                         }
                                     }
-                                    comparison.Text = old;
-                                    yoffset += Math.Max(pb.Height, comparison.Height);
-                                    TwitchLabel newLabel = new TwitchLabel(this);
-                                    newLabel.Font = font;
-                                    newLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                                    p.Controls.Add(newLabel);
-                                    newLabel.Location = new Point(border, userNameLabel.Location.Y + yoffset);
-                                    comparison = newLabel;
-                                    labelsToAdd.Add(newLabel);
-                                    lastLocation = newLabel.Right;
-                                    upTillNow = "";
-                                    i--;
                                 }
-                                else
+                                comparison.Text = old;
+                                yoffset += Math.Max(pb.Height, comparison.Height);
+                                TwitchLabel newLabel = new TwitchLabel(this)
                                 {
-                                    upTillNow += " ";
-                                }
-                                if (i == args.Count - 1)
-                                {
-                                    comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
-                                }
+                                    Font = font,
+                                    ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor
+                                };
+                                p.Controls.Add(newLabel);
+                                newLabel.Location = new Point(border, userNameLabel.Location.Y + yoffset);
+                                comparison = newLabel;
+                                labelsToAdd.Add(newLabel);
+                                lastLocation = newLabel.Right;
+                                upTillNow = "";
+                                i--;
                             }
-                        }
-                        int rightborder = comparison.Right + pb.Width;
-                        lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
-                        yoffset += rightborder > Width ? Math.Max(28, comparison.Height) : 0;
-                        labelsToAdd.Add(thel);
-                    }
-                    nextStart = ints.Item2 + 1;
-                    int theOr = lastLocation + (int)(pb.Size.Width * 2) + border;
-                    yoffset += theOr > Width ? Math.Max(28, comparison.Height) : 0;
-                    pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
-                    lastLocation = pb.Right + emoteSpacing;
-                    p.Controls.Add(pb);
-                }
-                TwitchLabel lastLabel = new TwitchLabel(this);
-                lastLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                lastLabel.Font = font;
-                lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
-                string theT = text.Substring(nextStart > text.Length ? text.Length - 1 : nextStart, (text.Length - nextStart < 0) ? 0 : text.Length - nextStart);
-                lastLabel.Text = first ? ": " + theT : theT;
-                if (first || theT.Length > 0)
-                {
-                    if (lastLabel.Text[0] == ' ')
-                        lastLabel.Text = lastLabel.Text.Substring(1);
-                    p.Controls.Add(lastLabel);
-                    lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                    labelsToAdd.Add(lastLabel);
-                    TwitchLabel labelToCompare = lastLabel;
-                    var args = new List<string>(lastLabel.Text.Split(' '));
-                    string stringCompare = "";
-                    for (int i = 0; i < args.Count; i++)
-                    {
-                        int startingLoc = labelToCompare.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                        string old = stringCompare;
-                        stringCompare += args[i];
-                        if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                        {
-                            var a = TextRenderer.MeasureText(args[i], font).Width;
-                            if (a + 2 * border + startingLoc > Width - vScrollBar1.Width)
+                            else
                             {
-                                string current = "";
-                                for (int x = 0; x < args[i].Length; x++)
+                                upTillNow += " ";
+                            }
+                            if (i == args.Count - 1)
+                            {
+                                comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
+                            }
+                        }
+                    }
+                    int rightborder = comparison.Right + pb.Width;
+                    lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
+                    yoffset += rightborder > Width ? Math.Max(28, comparison.Height) : 0;
+                    labelsToAdd.Add(thel);
+                }
+                nextStart = ints.Item2 + 1;
+                int theOr = lastLocation + (int)(pb.Size.Width * 2) + border;
+                yoffset += theOr > Width ? Math.Max(28, comparison.Height) : 0;
+                pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
+                lastLocation = pb.Right + emoteSpacing;
+                p.Controls.Add(pb);
+            }
+            TwitchLabel lastLabel = new TwitchLabel(this)
+            {
+                ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
+                Font = font
+            };
+            lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
+            string theT = text.Substring(nextStart > text.Length ? text.Length - 1 : nextStart, (text.Length - nextStart < 0) ? 0 : text.Length - nextStart);
+            lastLabel.Text = first ? ": " + theT : theT;
+            if (first || theT.Length > 0)
+            {
+                if (lastLabel.Text[0] == ' ')
+                    lastLabel.Text = lastLabel.Text.Substring(1);
+                p.Controls.Add(lastLabel);
+                lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
+                labelsToAdd.Add(lastLabel);
+                TwitchLabel labelToCompare = lastLabel;
+                var args = new List<string>(lastLabel.Text.Split(' '));
+                string stringCompare = "";
+                for (int i = 0; i < args.Count; i++)
+                {
+                    int startingLoc = labelToCompare.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
+                    string old = stringCompare;
+                    stringCompare += args[i];
+                    if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
+                    {
+                        var a = TextRenderer.MeasureText(args[i], font).Width;
+                        if (a + 2 * border + startingLoc > Width - vScrollBar1.Width)
+                        {
+                            string current = "";
+                            for (int x = 0; x < args[i].Length; x++)
+                            {
+                                string anotherold = current;
+                                current += args[i][x];
+                                if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                                 {
-                                    string anotherold = current;
-                                    current += args[i][x];
-                                    if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                                    {
-                                        x = x < 0 ? 0 : x;
-                                        args.Insert(i + 1, args[i].Substring(x));
-                                        args[i] = args[i].Substring(0, x);
-                                        old += anotherold;
-                                        i++;
-                                        break;
-                                    }
+                                    x = x < 0 ? 0 : x;
+                                    args.Insert(i + 1, args[i].Substring(x));
+                                    args[i] = args[i].Substring(0, x);
+                                    old += anotherold;
+                                    i++;
+                                    break;
                                 }
                             }
-                            yoffset += labelToCompare.Height;
-                            TwitchLabel l = new TwitchLabel(this);
-                            labelToCompare.Text = old;
-                            p.Controls.Add(l);
-                            l.Location = new Point(border, userNameLabel.Location.Y + yoffset);
-                            l.Font = font;
-                            l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                            i--;
-                            stringCompare = "";
-                            labelsToAdd.Add(l);
-                            labelToCompare = l;
                         }
-                        else
-                        {
-                            stringCompare += " ";
-                        }
-                        if (i == args.Count - 1)
-                            labelToCompare.Text = stringCompare;
+                        yoffset += labelToCompare.Height;
+                        TwitchLabel l = new TwitchLabel(this);
+                        labelToCompare.Text = old;
+                        p.Controls.Add(l);
+                        l.Location = new Point(border, userNameLabel.Location.Y + yoffset);
+                        l.Font = font;
+                        l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
+                        i--;
+                        stringCompare = "";
+                        labelsToAdd.Add(l);
+                        labelToCompare = l;
                     }
-                }
-                int highest = 0;
-                int lowest = 1000;
-                PictureBox splitterbox = null;
-                splitterbox = new PictureBox();
-                splitterbox.Image = splitter;
-                splitterbox.SizeMode = PictureBoxSizeMode.StretchImage;
-                splitterbox.Size = new Size(Width, 1);
-                Control lowestC = null;
-                if (!doSplitter)
-                    splitterbox.Visible = false;
-                for (int i = 0; i < p.Controls.Count; i++)
-                {
-                    if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
-                        highest = p.Controls[i].Bottom;
-                    if (p.Controls[i].Location.Y < lowest)
+                    else
                     {
-                        lowestC = p.Controls[i];
-                        lowest = p.Controls[i].Location.Y;
+                        stringCompare += " ";
                     }
+                    if (i == args.Count - 1)
+                        labelToCompare.Text = stringCompare;
                 }
-                p.Size = new Size(Width, highest - lowest + panelBorder);
-                splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
-                p.Controls.Add(splitterbox);
-                lowest = splitterbox.Top;
-                for (int i = 0; i < p.Controls.Count; i++)
-                {
-                    p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
-                }
-                if (panelBorder != 0)
-                    foreach (Control c in p.Controls)
-                    {
-                        if (c == splitterbox) continue;
-                        c.Location = new Point(c.Location.X, c.Location.Y - panelBorder / 2);
-                    }
-                m.panel = p;
-                m.splitter = splitterbox;
-                m.emotes = emoteBoxes;
-                m.messages = labelsToAdd;
-                m.username = userNameLabel;
-                p.Location = new Point(-Width, Height - p.Size.Height - 50);
-                //allTwitchMessages.Add(m.twitchMessage);
-                currentChatMessages.Add(m);
             }
+            int highest = 0;
+            int lowest = 1000;
+            PictureBox splitterbox = null;
+            splitterbox = new PictureBox
+            {
+                Image = splitter,
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                Size = new Size(Width, 1)
+            };
+            Control lowestC = null;
+            if (!doSplitter)
+                splitterbox.Visible = false;
+            for (int i = 0; i < p.Controls.Count; i++)
+            {
+                if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
+                    highest = p.Controls[i].Bottom;
+                if (p.Controls[i].Location.Y < lowest)
+                {
+                    lowestC = p.Controls[i];
+                    lowest = p.Controls[i].Location.Y;
+                }
+            }
+            p.Size = new Size(Width, highest - lowest + panelBorder);
+            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
+            p.Controls.Add(splitterbox);
+            lowest = splitterbox.Top;
+            for (int i = 0; i < p.Controls.Count; i++)
+            {
+                p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
+            }
+            if (panelBorder != 0)
+                foreach (Control c in p.Controls)
+                {
+                    if (c == splitterbox) continue;
+                    c.Location = new Point(c.Location.X, c.Location.Y - panelBorder / 2);
+                }
+            m.panel = p;
+            m.splitter = splitterbox;
+            m.emotes = emoteBoxes;
+            m.messages = labelsToAdd;
+            m.username = userNameLabel;
+            p.Location = new Point(-Width, Height - p.Size.Height - 50);
+            //allTwitchMessages.Add(m.twitchMessage);
+            currentChatMessages.Add(m);
             coroutineManager.StartCoroutine(moveLabels(m));
             return null;
         }
@@ -863,10 +878,21 @@ namespace TwitchChatCoroutines
         {
             twitchClient.Connect("irc.chat.twitch.tv", 6667);
             reader = new StreamReader(twitchClient.GetStream());
-            writer = new StreamWriter(twitchClient.GetStream());
-            writer.AutoFlush = true;
-            writer.WriteLine("PASS " + oauth);
-            writer.WriteLine("NICK " + botUsername.ToLower());
+            writer = new StreamWriter(twitchClient.GetStream())
+            {
+                AutoFlush = true
+            };
+            var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
+            if (chatMod == ChatModes.Anonymous)
+            {
+                botUsername = "justinfan1";
+                writer.WriteLine("NICK " + botUsername.ToLower());
+            } else if (chatMod == ChatModes.ChatUser)
+            {
+                //Todo: authentication and all that
+                writer.WriteLine("NICK " + botUsername.ToLower());
+                writer.WriteLine("PASS " + oauth);
+            }
 
             writer.WriteLine("JOIN #" + channelToJoin.ToLower());
             writer.WriteLine("CAP REQ :twitch.tv/tags");
