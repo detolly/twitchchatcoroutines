@@ -44,6 +44,10 @@ namespace TwitchChatCoroutines.Forms
         public MainForm()
         {
             InitializeComponent();
+            foreach(string s in ChatMode.available)
+            {
+                comboBox1.Items.Add(s);
+            }
             CheckGeneralSettings();
             generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
             if (Directory.Exists("./.AutoUpdater"))
@@ -228,7 +232,7 @@ emotesCaching: true
             SettingsForm a = new SettingsForm();
             a.saved += (o, e) =>
             {
-                generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
+                generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json")));
             };
             a.Show();
         }
@@ -236,6 +240,11 @@ emotesCaching: true
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             chatFormSettings[selectedIndex].PanelBorder = (int)numericUpDown1.Value;
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            chatFormSettings[selectedIndex].StreamerMode.currentIndex = comboBox1.SelectedIndex;
         }
     }
 }

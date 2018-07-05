@@ -5,7 +5,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 {
     public class ChatMode
     {
-        public string[] available = new string[]
+        public static string[] available = new string[]
         {
             "Anonymous",
             "Chat User",
