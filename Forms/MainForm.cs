@@ -171,6 +171,7 @@ emotesCaching: true
                 if (radios[index].Checked)
                     button1.Invoke((MethodInvoker)(() => button1.Enabled = true));
             });
+            t.SetApartmentState(ApartmentState.STA);
             t.Start();
             textBox1.Text = "";
         }

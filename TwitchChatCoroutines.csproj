@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Classes and Structs\ChatFormSettings.cs" />
     <Compile Include="Classes and Structs\ChatMode.cs" />
+    <Compile Include="Classes and Structs\HelperFunctions.cs" />
     <Compile Include="Classes and Structs\MessageControl.cs" />
     <Compile Include="Classes and Structs\PictureBoxAndInts.cs" />
     <Compile Include="Classes and Structs\TwitchLabel.cs">
@@ -66,6 +67,12 @@
     </Compile>
     <Compile Include="Classes and Structs\Password.cs" />
     <Compile Include="Classes and Structs\Program.cs" />
+    <Compile Include="Forms\LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,6 +89,9 @@
     <Compile Include="Classes and Structs\TwitchMessage.cs" />
     <EmbeddedResource Include="Forms\ChatForm.resx">
       <DependentUpon>ChatForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

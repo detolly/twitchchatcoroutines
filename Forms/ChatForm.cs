@@ -12,6 +12,8 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 
 using TwitchChatCoroutines.ClassesAndStructs;
+using TwitchChatCoroutines.Forms;
+using static TwitchChatCoroutines.ClassesAndStructs.HelperFunctions;
 
 namespace TwitchChatCoroutines
 {
@@ -27,7 +29,7 @@ namespace TwitchChatCoroutines
 
         private ColorConverter cc = new ColorConverter();
 
-        private string client_id = "m4rybj39stievswbum8069zxhxl5y4";
+        public static string client_id = "m4rybj39stievswbum8069zxhxl5y4";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
         private Font font;
@@ -59,6 +61,8 @@ namespace TwitchChatCoroutines
         private dynamic FFZEmotesJson;
         private dynamic FFZChannelEmotesJson;
 
+        private string[] headers;
+
         private dynamic badgeJson;
         private dynamic channelBadgeJson;
         private dynamic channelInformationJson;
@@ -83,11 +87,6 @@ namespace TwitchChatCoroutines
         {
             //return pixelsToMove/10;
             return pixelsToMove;
-        }
-
-        dynamic jsonGet(string url)
-        {
-            return JsonConvert.DeserializeObject<dynamic>(client.DownloadString(url));
         }
 
         IEnumerator save()
@@ -142,6 +141,9 @@ namespace TwitchChatCoroutines
             outlineColor = chatFormSettings.BackgroundColor;
             textColor = chatFormSettings.ForegroundColor;
             channelToJoin = chatFormSettings.Channel;
+            headers = new string[] {
+                    "Client-ID: " + client_id
+            };
             font = chatFormSettings.Font;
             doAnimations = chatFormSettings.Animations;
             emoteSpacing = chatFormSettings.EmoteSpacing;
@@ -165,8 +167,7 @@ namespace TwitchChatCoroutines
             Height = h;
             Width = w;
             client = new WebClient();
-            client.Headers.Add("Client-ID", client_id);
-            badgeJson = jsonGet("https://badges.twitch.tv/v1/badges/global/display").badge_sets;
+            badgeJson = jsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
             try
             {
                 bttvEmotesJson = jsonGet("https://api.betterttv.net/2/emotes").emotes;
@@ -187,9 +188,9 @@ namespace TwitchChatCoroutines
             {
                 useFFZ = false;
             }
-            channelInformationJson = jsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin);
+            channelInformationJson = jsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
             channelId = channelInformationJson.data[0].id;
-            channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display");
+            channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
 
             coroutineManager.StartCoroutine(save());
 
@@ -890,6 +891,9 @@ namespace TwitchChatCoroutines
             } else if (chatMod == ChatModes.ChatUser)
             {
                 //Todo: authentication and all that
+                LoginForm form = new LoginForm();
+                //form.ShowDialog();
+                //var auth = form.Auth;
                 writer.WriteLine("NICK " + botUsername.ToLower());
                 writer.WriteLine("PASS " + oauth);
             }
