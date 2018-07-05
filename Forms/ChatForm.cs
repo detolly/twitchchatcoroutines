@@ -411,7 +411,7 @@ namespace TwitchChatCoroutines
                     foreach (MessageControl m in currentChatMessages)
                     {
                         if (m.twitchMessage.display_name.ToLower() == user.ToLower())
-                            foreach (Label l in m.messages)
+                            foreach (TwitchLabel l in m.messages)
                             {
                                 l.Font = f;
                                 l.ForeColor = Color.Gray;
@@ -503,7 +503,7 @@ namespace TwitchChatCoroutines
                 // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
                 //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
                 SortedList<int, PictureBoxAndInts> emoteBoxes = new SortedList<int, PictureBoxAndInts>();
-                List<Label> labelsToAdd = new List<Label>();
+                List<TwitchLabel> labelsToAdd = new List<TwitchLabel>();
                 Panel p = new Panel();
                 Controls.Add(p);
                 string[] array = m.twitchMessage.message.Split(' ');
@@ -619,7 +619,7 @@ namespace TwitchChatCoroutines
                     s.Location = new Point(tStart + border, 100);
                     tStart += s.Size.Width + border;
                 }
-                TwitchLabel userNameLabel = new TwitchLabel();
+                TwitchLabel userNameLabel = new TwitchLabel(this);
                 userNameLabel.MaximumSize = new Size(Width - 20 - userNameLabel.Size.Width, 0);
                 userNameLabel.Font = font;
                 p.Controls.Add(userNameLabel);
@@ -637,7 +637,7 @@ namespace TwitchChatCoroutines
                 {
                     Tuple<int, int> ints = pbandInt.Value.ints;
                     PictureBox pb = pbandInt.Value.pb;
-                    TwitchLabel thel = new TwitchLabel();
+                    TwitchLabel thel = new TwitchLabel(this);
                     if (first)
                     {
                         thel.Text = ": ";
@@ -688,7 +688,7 @@ namespace TwitchChatCoroutines
                                     }
                                     comparison.Text = old;
                                     yoffset += Math.Max(pb.Height, comparison.Height);
-                                    TwitchLabel newLabel = new TwitchLabel();
+                                    TwitchLabel newLabel = new TwitchLabel(this);
                                     newLabel.Font = font;
                                     newLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                                     p.Controls.Add(newLabel);
@@ -721,7 +721,7 @@ namespace TwitchChatCoroutines
                     lastLocation = pb.Right + emoteSpacing;
                     p.Controls.Add(pb);
                 }
-                TwitchLabel lastLabel = new TwitchLabel();
+                TwitchLabel lastLabel = new TwitchLabel(this);
                 lastLabel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                 lastLabel.Font = font;
                 lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
@@ -764,7 +764,7 @@ namespace TwitchChatCoroutines
                                 }
                             }
                             yoffset += labelToCompare.Height;
-                            TwitchLabel l = new TwitchLabel();
+                            TwitchLabel l = new TwitchLabel(this);
                             labelToCompare.Text = old;
                             p.Controls.Add(l);
                             l.Location = new Point(border, userNameLabel.Location.Y + yoffset);
