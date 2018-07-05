@@ -21,10 +21,11 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public string Channel { get { return channel; } set {  channel = value; changed?.Invoke(this, new EventArgs()); } }
         private Color backgroundColor;
         public Color BackgroundColor { get { return backgroundColor; } set { backgroundColor = value; changed?.Invoke(this, new EventArgs()); } }
-        private Color foregroundColor;
         private int panelBorder;
         public int PanelBorder { get { return panelBorder; } set { panelBorder = value; changed?.Invoke(this, new EventArgs()); } }
-
+        private Color foregroundColor;
         public Color ForegroundColor { get { return foregroundColor; } set { foregroundColor = value; changed?.Invoke(this, new EventArgs()); } }
+        private ChatMode chatMode;
+        public ChatMode StreamerMode { get { return chatMode; } set { chatMode = value; changed?.Invoke(this, new EventArgs()); } }
     }
 }

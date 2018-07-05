@@ -4,8 +4,18 @@ using System.Windows.Forms;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
-    class TwitchLabel : Label
+    class TwitchLabel : TextBox
     {
+        private ChatForm owner;
+
+        public TwitchLabel(ChatForm form)
+        {
+            owner = form;
+            BorderStyle = BorderStyle.None;
+            BackColor = owner.BackColor;
+            ReadOnly = true;
+        }
+
         protected override void OnHandleCreated(EventArgs e)
         {
             try
@@ -18,7 +28,6 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         protected override void OnFontChanged(EventArgs e)
         {
             base.OnFontChanged(e);
-            FlatStyle = FlatStyle.System;
             Size = GetTextSize();
         }
 
