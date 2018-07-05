@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
-    class TwitchLabel : Label
+    class TwitchLabel : TextBox
     {
         protected override void OnHandleCreated(EventArgs e)
         {
