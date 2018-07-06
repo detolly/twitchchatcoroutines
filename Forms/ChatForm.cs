@@ -173,7 +173,7 @@ namespace TwitchChatCoroutines
             {
                 comboBox1.Items.Add(s);
             }
-
+            comboBox1.SelectedIndex = 0;
             coroutineManager.StartCoroutine(enterLoginPanel(panel1));
 
             Directory.CreateDirectory("./emotes/BetterTTV");
@@ -938,8 +938,8 @@ namespace TwitchChatCoroutines
                 else if (chatMod == ChatModes.ChatUser)
                 {
                     //Todo: Move to constructor
-                    writer.WriteLine("NICK " + botUsername.ToLower());
                     writer.WriteLine("PASS oauth:" + oauth);
+                    writer.WriteLine("NICK " + botUsername.ToLower());
                 }
 
                 writer.WriteLine("JOIN #" + channelToJoin.ToLower());
