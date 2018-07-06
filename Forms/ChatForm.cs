@@ -19,8 +19,8 @@ namespace TwitchChatCoroutines
     {
         private CoroutineManager coroutineManager = new CoroutineManager();
 
-        private string botUsername = "tSparkles".ToLower();
-        private string oauth = Password.oauth;
+        private string botUsername;
+        private string oauth;
         private string channelToJoin = "";
 
         private int panelBorder = 15;
@@ -89,19 +89,6 @@ namespace TwitchChatCoroutines
             return pixelsToMove;
         }
 
-        IEnumerator save()
-        {
-            while (true)
-            {
-                try
-                {
-                    File.WriteAllText("settings.txt", "Height:" + Height + "; Width:" + Width + ";");
-                }
-                catch { }
-                yield return new WaitForSeconds(10);
-            }
-        }
-
         void ChangedEvent(object o, EventArgs e)
         {
             outlineColor = chatFormSettings.BackgroundColor;
@@ -152,6 +139,7 @@ namespace TwitchChatCoroutines
                 yield return new WaitForMilliseconds(10);
             }
             authenticated = true;
+            Controls.Remove(p);
             yield break;
         }
 
@@ -159,22 +147,31 @@ namespace TwitchChatCoroutines
         {
             InitializeComponent();
 
-            panel1.BackColor = chatFormSettings.BackgroundColor;
-            panel1.ForeColor = chatFormSettings.ForegroundColor;
-
-            coroutineManager.Init();
-            Text = chatFormSettings.Channel;
-
-            this.chatFormSettings = chatFormSettings;
-            panel1.Location = new Point(Width / 2 - panel1.Size.Width, Height);
-
-            comboBox1.Items.Clear();
-            foreach (string s in Authentication.GetLogins())
+            if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
             {
-                comboBox1.Items.Add(s);
+
+                panel1.BackColor = chatFormSettings.BackgroundColor;
+                panel1.ForeColor = chatFormSettings.ForegroundColor;
+
+                int h = SystemInformation.PrimaryMonitorSize.Height - 150;
+                Height = h;
+
+                coroutineManager.Init();
+                Text = chatFormSettings.Channel;
+
+                this.chatFormSettings = chatFormSettings;
+                panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
+                panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top & AnchorStyles.Bottom;
+
+                comboBox1.Items.Clear();
+                foreach (string s in Authentication.GetLogins())
+                {
+                    comboBox1.Items.Add(s);
+                }
+                comboBox1.SelectedIndex = 0;
+                coroutineManager.StartCoroutine(enterLoginPanel(panel1));
+
             }
-            comboBox1.SelectedIndex = 0;
-            coroutineManager.StartCoroutine(enterLoginPanel(panel1));
 
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
@@ -196,20 +193,6 @@ namespace TwitchChatCoroutines
             badges = new SortedList<string, Dictionary<string, string>>();
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
-            int h = SystemInformation.PrimaryMonitorSize.Height - 150;
-            int w = Width;
-            if (File.Exists("settings.txt"))
-            {
-                string settings = File.ReadAllText("settings.txt");
-                int hstart = settings.IndexOf("Height:") + "Height:".Length;
-                int hstop = settings.IndexOf(";", hstart);
-                int wstart = settings.IndexOf("Width:", hstop) + "Width:".Length;
-                int wstop = settings.IndexOf(";", wstart);
-                h = int.Parse(settings.Substring(hstart, hstop - hstart));
-                w = Screen.PrimaryScreen.Bounds.Width / 4; //int.Parse(settings.Substring(wstart, wstop - wstart));
-            }
-            Height = h;
-            Width = w;
             client = new WebClient();
             badgeJson = jsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
             try
@@ -235,8 +218,6 @@ namespace TwitchChatCoroutines
             channelInformationJson = jsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
             channelId = channelInformationJson.data[0].id;
             channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
-
-            coroutineManager.StartCoroutine(save());
 
             if (useBTTV)
             {
