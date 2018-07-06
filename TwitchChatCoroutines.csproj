@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Classes and Structs\ChatFormSettings.cs" />
     <Compile Include="Classes and Structs\ChatMode.cs" />
+    <Compile Include="Classes and Structs\Authentication.cs" />
     <Compile Include="Classes and Structs\HelperFunctions.cs" />
     <Compile Include="Classes and Structs\MessageControl.cs" />
     <Compile Include="Classes and Structs\PictureBoxAndInts.cs" />

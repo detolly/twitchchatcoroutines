@@ -27,7 +27,7 @@ namespace TwitchChatCoroutines
 
         private ColorConverter cc = new ColorConverter();
 
-        public static string client_id = "m4rybj39stievswbum8069zxhxl5y4";
+        public static string client_id = "570bj9vd1lakwt3myr8mrhg05ia5u9";
 
         Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
         private Font font;
@@ -53,6 +53,8 @@ namespace TwitchChatCoroutines
         private TcpClient twitchClient = new TcpClient();
         private StreamReader reader;
         private StreamWriter writer;
+
+        private bool authenticated = false;
 
         private dynamic bttvEmotesJson;
         private dynamic bttvChannelEmotesJson;
@@ -124,13 +126,55 @@ namespace TwitchChatCoroutines
             emoteSpacing = chatFormSettings.EmoteSpacing;
         }
 
+        IEnumerator enterLoginPanel(Panel p)
+        {
+            int v = Height / 2 - p.Size.Height;
+            while (p.Location.Y + p.Size.Height / 2 > v)
+            {
+                if (p.Location.Y - (int)(1 + Math.Abs((p.Location.Y - v) * 0.1f)) > v)
+                    p.Location = new Point(p.Location.X, p.Location.Y - (int)(1 + Math.Abs((p.Location.Y - v) * 0.1f)));
+                else
+                {
+                    p.Location = new Point(p.Location.X, v);
+                    break;
+                }
+                yield return new WaitForMilliseconds(10);
+            }
+            yield break;
+        }
+
+        IEnumerator removePanel(Panel p)
+        {
+            int v = 0 - p.Size.Height;
+            while (p.Location.Y > v)
+            {
+                p.Location = new Point(p.Location.X, p.Location.Y - (int)(1 + Math.Abs((p.Location.Y + Height/2) * 0.05f)));
+                yield return new WaitForMilliseconds(10);
+            }
+            authenticated = true;
+            yield break;
+        }
+
         public ChatForm(ChatFormSettings chatFormSettings)
         {
             InitializeComponent();
+
+            panel1.BackColor = chatFormSettings.BackgroundColor;
+            panel1.ForeColor = chatFormSettings.ForegroundColor;
+
             coroutineManager.Init();
             Text = chatFormSettings.Channel;
 
             this.chatFormSettings = chatFormSettings;
+            panel1.Location = new Point(Width / 2 - panel1.Size.Width, Height);
+
+            comboBox1.Items.Clear();
+            foreach (string s in Authentication.GetLogins())
+            {
+                comboBox1.Items.Add(s);
+            }
+
+            coroutineManager.StartCoroutine(enterLoginPanel(panel1));
 
             Directory.CreateDirectory("./emotes/BetterTTV");
             Directory.CreateDirectory("./emotes/FFZ");
@@ -138,7 +182,9 @@ namespace TwitchChatCoroutines
 
             outlineColor = chatFormSettings.BackgroundColor;
             textColor = chatFormSettings.ForegroundColor;
+
             channelToJoin = chatFormSettings.Channel;
+
             headers = new string[] {
                     "Client-ID: " + client_id
             };
@@ -875,30 +921,31 @@ namespace TwitchChatCoroutines
 
         void Connect()
         {
-            twitchClient.Connect("irc.chat.twitch.tv", 6667);
-            reader = new StreamReader(twitchClient.GetStream());
-            writer = new StreamWriter(twitchClient.GetStream())
+            if (authenticated || (ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
             {
-                AutoFlush = true
-            };
-            var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
-            if (chatMod == ChatModes.Anonymous)
-            {
-                botUsername = "justinfan1";
-                writer.WriteLine("NICK " + botUsername.ToLower());
-            } else if (chatMod == ChatModes.ChatUser)
-            {
-                //Todo: Move to constructor
-                WebForm form = new WebForm();
-                form.ShowDialog();
-                var auth = form.Auth;
-                writer.WriteLine("NICK " + botUsername.ToLower());
-                writer.WriteLine("PASS " + oauth);
-            }
+                twitchClient.Connect("irc.chat.twitch.tv", 6667);
+                reader = new StreamReader(twitchClient.GetStream());
+                writer = new StreamWriter(twitchClient.GetStream())
+                {
+                    AutoFlush = true
+                };
+                var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
+                if (chatMod == ChatModes.Anonymous)
+                {
+                    botUsername = "justinfan1";
+                    writer.WriteLine("NICK " + botUsername.ToLower());
+                }
+                else if (chatMod == ChatModes.ChatUser)
+                {
+                    //Todo: Move to constructor
+                    writer.WriteLine("NICK " + botUsername.ToLower());
+                    writer.WriteLine("PASS oauth:" + oauth);
+                }
 
-            writer.WriteLine("JOIN #" + channelToJoin.ToLower());
-            writer.WriteLine("CAP REQ :twitch.tv/tags");
-            writer.WriteLine("CAP REQ :twitch.tv/commands");
+                writer.WriteLine("JOIN #" + channelToJoin.ToLower());
+                writer.WriteLine("CAP REQ :twitch.tv/tags");
+                writer.WriteLine("CAP REQ :twitch.tv/commands");
+            }
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -910,6 +957,28 @@ namespace TwitchChatCoroutines
         {
             foreach (MessageControl m in currentChatMessages)
                 m.splitter.Size = new Size(Width, m.splitter.Size.Height);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            WebForm form = new WebForm();
+            form.authenticated += (o, auth) =>
+            {
+                Authentication.Add(auth);
+                var g = Authentication.GetLogins();
+                comboBox1.Items.Clear();
+                foreach (string item in g)
+                    comboBox1.Items.Add(item);
+                form.Dispose();
+            };
+            form.Show();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            botUsername = comboBox1.SelectedItem.ToString();
+            oauth = Authentication.GetOauth(botUsername);
+            coroutineManager.StartCoroutine(removePanel(panel1));
         }
     }
 }

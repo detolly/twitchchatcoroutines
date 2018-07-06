@@ -40,7 +40,7 @@
             this.webBrowser1.Size = new System.Drawing.Size(498, 721);
             this.webBrowser1.TabIndex = 0;
             this.webBrowser1.Url = new System.Uri("https://id.twitch.tv/oauth2/authorize?client_id=570bj9vd1lakwt3myr8mrhg05ia5u9&re" +
-        "direct_uri=http://localhost/&response_type=token&scope=chat_login&user_read", System.UriKind.Absolute);
+        "direct_uri=http://localhost/&response_type=token&scope=chat_login%20user_read", System.UriKind.Absolute);
             // 
             // WebForm
             // 

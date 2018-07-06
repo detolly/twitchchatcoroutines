@@ -109,6 +109,9 @@ twitchEmoteCaching: true,
 bttvEmoteCaching: true,
 ffzEmoteCaching: true,
 emotesCaching: true
+},
+authentication:{
+
 }}");
                 var o = JsonConvert.SerializeObject(a);
                 System.IO.File.WriteAllText("settings.json", o);
@@ -150,18 +153,12 @@ emotesCaching: true
                 var a = new ChatForm(settings);
                 chatFormSettings[index].Current = a;
                 a.Show();
-                Stopwatch w = new Stopwatch();
                 while (true)
                 {
                     if (a.hasClosed)
                         break;
-                    w.Start();
                     Application.DoEvents();
                     a.CustomUpdate();
-                    w.Stop();
-                    if (w.ElapsedMilliseconds > 2500)
-                        a.Controls.Clear();
-                    w.Reset();
                     Thread.Sleep(1);
                 }
                 a.Dispose();
