@@ -5,9 +5,7 @@ using System.Net.Sockets;
 using System.Windows.Forms;
 using CoroutineSystem;
 using System.IO;
-using static CoroutineSystem.CoroutineManager;
 using System;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
@@ -890,10 +888,10 @@ namespace TwitchChatCoroutines
                 writer.WriteLine("NICK " + botUsername.ToLower());
             } else if (chatMod == ChatModes.ChatUser)
             {
-                //Todo: authentication and all that
-                LoginForm form = new LoginForm();
-                //form.ShowDialog();
-                //var auth = form.Auth;
+                //Todo: Move to constructor
+                WebForm form = new WebForm();
+                form.ShowDialog();
+                var auth = form.Auth;
                 writer.WriteLine("NICK " + botUsername.ToLower());
                 writer.WriteLine("PASS " + oauth);
             }
