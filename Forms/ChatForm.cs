@@ -885,17 +885,7 @@ namespace TwitchChatCoroutines
             };
             return colors[r.Next(colors.Length)];
         }
-
-        private string GetUsername(string raw)
-        {
-            return raw.Substring(raw.IndexOf(':') + 1, raw.IndexOf('!') - raw.IndexOf(':') - 1);
-        }
-
-        private string GetExtractedMessage(string raw)
-        {
-            return raw.Substring(raw.IndexOf(':', 1) + 1);
-        }
-
+        
         private void SendRawMessage(string inp)
         {
             writer.WriteLine(inp);
