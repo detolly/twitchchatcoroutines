@@ -19,14 +19,7 @@ namespace TwitchChatCoroutines
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            mainForm = new MainForm();
-            if (!mainForm.IsDisposed) mainForm.Show();
-            while (true)
-            {
-                if (mainForm.hasClosed) break;
-                Application.DoEvents();
-                Thread.Sleep(1);
-            }
+            Application.Run(new MainForm());
         }
 
     }

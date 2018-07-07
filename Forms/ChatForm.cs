@@ -146,20 +146,19 @@ namespace TwitchChatCoroutines
         public ChatForm(ChatFormSettings chatFormSettings)
         {
             InitializeComponent();
+            this.chatFormSettings = chatFormSettings;
+            coroutineManager.Init();
 
             if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
             {
-
                 panel1.BackColor = chatFormSettings.BackgroundColor;
                 panel1.ForeColor = chatFormSettings.ForegroundColor;
 
                 int h = SystemInformation.PrimaryMonitorSize.Height - 150;
                 Height = h;
 
-                coroutineManager.Init();
                 Text = chatFormSettings.Channel;
 
-                this.chatFormSettings = chatFormSettings;
                 panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
                 panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top & AnchorStyles.Bottom;
 
@@ -170,7 +169,9 @@ namespace TwitchChatCoroutines
                 }
                 comboBox1.SelectedIndex = 0;
                 coroutineManager.StartCoroutine(enterLoginPanel(panel1));
-
+            } else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
+            {
+                Controls.Remove(panel1);
             }
 
             Directory.CreateDirectory("./emotes/BetterTTV");
@@ -846,7 +847,7 @@ namespace TwitchChatCoroutines
                 }
             }
             p.Size = new Size(Width, highest - lowest + panelBorder);
-            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
+            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder / 2);
             p.Controls.Add(splitterbox);
             lowest = splitterbox.Top;
             for (int i = 0; i < p.Controls.Count; i++)
