@@ -48,7 +48,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(498, 721);
             this.Controls.Add(this.webBrowser1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "WebForm";
             this.Text = "WebForm";
             this.ResumeLayout(false);

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -90,50 +91,36 @@ namespace TwitchChatCoroutines.Forms
             chatFormSettings = new ChatFormSettings[amountOfThings];
             for (int i = 0; i < amountOfThings; i++)
             {
-                chatFormSettings[i] = Default();
+                chatFormSettings[i] = ChatFormSettings.Default();
             }
             foreach (var s in (ChatModes[])Enum.GetValues(typeof(ChatModes)))
             {
                 comboBox1.Items.Add(s);
             }
-            comboBox1.SelectedIndex = 0;
+            radioButton1.Checked = true;
         }
 
         private void CheckGeneralSettings()
         {
-            if (!System.IO.File.Exists("settings.json"))
-            {
-                var a = JsonConvert.DeserializeObject<dynamic>(@"
-{general: {
-twitchEmoteCaching: true,
-bttvEmoteCaching: true,
-ffzEmoteCaching: true,
-emotesCaching: true
-},
-authentication:{
+            string text = File.ReadAllText("settings.json");
+            dynamic json = JsonConvert.DeserializeObject<dynamic>(text);
+            if (json.authentication == null)
+                json.authentication = new JObject();
+            if (json.general == null)
+                json.general = new JObject();
+            if (json.general.bttvEmoteCaching == null)
+                json.general.bttvEmoteCaching = true;
+            if (json.general.twitchEmoteCaching == null)
+                json.general.twitchEmoteCaching = true;
+            if (json.general.ffzEmoteCaching == null)
+                json.general.ffzEmoteCaching = true;
+            if (json.general.emotesCaching == null)
+                json.general.emotesCaching = true;
 
-}}");
-                var o = JsonConvert.SerializeObject(a);
-                System.IO.File.WriteAllText("settings.json", o);
-                Thread.Sleep(50);
-            }
-        }
-
-        ChatFormSettings Default()
-        {
-            ChatFormSettings settings = new ChatFormSettings
-            {
-                ForegroundColor = (Color)cc.ConvertFromString("#FFFFFF"),
-                BackgroundColor = (Color)cc.ConvertFromString("#111111"),
-                Animations = false,
-                ChatMode = new ChatMode(),
-                Font = defaultFont,
-                EmoteSpacing = 3,
-                PanelBorder = 15,
-                Channel = "forsen",
-                Splitter = true
-            };
-            return settings;
+            if (json.users == null)
+                json.users = new JObject();
+            text = JsonConvert.SerializeObject(json);
+            File.WriteAllText("settings.json", text);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -163,7 +150,7 @@ authentication:{
                 }
                 a.Dispose();
                 GC.Collect();
-                chatFormSettings[index] = Default();
+                chatFormSettings[index] = ChatFormSettings.Default();
                 radios[index].Invoke((MethodInvoker)(() => radios[index].Text = "Empty"));
                 if (radios[index].Checked)
                     button1.Invoke((MethodInvoker)(() => button1.Enabled = true));
@@ -212,6 +199,9 @@ authentication:{
             Emotespacing.Value = chatFormSettings[selectedIndex].EmoteSpacing;
             AnimationsCheckBox.Checked = chatFormSettings[selectedIndex].Animations;
             Fontlabel.Text = chatFormSettings[selectedIndex].Font.Name + ", " + chatFormSettings[selectedIndex].Font.Size;
+            checkBox1.Checked = chatFormSettings[selectedIndex].Splitter;
+            comboBox1.SelectedIndex = chatFormSettings[selectedIndex].ChatMode.currentIndex;
+            numericUpDown1.Value = chatFormSettings[selectedIndex].PanelBorder;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)

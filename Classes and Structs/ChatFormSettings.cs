@@ -6,6 +6,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
     public class ChatFormSettings
     {
         public event EventHandler Changed;
+        public static ColorConverter cc = new ColorConverter();
 
         private ChatForm current = null;
         public ChatForm Current { get { return current; } set {  current = value; Changed?.Invoke(this, new EventArgs()); } }
@@ -27,5 +28,27 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public Color ForegroundColor { get { return foregroundColor; } set { foregroundColor = value; Changed?.Invoke(this, new EventArgs()); } }
         private ChatMode chatMode;
         public ChatMode ChatMode { get { return chatMode; } set { chatMode = value; Changed?.Invoke(this, new EventArgs()); } }
+        
+        public static ChatFormSettings Default()
+        {
+            ChatFormSettings settings = new ChatFormSettings
+            {
+                ForegroundColor = (Color)cc.ConvertFromString("#FFFFFF"),
+                BackgroundColor = (Color)cc.ConvertFromString("#111111"),
+                Animations = false,
+                ChatMode = new ChatMode(),
+                Font = new Font("Segoe UI", 9.75f),
+                EmoteSpacing = 3,
+                PanelBorder = 8,
+                Channel = "forsen",
+                Splitter = true,
+                chatMode = new ChatMode()
+                {
+                    currentIndex = 0
+                }
+            };
+        return settings;
+        }
+
     }
 }
