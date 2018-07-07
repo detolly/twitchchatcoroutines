@@ -847,7 +847,7 @@ namespace TwitchChatCoroutines
                 }
             }
             p.Size = new Size(Width, highest - lowest + panelBorder);
-            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder / 2);
+            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
             p.Controls.Add(splitterbox);
             lowest = splitterbox.Top;
             for (int i = 0; i < p.Controls.Count; i++)
