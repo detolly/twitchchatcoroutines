@@ -714,11 +714,12 @@ namespace TwitchChatCoroutines
                                     }
                                 }
                                 comparison.Text = old;
-                                yoffset += Math.Max(pb.Height, comparison.Height);
+                                yoffset += comparison.Height + (28 / 2 - comparison.Size.Height/2);
                                 TwitchLabel newLabel = new TwitchLabel(this)
                                 {
                                     Font = font,
-                                    ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor
+                                    ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
+                                    Parent = comparison
                                 };
                                 p.Controls.Add(newLabel);
                                 newLabel.Location = new Point(border, userNameLabel.Location.Y + yoffset);
@@ -740,11 +741,12 @@ namespace TwitchChatCoroutines
                     }
                     int rightborder = comparison.Right + pb.Width;
                     lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
-                    yoffset += rightborder > Width ? Math.Max(28, comparison.Height) : 0;
+                    yoffset += rightborder > Width ? 28 / 2 : 0;
                     labelsToAdd.Add(thel);
                 }
                 nextStart = ints.Item2 + 1;
-                int theOr = lastLocation + (int)(pb.Size.Width * 2) + border;
+                pb.Parent = comparison;
+                int theOr = lastLocation + (pb.Size.Width * 2) + border;
                 yoffset += theOr > Width ? Math.Max(28, comparison.Height) : 0;
                 pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
                 lastLocation = pb.Right + emoteSpacing;
@@ -794,13 +796,16 @@ namespace TwitchChatCoroutines
                                 }
                             }
                         }
-                        yoffset += labelToCompare.Height;
-                        TwitchLabel l = new TwitchLabel(this);
                         labelToCompare.Text = old;
+                        yoffset += labelToCompare.Height + (28 / 2 - labelToCompare.Size.Height / 2);
+                        TwitchLabel l = new TwitchLabel(this)
+                        {
+                            Location = new Point(border, userNameLabel.Location.Y + yoffset),
+                            Font = font,
+                            ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
+                            Parent = labelToCompare
+                        };
                         p.Controls.Add(l);
-                        l.Location = new Point(border, 28 / 2 - l.Size.Height + userNameLabel.Location.Y + yoffset);
-                        l.Font = font;
-                        l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                         i--;
                         stringCompare = "";
                         labelsToAdd.Add(l);
