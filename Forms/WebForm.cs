@@ -8,15 +8,13 @@ namespace TwitchChatCoroutines.Forms
     public partial class WebForm : Form
     {
         public dynamic Auth = null;
-        public event EventHandler<Auth> authenticated;
+        public event EventHandler<Auth> Authenticated;
 
         [DllImport("wininet.dll", SetLastError = true)]
         private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int lpdwBufferLength);
 
-        private const int INTERNET_OPTION_SUPPRESS_BEHAVIOR = 3; //INTERNET_SUPPRESS_COOKIE_PERSIST - Suppresses the persistence of cookies, even if the server has specified them as persistent.
-
+        private const int INTERNET_OPTION_SUPPRESS_BEHAVIOR = 3;
         private const int INTERNET_OPTION_END_BROWSER_SESSION = 42;
-
         private const int INTERNET_SUPPRESS_COOKIE_PERSIST = 81;
 
         public WebForm()
@@ -44,11 +42,11 @@ namespace TwitchChatCoroutines.Forms
                     "Authorization: OAuth " + token,
                     "Client-ID: " + ChatForm.client_id
                 };
-                string name = HelperFunctions.jsonGet("https://api.twitch.tv/kraken/user?authorization=oauth+" + token + "&client_id=" + ChatForm.client_id, headers).name;
+                string name = HelperFunctions.JsonGet("https://api.twitch.tv/kraken/user?authorization=oauth+" + token + "&client_id=" + ChatForm.client_id, headers).name;
                 dynamic auth = new Auth();
                 auth.username = name;
                 auth.oauth = token;
-                authenticated?.Invoke(this, auth);
+                Authenticated?.Invoke(this, auth);
                 Close();
             }
         }

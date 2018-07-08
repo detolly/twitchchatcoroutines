@@ -222,11 +222,11 @@ namespace TwitchChatCoroutines
             BackColor = outlineColor;
             //TransparencyKey = BackColor;
             client = new WebClient();
-            badgeJson = jsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
+            badgeJson = JsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
             try
             {
-                bttvEmotesJson = jsonGet("https://api.betterttv.net/2/emotes").emotes;
-                bttvChannelEmotesJson = jsonGet("https://api.betterttv.net/2/channels/" + channelToJoin).emotes;
+                bttvEmotesJson = JsonGet("https://api.betterttv.net/2/emotes").emotes;
+                bttvChannelEmotesJson = JsonGet("https://api.betterttv.net/2/channels/" + channelToJoin).emotes;
             }
             catch
             {
@@ -235,17 +235,17 @@ namespace TwitchChatCoroutines
             //FFZEmotesJson = jsonGet("https://api.betterttv.net/2/emotes").emotes;
             try
             {
-                FFZChannelEmotesJson = jsonGet("https://api.frankerfacez.com/v1/room/" + channelToJoin);
+                FFZChannelEmotesJson = JsonGet("https://api.frankerfacez.com/v1/room/" + channelToJoin);
                 FFZChannelEmotesJson = FFZChannelEmotesJson.sets[(string)(FFZChannelEmotesJson.room.set)].emoticons;
-                FFZEmotesJson = jsonGet("https://api.frankerfacez.com/v1/set/global");
+                FFZEmotesJson = JsonGet("https://api.frankerfacez.com/v1/set/global");
             }
             catch
             {
                 useFFZ = false;
             }
-            channelInformationJson = jsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
+            channelInformationJson = JsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
             channelId = channelInformationJson.data[0].id;
-            channelBadgeJson = jsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
+            channelBadgeJson = JsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
 
             if (useBTTV)
             {
@@ -492,7 +492,7 @@ namespace TwitchChatCoroutines
         private void button1_Click(object sender, EventArgs e)
         {
             WebForm form = new WebForm();
-            form.authenticated += (o, auth) =>
+            form.Authenticated += (o, auth) =>
             {
                 Authentication.Add(auth);
                 var g = Authentication.GetLogins();

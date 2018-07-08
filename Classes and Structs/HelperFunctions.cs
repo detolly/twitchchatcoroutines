@@ -15,7 +15,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
-        public static dynamic jsonGet(string url, string[] headers = null)
+        public static dynamic JsonGet(string url, string[] headers = null)
         {
             using (WebClient client = new WebClient())
             {
