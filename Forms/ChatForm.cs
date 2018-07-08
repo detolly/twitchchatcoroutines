@@ -107,7 +107,7 @@ namespace TwitchChatCoroutines
             int v = 0 - p.Size.Height;
             while (p.Location.Y > v)
             {
-                p.Location = new Point(p.Location.X, p.Location.Y - (int)(1 + Math.Abs((p.Location.Y + Height/2) * 0.05f)));
+                p.Location = new Point(p.Location.X, p.Location.Y - (int)(1 + Math.Abs((p.Location.Y + Height / 2) * 0.05f)));
                 yield return new WaitForMilliseconds(10);
             }
             authenticated = true;
@@ -196,7 +196,8 @@ namespace TwitchChatCoroutines
                 }
                 comboBox1.SelectedIndex = 0;
                 coroutineManager.StartCoroutine(enterLoginPanel(panel1));
-            } else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
+            }
+            else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
             {
                 Controls.Remove(panel1);
             }
@@ -511,7 +512,7 @@ namespace TwitchChatCoroutines
             oauth = Authentication.GetOauth(botUsername);
             coroutineManager.StartCoroutine(removePanel(panel1));
         }
-#endregion
+        #endregion
 
         #region Misc
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
@@ -797,7 +798,7 @@ namespace TwitchChatCoroutines
                         TwitchLabel l = new TwitchLabel(this);
                         labelToCompare.Text = old;
                         p.Controls.Add(l);
-                        l.Location = new Point(border, userNameLabel.Location.Y + yoffset);
+                        l.Location = new Point(border, 28 / 2 - l.Size.Height + userNameLabel.Location.Y + yoffset);
                         l.Font = font;
                         l.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
                         i--;
@@ -823,6 +824,7 @@ namespace TwitchChatCoroutines
                 Size = new Size(Width, 1)
             };
             Control lowestC = null;
+            int lowestCS = 1000;
             if (!doSplitter)
                 splitterbox.Visible = false;
             for (int i = 0; i < p.Controls.Count; i++)
@@ -830,25 +832,31 @@ namespace TwitchChatCoroutines
                 if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
                     highest = p.Controls[i].Bottom;
                 if (p.Controls[i].Location.Y < lowest)
-                {
-                    lowestC = p.Controls[i];
                     lowest = p.Controls[i].Location.Y;
+                if (p.Controls[i] is TwitchLabel)
+                {
+                    if (p.Controls[i].Location.Y < lowestCS)
+                    {
+                        lowestC = p.Controls[i];
+                        lowestCS = p.Controls[i].Location.Y;
+                    }
                 }
+            }
+            if (highest-lowest+panelBorder < 28)
+            {
+                int diff = highest - lowest;
+                lowest -= (28 - diff) / 2;
+                highest += (28 - diff) / 2;
             }
             p.Size = new Size(Width, highest - lowest + panelBorder);
-            splitterbox.Location = new Point(0, lowestC.Location.Y - panelBorder);
+            splitterbox.Location = new Point(0, lowest /* can be lowestCS */ - panelBorder / 2);
+            lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest; 
             p.Controls.Add(splitterbox);
-            lowest = splitterbox.Top;
+            splitterbox.SendToBack();
             for (int i = 0; i < p.Controls.Count; i++)
             {
-                p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest);
+                p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest + panelBorder / 2);
             }
-            if (panelBorder != 0)
-                foreach (Control c in p.Controls)
-                {
-                    if (c == splitterbox) continue;
-                    c.Location = new Point(c.Location.X, c.Location.Y - panelBorder / 2);
-                }
             m.panel = p;
             m.splitter = splitterbox;
             m.emotes = emoteBoxes;
