@@ -18,7 +18,6 @@ namespace TwitchChatCoroutines
         //public string user_type;
         public string message;
 
-
         public static TwitchMessage GetTwitchMessage(string raw)
         {
             TwitchMessage returnMessage = new TwitchMessage();
@@ -89,6 +88,5 @@ namespace TwitchChatCoroutines
 
             return returnMessage;
         }
-
     }
 }

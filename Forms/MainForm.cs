@@ -14,6 +14,7 @@ namespace TwitchChatCoroutines.Forms
 {
     public partial class MainForm : Form
     {
+        #region Declarations
         private string version = "v0.3-alpha-e";
 
         static List<ChatForm> chatforms = new List<ChatForm>();
@@ -36,12 +37,9 @@ namespace TwitchChatCoroutines.Forms
 
         public string channel;
         int selectedIndex = 0;
+#endregion
 
-        public bool hasClosed
-        {
-            get; private set;
-        }
-
+        #region Init
         public MainForm()
         {
             InitializeComponent();
@@ -99,7 +97,9 @@ namespace TwitchChatCoroutines.Forms
             }
             radioButton1.Checked = true;
         }
+        #endregion
 
+        #region Misc
         private void CheckGeneralSettings()
         {
             string text = File.ReadAllText("settings.json");
@@ -124,7 +124,9 @@ namespace TwitchChatCoroutines.Forms
             text = JsonConvert.SerializeObject(json);
             File.WriteAllText("settings.json", text);
         }
+        #endregion
 
+        #region Events
         private void button1_Click(object sender, EventArgs e)
         {
             int index = selectedIndex;
@@ -160,11 +162,6 @@ namespace TwitchChatCoroutines.Forms
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
             textBox1.Text = "";
-        }
-
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            hasClosed = true;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -240,5 +237,6 @@ namespace TwitchChatCoroutines.Forms
         {
             chatFormSettings[selectedIndex].ChatMode.currentIndex = comboBox1.SelectedIndex;
         }
+        #endregion
     }
 }
