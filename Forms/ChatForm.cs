@@ -40,7 +40,7 @@ namespace TwitchChatCoroutines
         private SortedList<string, Image> cachedFFZEmotes = new SortedList<string, Image>();
         private SortedList<string, Image> cachedTwitchEmotes = new SortedList<string, Image>();
 
-        private Image splitter = Properties.Resources.splitter;
+        private Image splitter = Properties.Resources.splitter2;
 
         private int emoteSpacing = 0;
 
@@ -499,6 +499,7 @@ namespace TwitchChatCoroutines
                 comboBox1.Items.Clear();
                 foreach (string item in g)
                     comboBox1.Items.Add(item);
+                comboBox1.SelectedIndex = 0;
                 form.Dispose();
             };
             form.Show();
