@@ -26,14 +26,13 @@ namespace TwitchChatCoroutines.Forms
             string url = "https://id.twitch.tv/oauth2/authorize?client_id=570bj9vd1lakwt3myr8mrhg05ia5u9&redirect_uri=http://localhost/&response_type=token&scope=chat_login%20user_read";
             url += "&random=" + Guid.NewGuid();
             webBrowser1.Navigated += WebBrowser1_Navigated;
-            webBrowser1.Url = new Uri(url);
+            webBrowser1.Navigate(new Uri(url));
         }
 
         public void WebBrowser1_Navigated(object o, WebBrowserNavigatedEventArgs e)
         {
             if (webBrowser1.Url.OriginalString.StartsWith("http://localhost/"))
             {
-                //let see
                 int start = webBrowser1.Url.OriginalString.IndexOf("access_token") + "access_token".Length + 1;
                 int stop = webBrowser1.Url.OriginalString.IndexOf("&", start);
                 string token = webBrowser1.Url.OriginalString.Substring(start, stop - start);
