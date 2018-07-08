@@ -17,6 +17,7 @@ namespace TwitchChatCoroutines
 {
     public partial class ChatForm : Form
     {
+        #region Declarations
         private CoroutineManager coroutineManager = new CoroutineManager();
 
         private string botUsername;
@@ -81,38 +82,9 @@ namespace TwitchChatCoroutines
         private SortedList<string, Dictionary<string, string>> badges;
 
         private WebClient client;
+        #endregion
 
-        // Useful variables to change
-        int pixelsToMovee(int pixelsToMove)
-        {
-            //return pixelsToMove/10;
-            return pixelsToMove;
-        }
-
-        void ChangedEvent(object o, EventArgs e)
-        {
-            outlineColor = chatFormSettings.BackgroundColor;
-            BackColor = outlineColor;
-            textColor = chatFormSettings.ForegroundColor;
-            font = chatFormSettings.Font;
-            doAnimations = chatFormSettings.Animations;
-            panelBorder = chatFormSettings.PanelBorder;
-            if (doSplitter != chatFormSettings.Splitter)
-            {
-                doSplitter = chatFormSettings.Splitter;
-                if (IsHandleCreated)
-                    Invoke((MethodInvoker)(() =>
-                    {
-                        foreach (MessageControl m in currentChatMessages)
-                            m.splitter.Invoke((MethodInvoker)(() =>
-                            {
-                                m.splitter.Visible = doSplitter;
-                            }));
-                    }));
-            }
-            emoteSpacing = chatFormSettings.EmoteSpacing;
-        }
-
+        #region Enumerators
         IEnumerator enterLoginPanel(Panel p)
         {
             int v = Height / 2 - p.Size.Height;
@@ -142,7 +114,63 @@ namespace TwitchChatCoroutines
             Controls.Remove(p);
             yield break;
         }
+        IEnumerator enterChatLine(MessageControl greetings)
+        {
+            while (greetings.panel.Location.X < 0)
+            {
+                if (!doAnimations)
+                    greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
+                else if (doAnimations)
+                {
+                    if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
+                    {
+                        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
+                        continue;
+                    }
+                    greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                }
+                yield return new WaitForMilliseconds(5);
+            }
+            yield break;
+        }
 
+        IEnumerator moveLabels(MessageControl exclude)
+        {
+            List<MessageControl> toRemove = new List<MessageControl>();
+
+            coroutineManager.StartLateCoroutine(enterChatLine(exclude));
+            pixelsToMove = exclude.panel.Size.Height + panelBorder;
+
+            for (int i = 0; i < currentChatMessages.Count; i++)
+            {
+                if (currentChatMessages[i].messages == exclude.messages) continue;
+                int border = -currentChatMessages[i].panel.Size.Height - 5;
+                pixelsToMove = exclude.panel.Size.Height;
+                currentChatMessages[i].panel.Location = new Point(currentChatMessages[i].panel.Location.X, currentChatMessages[i].panel.Location.Y - pixelsToMove);
+                if (currentChatMessages[i].panel.Location.Y < border)
+                    toRemove.Add(currentChatMessages[i]);
+            }
+
+            if (toRemove.Count > 0 && IsHandleCreated)
+                toRemove[0].panel.Invoke((MethodInvoker)(() =>
+                {
+                    for (int i = 0; i < toRemove.Count; i++)
+                    {
+                        currentChatMessages.Remove(toRemove[i]);
+                        for (int x = 0; x < toRemove[i].panel.Controls.Count; x++)
+                        {
+                            toRemove[i].panel.Controls[x].Dispose();
+                        }
+                        Controls.Remove(toRemove[i].panel);
+                        toRemove[i].panel.Dispose();
+                        //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
+                    }
+                }));
+            yield break;
+        }
+        #endregion
+
+        #region Init
         public ChatForm(ChatFormSettings chatFormSettings)
         {
             InitializeComponent();
@@ -325,72 +353,9 @@ namespace TwitchChatCoroutines
                 catch { }
             }
         }
+        #endregion
 
-        IEnumerator enterChatLine(MessageControl greetings)
-        {
-            while (greetings.panel.Location.X < 0)
-            {
-                if (!doAnimations)
-                    greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-                else if (doAnimations)
-                {
-                    if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
-                    {
-                        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-                        continue;
-                    }
-                    greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
-                }
-                yield return new WaitForMilliseconds(5);
-            }
-            yield break;
-        }
-
-        IEnumerator moveLabels(MessageControl exclude)
-        {
-            List<MessageControl> toRemove = new List<MessageControl>();
-
-            coroutineManager.StartLateCoroutine(enterChatLine(exclude));
-            pixelsToMove = exclude.panel.Size.Height + panelBorder;
-
-            for (int i = 0; i < currentChatMessages.Count; i++)
-            {
-                if (currentChatMessages[i].messages == exclude.messages) continue;
-                int border = -currentChatMessages[i].panel.Size.Height - 5;
-                pixelsToMove = exclude.panel.Size.Height;
-                currentChatMessages[i].panel.Location = new Point(currentChatMessages[i].panel.Location.X, currentChatMessages[i].panel.Location.Y - pixelsToMove);
-                if (currentChatMessages[i].panel.Location.Y < border)
-                    toRemove.Add(currentChatMessages[i]);
-            }
-
-            if (toRemove.Count > 0 && IsHandleCreated)
-                toRemove[0].panel.Invoke((MethodInvoker)(() =>
-                {
-                    for (int i = 0; i < toRemove.Count; i++)
-                    {
-                        currentChatMessages.Remove(toRemove[i]);
-                        for (int x = 0; x < toRemove[i].panel.Controls.Count; x++)
-                        {
-                            toRemove[i].panel.Controls[x].Dispose();
-                        }
-                        Controls.Remove(toRemove[i].panel);
-                        toRemove[i].panel.Dispose();
-                        //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
-                    }
-                }));
-            yield break;
-        }
-
-        public string ReplaceFirst(string text, string search, string replace)
-        {
-            int pos = text.IndexOf(search);
-            if (pos < 0)
-            {
-                return text;
-            }
-            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-        }
-
+        #region IRC
         public void CustomUpdate()
         {
             coroutineManager.Interval();
@@ -453,6 +418,101 @@ namespace TwitchChatCoroutines
             }
         }
 
+        private void SendRawMessage(string inp)
+        {
+            writer.WriteLine(inp);
+        }
+
+        void Connect()
+        {
+            if (authenticated || (ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
+            {
+                twitchClient.Connect("irc.chat.twitch.tv", 6667);
+                reader = new StreamReader(twitchClient.GetStream());
+                writer = new StreamWriter(twitchClient.GetStream())
+                {
+                    AutoFlush = true
+                };
+                var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
+                if (chatMod == ChatModes.Anonymous)
+                {
+                    botUsername = "justinfan1";
+                    writer.WriteLine("NICK " + botUsername.ToLower());
+                }
+                else if (chatMod == ChatModes.ChatUser)
+                {
+                    //Todo: Move to constructor
+                    writer.WriteLine("PASS oauth:" + oauth);
+                    writer.WriteLine("NICK " + botUsername.ToLower());
+                }
+
+                writer.WriteLine("JOIN #" + channelToJoin.ToLower());
+                writer.WriteLine("CAP REQ :twitch.tv/tags");
+                writer.WriteLine("CAP REQ :twitch.tv/commands");
+            }
+        }
+        #endregion
+
+        #region Events
+        void ChangedEvent(object o, EventArgs e)
+        {
+            outlineColor = chatFormSettings.BackgroundColor;
+            BackColor = outlineColor;
+            textColor = chatFormSettings.ForegroundColor;
+            font = chatFormSettings.Font;
+            doAnimations = chatFormSettings.Animations;
+            panelBorder = chatFormSettings.PanelBorder;
+            if (doSplitter != chatFormSettings.Splitter)
+            {
+                doSplitter = chatFormSettings.Splitter;
+                if (IsHandleCreated)
+                    Invoke((MethodInvoker)(() =>
+                    {
+                        foreach (MessageControl m in currentChatMessages)
+                            m.splitter.Invoke((MethodInvoker)(() =>
+                            {
+                                m.splitter.Visible = doSplitter;
+                            }));
+                    }));
+            }
+            emoteSpacing = chatFormSettings.EmoteSpacing;
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            hasClosed = true;
+        }
+
+        private void ChatForm_SizeChanged(object sender, EventArgs e)
+        {
+            foreach (MessageControl m in currentChatMessages)
+                m.splitter.Size = new Size(Width, m.splitter.Size.Height);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            WebForm form = new WebForm();
+            form.authenticated += (o, auth) =>
+            {
+                Authentication.Add(auth);
+                var g = Authentication.GetLogins();
+                comboBox1.Items.Clear();
+                foreach (string item in g)
+                    comboBox1.Items.Add(item);
+                form.Dispose();
+            };
+            form.Show();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            botUsername = comboBox1.SelectedItem.ToString();
+            oauth = Authentication.GetOauth(botUsername);
+            coroutineManager.StartCoroutine(removePanel(panel1));
+        }
+#endregion
+
+        #region Misc
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
@@ -813,72 +873,6 @@ namespace TwitchChatCoroutines
             };
             return colors[r.Next(colors.Length)];
         }
-        
-        private void SendRawMessage(string inp)
-        {
-            writer.WriteLine(inp);
-        }
-
-        void Connect()
-        {
-            if (authenticated || (ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
-            {
-                twitchClient.Connect("irc.chat.twitch.tv", 6667);
-                reader = new StreamReader(twitchClient.GetStream());
-                writer = new StreamWriter(twitchClient.GetStream())
-                {
-                    AutoFlush = true
-                };
-                var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
-                if (chatMod == ChatModes.Anonymous)
-                {
-                    botUsername = "justinfan1";
-                    writer.WriteLine("NICK " + botUsername.ToLower());
-                }
-                else if (chatMod == ChatModes.ChatUser)
-                {
-                    //Todo: Move to constructor
-                    writer.WriteLine("PASS oauth:" + oauth);
-                    writer.WriteLine("NICK " + botUsername.ToLower());
-                }
-
-                writer.WriteLine("JOIN #" + channelToJoin.ToLower());
-                writer.WriteLine("CAP REQ :twitch.tv/tags");
-                writer.WriteLine("CAP REQ :twitch.tv/commands");
-            }
-        }
-
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            hasClosed = true;
-        }
-
-        private void ChatForm_SizeChanged(object sender, EventArgs e)
-        {
-            foreach (MessageControl m in currentChatMessages)
-                m.splitter.Size = new Size(Width, m.splitter.Size.Height);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            WebForm form = new WebForm();
-            form.authenticated += (o, auth) =>
-            {
-                Authentication.Add(auth);
-                var g = Authentication.GetLogins();
-                comboBox1.Items.Clear();
-                foreach (string item in g)
-                    comboBox1.Items.Add(item);
-                form.Dispose();
-            };
-            form.Show();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            botUsername = comboBox1.SelectedItem.ToString();
-            oauth = Authentication.GetOauth(botUsername);
-            coroutineManager.StartCoroutine(removePanel(panel1));
-        }
+        #endregion
     }
 }
