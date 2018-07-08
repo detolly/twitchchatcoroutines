@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using TwitchChatCoroutines.ClassesAndStructs;
 
@@ -9,10 +10,25 @@ namespace TwitchChatCoroutines.Forms
         public dynamic Auth = null;
         public event EventHandler<Auth> authenticated;
 
+        [DllImport("wininet.dll", SetLastError = true)]
+        private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int lpdwBufferLength);
+
+        private const int INTERNET_OPTION_SUPPRESS_BEHAVIOR = 3; //INTERNET_SUPPRESS_COOKIE_PERSIST - Suppresses the persistence of cookies, even if the server has specified them as persistent.
+
+        private const int INTERNET_OPTION_END_BROWSER_SESSION = 42;
+
+        private const int INTERNET_SUPPRESS_COOKIE_PERSIST = 81;
+
         public WebForm()
         {
             InitializeComponent();
+            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_END_BROWSER_SESSION, IntPtr.Zero, 0);
+            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SUPPRESS_BEHAVIOR, IntPtr.Zero, 0);
+            InternetSetOption(IntPtr.Zero, INTERNET_SUPPRESS_COOKIE_PERSIST, IntPtr.Zero, 0);
+            string url = "https://id.twitch.tv/oauth2/authorize?client_id=570bj9vd1lakwt3myr8mrhg05ia5u9&redirect_uri=http://localhost/&response_type=token&scope=chat_login%20user_read";
+            url += "&random=" + Guid.NewGuid();
             webBrowser1.Navigated += WebBrowser1_Navigated;
+            webBrowser1.Url = new Uri(url);
         }
 
         public void WebBrowser1_Navigated(object o, WebBrowserNavigatedEventArgs e)

@@ -148,6 +148,7 @@ namespace TwitchChatCoroutines
             InitializeComponent();
             this.chatFormSettings = chatFormSettings;
             coroutineManager.Init();
+            Text = chatFormSettings.Channel;
 
             if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
             {
@@ -156,8 +157,6 @@ namespace TwitchChatCoroutines
 
                 int h = SystemInformation.PrimaryMonitorSize.Height - 150;
                 Height = h;
-
-                Text = chatFormSettings.Channel;
 
                 panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
                 panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top & AnchorStyles.Bottom;
@@ -412,7 +411,7 @@ namespace TwitchChatCoroutines
                 }
                 else if (rawLine.Contains("PRIVMSG"))
                 {
-                    TwitchMessage user = GetTwitchMessage(rawLine);
+                    TwitchMessage user = TwitchMessage.GetTwitchMessage(rawLine);
                     string username = user.display_name; //GetUsername(rawLine);
                     string extractedMessage = user.message; //GetExtractedMessage(rawLine);
                     bool isAction = false;
@@ -452,77 +451,6 @@ namespace TwitchChatCoroutines
             {
                 MakeAndInsertLabel(stringsToBeAdded.Dequeue());
             }
-        }
-
-        TwitchMessage GetTwitchMessage(string raw)
-        {
-            TwitchMessage returnMessage = new TwitchMessage();
-
-            int iStartRaw = raw.IndexOf("@");
-            string current = "badges=";
-
-            int iStartBadges = raw.IndexOf(current, iStartRaw) + current.Length;
-            int iStopBadges = raw.IndexOf(";", iStartBadges);
-            returnMessage.badges = raw.Substring(iStartBadges, iStopBadges - iStartBadges);
-
-            current = "color=";
-            int iStartColor = raw.IndexOf(current, iStopBadges) + current.Length;
-            int iStopColor = raw.IndexOf(";", iStartColor);
-            returnMessage.color = raw.Substring(iStartColor, iStopColor - iStartColor);
-
-            current = "display-name=";
-            int iStartDisplayName = raw.IndexOf(current, iStopColor) + current.Length;
-            int iStopDisplayName = raw.IndexOf(";", iStartDisplayName);
-            returnMessage.display_name = raw.Substring(iStartDisplayName, iStopDisplayName - iStartDisplayName);
-
-            current = "emotes=";
-            int iStartEmotes = raw.IndexOf(current, iStopDisplayName) + current.Length;
-            int iStopEmotes = raw.IndexOf(";", iStartEmotes);
-            returnMessage.emotes = raw.Substring(iStartEmotes, iStopEmotes - iStartEmotes);
-
-            current = "id=";
-            int iStartId = raw.IndexOf(current, iStopEmotes) + current.Length;
-            int iStopId = raw.IndexOf(";", iStartId);
-            returnMessage.id = raw.Substring(iStartId, iStopId - iStartId);
-
-            current = "mod=";
-            int iStartMod = raw.IndexOf(current, iStopId) + current.Length;
-            int iStopMod = raw.IndexOf(";", iStartMod);
-            returnMessage.mod = byte.Parse(raw.Substring(iStartMod, iStopMod - iStartMod));
-
-            current = "room-id=";
-            int iStartRoomId = raw.IndexOf(current, iStopMod) + current.Length;
-            int iStopRoomId = raw.IndexOf(";", iStartRoomId);
-            returnMessage.room_id = long.Parse(raw.Substring(iStartRoomId, iStopRoomId - iStartRoomId));
-
-            current = "subscriber=";
-            int iStartSubscriber = raw.IndexOf(current, iStopRoomId) + current.Length;
-            int iStopSubscriber = raw.IndexOf(";", iStartSubscriber);
-            returnMessage.subscriber = byte.Parse(raw.Substring(iStartSubscriber, iStopSubscriber - iStartSubscriber));
-
-            current = "tmi-sent-ts=";
-            int iStartTMI = raw.IndexOf(current, iStopSubscriber) + current.Length;
-            int iStopTMI = raw.IndexOf(";", iStartTMI);
-            returnMessage.tmi_sent_ts = long.Parse(raw.Substring(iStartTMI, iStopTMI - iStartTMI));
-
-            current = "turbo=";
-            int iStartTurbo = raw.IndexOf(current, iStopTMI) + current.Length;
-            int iStopTurbo = raw.IndexOf(";", iStartTurbo);
-            returnMessage.turbo = byte.Parse(raw.Substring(iStartTurbo, iStopTurbo - iStartTurbo));
-
-            current = "user-id=";
-            int iStartUserID = raw.IndexOf(current, iStopTurbo) + current.Length;
-            int iStopUserID = raw.IndexOf(";", iStartUserID);
-            returnMessage.user_id = long.Parse(raw.Substring(iStartUserID, iStopUserID - iStartUserID));
-
-            //current = "user-type=";
-            //int iStartUserType = raw.IndexOf(current, iStopUserID) + current.Length;
-            //int iStopUserType = raw.IndexOf(";", iStartUserType);
-            //returnMessage.id = raw.Substring(iStartUserType, iStopUserType - iStartUserType);
-
-            returnMessage.message = raw.Substring(raw.IndexOf(':', raw.IndexOf(':', iStopUserID) + 1) + 1);
-
-            return returnMessage;
         }
 
         private TwitchLabel MakeAndInsertLabel(MessageControl m)

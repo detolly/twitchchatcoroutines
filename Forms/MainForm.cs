@@ -46,7 +46,7 @@ namespace TwitchChatCoroutines.Forms
         {
             InitializeComponent();
             CheckGeneralSettings();
-            generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(System.IO.File.ReadAllText("settings.json")));
+            generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json")));
             if (Directory.Exists("./.AutoUpdater"))
             {
                 string fileName = "./.AutoUpdater/AutoUpdater.exe";
@@ -104,8 +104,10 @@ namespace TwitchChatCoroutines.Forms
         {
             string text = File.ReadAllText("settings.json");
             dynamic json = JsonConvert.DeserializeObject<dynamic>(text);
+
             if (json.authentication == null)
                 json.authentication = new JObject();
+
             if (json.general == null)
                 json.general = new JObject();
             if (json.general.bttvEmoteCaching == null)
