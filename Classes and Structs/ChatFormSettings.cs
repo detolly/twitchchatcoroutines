@@ -37,9 +37,9 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 BackgroundColor = (Color)cc.ConvertFromString("#111111"),
                 Animations = false,
                 ChatMode = new ChatMode(),
-                Font = new Font("Segoe UI", 9.75f),
+                Font = new Font("Segoe UI Semibold", 11.25f),
                 EmoteSpacing = 3,
-                PanelBorder = 8,
+                PanelBorder = 6,
                 Channel = "forsen",
                 Splitter = true,
                 chatMode = new ChatMode()
