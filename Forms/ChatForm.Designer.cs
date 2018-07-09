@@ -53,7 +53,7 @@
             this.label1.Font = new System.Drawing.Font("Bahnschrift SemiLight", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(21, 3);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(179, 39);
+            this.label1.Size = new System.Drawing.Size(180, 39);
             this.label1.TabIndex = 1;
             this.label1.Text = "Select User";
             // 
@@ -89,6 +89,7 @@
             this.button2.TabIndex = 4;
             this.button2.Text = "Remove";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 

@@ -194,6 +194,7 @@ namespace TwitchChatCoroutines
                 {
                     comboBox1.Items.Add(s);
                 }
+                if (comboBox1.Items.Count > 0)
                 comboBox1.SelectedIndex = 0;
                 coroutineManager.StartCoroutine(enterLoginPanel(panel1));
             }
@@ -511,6 +512,14 @@ namespace TwitchChatCoroutines
             botUsername = comboBox1.SelectedItem.ToString();
             oauth = Authentication.GetOauth(botUsername);
             coroutineManager.StartCoroutine(removePanel(panel1));
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var username = (string)comboBox1.SelectedItem;
+            Authentication.Remove(username);
+            comboBox1.Items.Remove(comboBox1.SelectedItem);
+            comboBox1.SelectedItem = "";
         }
         #endregion
 
@@ -888,5 +897,6 @@ namespace TwitchChatCoroutines
             return colors[r.Next(colors.Length)];
         }
         #endregion
+
     }
 }

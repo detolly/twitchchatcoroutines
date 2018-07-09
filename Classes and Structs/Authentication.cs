@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +15,17 @@ namespace TwitchChatCoroutines.ClassesAndStructs
     public static class Authentication
     {
 
-        public static void Remove()
+        public static void Remove(string username)
         {
-
+            dynamic json = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json"));
+            Dictionary<string, string> a = json.authentication.ToObject<Dictionary<string, string>>();
+            if (a.ContainsKey(username))
+                a.Remove(username);
+            if (a.Count == 0)
+                json.authentication = new JObject();
+            else
+            json.authentication = a;
+            File.WriteAllText("settings.json", JsonConvert.SerializeObject(json));
         }
 
         public static void Add(Auth a)
