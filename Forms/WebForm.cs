@@ -20,9 +20,6 @@ namespace TwitchChatCoroutines.Forms
         public WebForm()
         {
             InitializeComponent();
-            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_END_BROWSER_SESSION, IntPtr.Zero, 0);
-            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SUPPRESS_BEHAVIOR, IntPtr.Zero, 0);
-            InternetSetOption(IntPtr.Zero, INTERNET_SUPPRESS_COOKIE_PERSIST, IntPtr.Zero, 0);
             string url = "https://id.twitch.tv/oauth2/authorize?client_id=570bj9vd1lakwt3myr8mrhg05ia5u9&redirect_uri=http://localhost/&response_type=token&scope=chat_login%20user_read";
             url += "&random=" + Guid.NewGuid();
             webBrowser1.Navigated += WebBrowser1_Navigated;

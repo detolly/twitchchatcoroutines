@@ -30,7 +30,7 @@ namespace TwitchChatCoroutines
 
         public static string client_id = "570bj9vd1lakwt3myr8mrhg05ia5u9";
 
-        Queue<MessageControl> stringsToBeAdded = new Queue<MessageControl>();
+        Queue<MessageControl> messagesToBeAdded = new Queue<MessageControl>();
         private Font font;
         private int pixelsToMove;
         private Color outlineColor;
@@ -114,6 +114,7 @@ namespace TwitchChatCoroutines
             Controls.Remove(p);
             yield break;
         }
+
         IEnumerator enterChatLine(MessageControl greetings)
         {
             while (greetings.panel.Location.X < 0)
@@ -163,7 +164,6 @@ namespace TwitchChatCoroutines
                         }
                         Controls.Remove(toRemove[i].panel);
                         toRemove[i].panel.Dispose();
-                        //StartLateCoroutine(removeChatLine(toRemove[i])); // Totally doesn't work btw unless your cpu is like insane
                     }
                 }));
             yield break;
@@ -195,7 +195,7 @@ namespace TwitchChatCoroutines
                     comboBox1.Items.Add(s);
                 }
                 if (comboBox1.Items.Count > 0)
-                comboBox1.SelectedIndex = 0;
+                    comboBox1.SelectedIndex = 0;
                 coroutineManager.StartCoroutine(enterLoginPanel(panel1));
             }
             else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
@@ -394,7 +394,12 @@ namespace TwitchChatCoroutines
                         twitchMessage = user,
                         isAction = isAction
                     };
-                    stringsToBeAdded.Enqueue(m);
+                    messagesToBeAdded.Enqueue(m);
+
+                    //#if DEBUG
+                    //  if (channelToJoin.ToLower() == "kingkalus" && user.mod == 0)
+                    //    SendMessage(".timeout " + user.display_name + " 1");
+                    //#endif
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
                 {
@@ -414,15 +419,20 @@ namespace TwitchChatCoroutines
                     }
                 }
             }
-            if (stringsToBeAdded.Count > 0)
+            if (messagesToBeAdded.Count > 0)
             {
-                MakeAndInsertLabel(stringsToBeAdded.Dequeue());
+                MakeAndInsertLabel(messagesToBeAdded.Dequeue());
             }
         }
 
         private void SendRawMessage(string inp)
         {
             writer.WriteLine(inp);
+        }
+
+        private void SendMessage(string message)
+        {
+            writer.WriteLine( $":{botUsername}!{botUsername}@{botUsername}.tmi.twitch.tv PRIVMSG #{channelToJoin} :{message}");
         }
 
         void Connect()
@@ -488,7 +498,10 @@ namespace TwitchChatCoroutines
         private void ChatForm_SizeChanged(object sender, EventArgs e)
         {
             foreach (MessageControl m in currentChatMessages)
+            {
+                m.panel.Size = new Size(Width, m.panel.Size.Height);
                 m.splitter.Size = new Size(Width, m.splitter.Size.Height);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -723,7 +736,7 @@ namespace TwitchChatCoroutines
                                     }
                                 }
                                 comparison.Text = old;
-                                yoffset += comparison.Height + (28 / 2 - comparison.Size.Height/2);
+                                yoffset += comparison.Height + (28 / 2 - comparison.Size.Height / 2);
                                 TwitchLabel newLabel = new TwitchLabel(this)
                                 {
                                     Font = font,
@@ -856,7 +869,7 @@ namespace TwitchChatCoroutines
                     }
                 }
             }
-            if (highest-lowest+panelBorder < 28)
+            if (highest - lowest + panelBorder < 28)
             {
                 int diff = highest - lowest;
                 lowest -= (28 - diff) / 2;
@@ -864,7 +877,7 @@ namespace TwitchChatCoroutines
             }
             p.Size = new Size(Width, highest - lowest + panelBorder);
             splitterbox.Location = new Point(0, lowest /* can be lowestCS */ - panelBorder / 2);
-            lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest; 
+            lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest;
             p.Controls.Add(splitterbox);
             splitterbox.SendToBack();
             for (int i = 0; i < p.Controls.Count; i++)
