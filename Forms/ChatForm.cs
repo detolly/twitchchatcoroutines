@@ -45,6 +45,7 @@ namespace TwitchChatCoroutines
         private int emoteSpacing = 0;
 
         Random r = new Random();
+        private Size lastSize;
 
         private List<MessageControl> currentChatMessages = new List<MessageControl>();
         private List<TwitchMessage> allTwitchMessages = new List<TwitchMessage>();
@@ -495,8 +496,18 @@ namespace TwitchChatCoroutines
             hasClosed = true;
         }
 
-        private void ChatForm_SizeChanged(object sender, EventArgs e)
+        private void ChatForm_ResizeStart(object sender, EventArgs e)
         {
+            lastSize = Size;
+        }
+
+        private void ChatForm_ResizeEnd(object sender, EventArgs e)
+        {
+            Size difference = new Size(lastSize.Width - Size.Width, lastSize.Height - Size.Height);
+            foreach(MessageControl m in currentChatMessages)
+            {
+                m.panel.Location = new Point(m.panel.Location.X, m.panel.Location.Y - difference.Height);
+            }
             foreach (MessageControl m in currentChatMessages)
             {
                 m.panel.Size = new Size(Width, m.panel.Size.Height);

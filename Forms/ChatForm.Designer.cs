@@ -121,7 +121,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.SizeChanged += new System.EventHandler(this.ChatForm_SizeChanged);
+            this.ResizeEnd += ChatForm_ResizeEnd;
+            this.ResizeBegin += ChatForm_ResizeStart;
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);
