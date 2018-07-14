@@ -6,6 +6,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
     class MessageControl
     {
         public SortedList<int, PictureBoxAndInts> emotes;
+        public List<PictureBox> badges;
         public List<TwitchLabel> messages;
         public Panel panel;
         public TwitchLabel username;

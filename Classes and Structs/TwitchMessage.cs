@@ -3,8 +3,8 @@ namespace TwitchChatCoroutines
 {
     struct TwitchMessage
     {
-        //@badges=premium/1;color=;display-name=wangstar1;emotes=;id=b0167ef4-58a8-4591-b094-cd6d9da90c55;mod=0;room-id=192805101;subscriber=0;tmi-sent-ts=1529454707822;turbo=0;user-id=184083783;user-type= :wangstar1!wangstar1@wangstar1.tmi.twitch.tv PRIVMSG #nhl :message here
         public string badges;
+        public string username;
         public string color;
         public string display_name;
         public string emotes;
@@ -18,6 +18,7 @@ namespace TwitchChatCoroutines
         //public string user_type;
         public string message;
 
+        //@badges=premium/1;color=;display-name=wangstar1;emotes=;id=b0167ef4-58a8-4591-b094-cd6d9da90c55;mod=0;room-id=192805101;subscriber=0;tmi-sent-ts=1529454707822;turbo=0;user-id=184083783;user-type= :wangstar1!wangstar1@wangstar1.tmi.twitch.tv PRIVMSG #nhl :message here
         public static TwitchMessage GetTwitchMessage(string raw)
         {
             TwitchMessage returnMessage = new TwitchMessage();
@@ -83,6 +84,11 @@ namespace TwitchChatCoroutines
             //int iStartUserType = raw.IndexOf(current, iStopUserID) + current.Length;
             //int iStopUserType = raw.IndexOf(";", iStartUserType);
             //returnMessage.id = raw.Substring(iStartUserType, iStopUserType - iStartUserType);
+
+            current = ":";
+            int iStartUsername = raw.IndexOf(current, iStopUserID) + current.Length;
+            int iStopUsername = raw.IndexOf("!", iStartUsername);
+            returnMessage.username = raw.Substring(iStartUsername, iStopUsername - iStartUsername);
 
             returnMessage.message = raw.Substring(raw.IndexOf(':', raw.IndexOf(':', iStopUserID) + 1) + 1);
 

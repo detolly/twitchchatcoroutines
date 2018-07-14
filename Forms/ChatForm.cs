@@ -163,6 +163,10 @@ namespace TwitchChatCoroutines
                         {
                             toRemove[i].panel.Controls[x].Dispose();
                         }
+                        for(int x = 0; x < toRemove[i].badges.Count; x++)
+                        {
+                            toRemove[i].badges[x].Dispose();
+                        }
                         Controls.Remove(toRemove[i].panel);
                         toRemove[i].panel.Dispose();
                     }
@@ -438,7 +442,8 @@ namespace TwitchChatCoroutines
                     MessageControl m = new MessageControl
                     {
                         twitchMessage = user,
-                        isAction = isAction
+                        isAction = isAction,
+                        badges = new List<PictureBox>()
                     };
                     messagesToBeAdded.Enqueue(m);
 
@@ -657,6 +662,7 @@ namespace TwitchChatCoroutines
                         box.Image = cachedBadges[parts[0]].versions[parts[1]].image;
                         box.SizeMode = PictureBoxSizeMode.AutoSize;
                         badges.Add(box);
+                        m.badges.Add(box);
                     }
                 }
             }
@@ -684,7 +690,7 @@ namespace TwitchChatCoroutines
                         string theId = s.Substring(0, start);
                         string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
                         PictureBox b = new PictureBox();
-                        if (Forms.MainForm.generalSettings.twitchEmoteCaching)
+                        if (MainForm.generalSettings.twitchEmoteCaching)
                         {
                             string path = "./emotes/Twitch/Twitch" + theId + ".png";
                             if (!File.Exists(path))
@@ -697,7 +703,7 @@ namespace TwitchChatCoroutines
                             b.Image = image;
                             b.SizeMode = PictureBoxSizeMode.AutoSize;
                         }
-                        if (!Forms.MainForm.generalSettings.twitchEmoteCaching)
+                        if (!MainForm.generalSettings.twitchEmoteCaching)
                         {
                             b.ImageLocation = theUrl;
                             b.Size = new Size(28, 28);
@@ -724,13 +730,14 @@ namespace TwitchChatCoroutines
                 s.Location = new Point(tStart + border, 100);
                 tStart += s.Size.Width + border;
             }
-            TwitchLabel userNameLabel = new TwitchLabel(this);
-            userNameLabel.MaximumSize = new Size(Width - 20 - userNameLabel.Size.Width, 0);
-            userNameLabel.Font = font;
-            p.Controls.Add(userNameLabel);
-            userNameLabel.Text = m.twitchMessage.display_name;
+            TwitchLabel userNameLabel = new TwitchLabel(this)
+            {
+                Font = font,
+                Text = m.twitchMessage.display_name + (m.twitchMessage.username != m.twitchMessage.display_name.ToLower() ? " (" + m.twitchMessage.username + ")" : ""),
+                ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color)
+            };
             userNameLabel.Location = new Point(tStart + border, 100 + (exists ? badges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
-            userNameLabel.ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color);
+            p.Controls.Add(userNameLabel);
             string text = m.twitchMessage.message;
 
             int nextStart = 0;
