@@ -547,7 +547,7 @@ namespace TwitchChatCoroutines
         }
         #endregion
 
-        #region Misc
+        #region Visual
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
@@ -811,7 +811,7 @@ namespace TwitchChatCoroutines
                     if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                     {
                         var a = TextRenderer.MeasureText(args[i], font).Width;
-                        if (a + 2 * border + startingLoc > Width - vScrollBar1.Width)
+                        if (a + 2 * border > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
                         {
                             string current = "";
                             for (int x = 0; x < args[i].Length; x++)
