@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes and Structs\Badge.cs" />
     <Compile Include="Classes and Structs\ChatFormSettings.cs" />
     <Compile Include="Classes and Structs\ChatMode.cs" />
     <Compile Include="Classes and Structs\Authentication.cs" />
@@ -60,6 +61,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Classes and Structs\Coroutines.cs" />
+    <Compile Include="Emojis.cs" />
     <Compile Include="Forms\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
