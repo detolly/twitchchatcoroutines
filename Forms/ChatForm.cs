@@ -291,6 +291,39 @@ namespace TwitchChatCoroutines
                     catch { }
                 }
             }
+            if (useFFZ)
+            {
+                var temporary3 = JArray.FromObject(FFZChannelEmotesJson);
+                foreach (var entry in temporary3)
+                {
+                    string code = entry.name;
+                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri(url), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+                var temporary4 = JArray.FromObject(FFZEmotesJson.sets["3"].emoticons);
+                foreach (var entry in temporary4)
+                {
+                    string code = entry.name;
+                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri(url), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+            }
             var strings = badgeJson.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
             foreach (var entry in strings)
             {
@@ -365,39 +398,6 @@ namespace TwitchChatCoroutines
                         image = img
                     };
                     b.versions[keys[i]] = v;
-                }
-            }
-            if (useFFZ)
-            {
-                var temporary3 = JArray.FromObject(FFZChannelEmotesJson);
-                foreach (var entry in temporary3)
-                {
-                    string code = entry.name;
-                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
-                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri(url), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedFFZEmotes.Add(code, image);
-                    }
-                    catch { }
-                }
-                var temporary4 = JArray.FromObject(FFZEmotesJson.sets["3"].emoticons);
-                foreach (var entry in temporary4)
-                {
-                    string code = entry.name;
-                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
-                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri(url), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedFFZEmotes.Add(code, image);
-                    }
-                    catch { }
                 }
             }
         }
