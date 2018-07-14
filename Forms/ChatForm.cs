@@ -635,7 +635,7 @@ namespace TwitchChatCoroutines
                     {
                         int firstIndex = ints[i].Item1;
                         int secondIndex = ints[i].Item2;
-                        string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
+                        string code = m.twitchMessage.message.CustomSubstring(firstIndex, secondIndex - firstIndex + 1);
                         string theId = s.Substring(0, start);
                         string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
                         PictureBox b = new PictureBox();
