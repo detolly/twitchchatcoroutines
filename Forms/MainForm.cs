@@ -37,7 +37,7 @@ namespace TwitchChatCoroutines.Forms
 
         public string channel;
         int selectedIndex = 0;
-#endregion
+        #endregion
 
         #region Init
         public MainForm()
@@ -100,9 +100,9 @@ namespace TwitchChatCoroutines.Forms
             }
             radioButton1.Checked = true;
         }
-#endregion
+        #endregion
 
-#region Misc
+        #region Misc
         private void CheckGeneralSettings()
         {
             string text = File.ReadAllText("settings.json");
@@ -127,9 +127,9 @@ namespace TwitchChatCoroutines.Forms
             text = JsonConvert.SerializeObject(json);
             File.WriteAllText("settings.json", text);
         }
-#endregion
+        #endregion
 
-#region Events
+        #region Events
         private void button1_Click(object sender, EventArgs e)
         {
             int index = selectedIndex;
@@ -240,6 +240,6 @@ namespace TwitchChatCoroutines.Forms
         {
             chatFormSettings[selectedIndex].ChatMode.currentIndex = comboBox1.SelectedIndex;
         }
-#endregion
+        #endregion
     }
 }
