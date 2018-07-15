@@ -12,6 +12,7 @@ using System.Net;
 using TwitchChatCoroutines.ClassesAndStructs;
 using TwitchChatCoroutines.Forms;
 using static TwitchChatCoroutines.ClassesAndStructs.HelperFunctions;
+using System.Linq;
 
 namespace TwitchChatCoroutines
 {
@@ -72,6 +73,7 @@ namespace TwitchChatCoroutines
 
         private bool useFFZ = true;
         private bool useBTTV = true;
+        private bool useEmoji = true;
         private int border = 5;
 
         private bool doAnimations = false;
@@ -608,7 +610,7 @@ namespace TwitchChatCoroutines
             Controls.Add(p);
             string[] array = m.twitchMessage.message.Split(' ');
             int lastLoc = 0;
-            if (useFFZ || useBTTV)
+            if (useFFZ || useBTTV || useEmoji)
                 foreach (string a in array)
                 {
                     if (cachedBTTVEmotes.ContainsKey(a))
@@ -646,6 +648,27 @@ namespace TwitchChatCoroutines
                             ints = ints
                         };
                         emoteBoxes.Add(start, iss);
+                    }
+                    else if (useEmoji)
+                    {
+                        if (Emojis.codeToEmoji.ContainsKey(a))
+                        {
+                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
+                            int stop = start + a.Length - 1;
+                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                            lastLoc = stop;
+                            PictureBox pb = new PictureBox
+                            {
+                                Image = Emojis.codeToEmoji[a],
+                                SizeMode = PictureBoxSizeMode.AutoSize
+                            };
+                            PictureBoxAndInts iss = new PictureBoxAndInts
+                            {
+                                pb = pb,
+                                ints = ints
+                            };
+                            emoteBoxes.Add(start, iss);
+                        }
                     }
                 }
             List<PictureBox> badges = new List<PictureBox>();
@@ -973,5 +996,13 @@ namespace TwitchChatCoroutines
         }
         #endregion
 
+        #region Misc
+        public bool IsUnicodeCharacter(char c)
+        {
+            const int MaxAnsiCode = 255;
+
+            return c > MaxAnsiCode;
+        }
+        #endregion
     }
 }

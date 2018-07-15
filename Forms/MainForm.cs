@@ -44,6 +44,7 @@ namespace TwitchChatCoroutines.Forms
         {
             InitializeComponent();
             CheckGeneralSettings();
+            Emojis.Init();
             generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json")));
             if (Directory.Exists("./.AutoUpdater"))
             {
