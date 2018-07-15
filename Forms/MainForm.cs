@@ -105,6 +105,9 @@ namespace TwitchChatCoroutines.Forms
         #region Misc
         private void CheckGeneralSettings()
         {
+            if (!File.Exists("settings.json"))
+                File.WriteAllText("settings.json", "{}");
+            Thread.Sleep(50);
             string text = File.ReadAllText("settings.json");
             dynamic json = JsonConvert.DeserializeObject<dynamic>(text);
 
