@@ -44,7 +44,7 @@ namespace TwitchChatCoroutines.Forms
         {
             InitializeComponent();
             CheckGeneralSettings();
-            Emojis.Init();
+            //Emojis.Init();
             generalSettings = TwitchSettings.Interpret(JsonConvert.DeserializeObject<dynamic>(File.ReadAllText("settings.json")));
             if (Directory.Exists("./.AutoUpdater"))
             {
@@ -55,6 +55,7 @@ namespace TwitchChatCoroutines.Forms
                 Directory.Delete("./.AutoUpdater");
                 MessageBox.Show("Update Complete!");
             }
+#if !DEBUG
             using (WebClient client = new WebClient())
             {
                 string v = "";
@@ -77,6 +78,7 @@ namespace TwitchChatCoroutines.Forms
                     }
                 }
             }
+#endif
             Fontlabel.Text = defaultFont.Name + ", " + defaultFont.Size;
             radios = new RadioButton[] {
                 radioButton1,
@@ -98,9 +100,9 @@ namespace TwitchChatCoroutines.Forms
             }
             radioButton1.Checked = true;
         }
-        #endregion
+#endregion
 
-        #region Misc
+#region Misc
         private void CheckGeneralSettings()
         {
             string text = File.ReadAllText("settings.json");
@@ -125,9 +127,9 @@ namespace TwitchChatCoroutines.Forms
             text = JsonConvert.SerializeObject(json);
             File.WriteAllText("settings.json", text);
         }
-        #endregion
+#endregion
 
-        #region Events
+#region Events
         private void button1_Click(object sender, EventArgs e)
         {
             int index = selectedIndex;
@@ -238,6 +240,6 @@ namespace TwitchChatCoroutines.Forms
         {
             chatFormSettings[selectedIndex].ChatMode.currentIndex = comboBox1.SelectedIndex;
         }
-        #endregion
+#endregion
     }
 }

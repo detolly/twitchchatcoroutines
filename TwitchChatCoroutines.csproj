@@ -61,7 +61,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Classes and Structs\Coroutines.cs" />
-    <Compile Include="Emojis.cs" />
+    <Compile Include="Classes and Structs\Emojis.cs" />
     <Compile Include="Forms\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,7 +89,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes and Structs\TwitchMessage.cs" />
-    <Compile Include="Settings.cs" />
+    <Compile Include="Classes and Structs\Settings.cs" />
     <EmbeddedResource Include="Forms\ChatForm.resx">
       <DependentUpon>ChatForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -103,7 +103,7 @@
       <DependentUpon>WebForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -129,6 +129,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes and Structs\TwitchSettings.cs" />
+    <None Include="Resources\1f1ec-1f1e7.png" />
+    <None Include="Resources\1f1ec.png" />
     <None Include="Resources\1f1e6.png" />
     <None Include="Resources\1f0cf.png" />
     <None Include="Resources\e50a.png" />
@@ -990,8 +992,6 @@
     <None Include="Resources\1f1ee-1f1f9.png" />
     <None Include="Resources\1f1ee.png" />
     <None Include="Resources\1f1ed.png" />
-    <None Include="Resources\1f1ec-1f1e7.png" />
-    <None Include="Resources\1f1ec.png" />
     <None Include="Resources\1f1eb-1f1f7.png" />
     <None Include="Resources\1f1eb.png" />
     <None Include="Resources\1f1ea-1f1f8.png" />

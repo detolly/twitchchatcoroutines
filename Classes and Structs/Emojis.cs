@@ -12,7 +12,7 @@ namespace TwitchChatCoroutines
     {
         public static Dictionary<string, Image> codeToEmoji;
 
-        public static void Init()
+        static Emojis()
         {
             codeToEmoji = new Dictionary<string, Image>();
             ResourceManager MyResourceClass = new ResourceManager(typeof(Resources /* Reference to your resources class -- may be named differently in your case */));

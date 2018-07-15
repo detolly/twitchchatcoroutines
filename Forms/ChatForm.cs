@@ -660,8 +660,9 @@ namespace TwitchChatCoroutines
                             PictureBox pb = new PictureBox
                             {
                                 Image = Emojis.codeToEmoji[a],
-                                SizeMode = PictureBoxSizeMode.AutoSize
+                                SizeMode = PictureBoxSizeMode.StretchImage
                             };
+                            pb.Size = new Size(18,18);
                             PictureBoxAndInts iss = new PictureBoxAndInts
                             {
                                 pb = pb,
