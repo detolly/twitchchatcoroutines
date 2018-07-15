@@ -27,20 +27,5 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 return JsonConvert.DeserializeObject<dynamic>(client.DownloadString(url));
             }
         }
-
-        public static string CustomSubstring(this string theString, int firstIndex, int length)
-        {
-            System.Text.StringBuilder builder = new System.Text.StringBuilder();
-            for (int i = firstIndex; i < length; i++)
-            {
-                builder.Append(theString[i]);
-                //emoji stuff
-                //if (theString[i])
-                //{
-
-                //}
-            }
-            return builder.ToString();
-        }
     }
 }
