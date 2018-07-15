@@ -18,7 +18,9 @@ namespace TwitchChatCoroutines
                 string type = fileArray[1];
                 if (type == "png")
                 {
-                    //codeToEmoji.Add(string.Concat("\\", "U000", name), Image.FromFile(file));
+                    //string s = string.Concat("\\", "U000", name);
+                    //System.Text
+                    //codeToEmoji.Add(, Image.FromFile(file));
                 }
             }
         }
