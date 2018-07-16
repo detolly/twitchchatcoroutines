@@ -13,6 +13,7 @@ using TwitchChatCoroutines.ClassesAndStructs;
 using TwitchChatCoroutines.Forms;
 using static TwitchChatCoroutines.ClassesAndStructs.HelperFunctions;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TwitchChatCoroutines
 {
@@ -165,7 +166,7 @@ namespace TwitchChatCoroutines
                         {
                             toRemove[i].panel.Controls[x].Dispose();
                         }
-                        for(int x = 0; x < toRemove[i].badges.Count; x++)
+                        for (int x = 0; x < toRemove[i].badges.Count; x++)
                         {
                             toRemove[i].badges[x].Dispose();
                         }
@@ -651,25 +652,44 @@ namespace TwitchChatCoroutines
                     }
                     else if (useEmoji)
                     {
-                        if (Emojis.codeToEmoji.ContainsKey(a))
-                        {
-                            int start = m.twitchMessage.message.IndexOf(a, lastLoc);
-                            int stop = start + a.Length - 1;
-                            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                            lastLoc = stop;
-                            PictureBox pb = new PictureBox
+                        //List<string> emojis = new List<string>();
+                        //string current = "";
+                        //bool still = true;
+                        //foreach(char c in a)
+                        //{
+                        //    if (char.IsSymbol(c) && still)
+                        //    {
+                        //        current += c;
+                        //        still = true;
+                        //        continue;
+                        //    }
+                        //    still = false;
+                        //    if (current.Length > 0)
+                        //        emojis.Add(current);
+                        //    current = "";
+                        //}
+                        //if (current.Length > 0)
+                        //    emojis.Add(current);
+                        //foreach (string s in emojis)
+                            if (Emojis.codeToEmoji.ContainsKey(a))
                             {
-                                Image = Emojis.codeToEmoji[a],
-                                SizeMode = PictureBoxSizeMode.StretchImage
-                            };
-                            pb.Size = new Size(18,18);
-                            PictureBoxAndInts iss = new PictureBoxAndInts
-                            {
-                                pb = pb,
-                                ints = ints
-                            };
-                            emoteBoxes.Add(start, iss);
-                        }
+                                int start = m.twitchMessage.message.IndexOf(a, lastLoc);
+                                int stop = start + a.Length - 1;
+                                Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                                lastLoc = stop;
+                                PictureBox pb = new PictureBox
+                                {
+                                    Image = Emojis.codeToEmoji[a],
+                                    SizeMode = PictureBoxSizeMode.StretchImage
+                                };
+                                pb.Size = new Size(18, 18);
+                                PictureBoxAndInts iss = new PictureBoxAndInts
+                                {
+                                    pb = pb,
+                                    ints = ints
+                                };
+                                emoteBoxes.Add(start, iss);
+                            }
                     }
                 }
             List<PictureBox> badges = new List<PictureBox>();
