@@ -600,6 +600,18 @@ namespace TwitchChatCoroutines
         }
         #endregion
 
+        int getOffset(int index, Dictionary<int, int> start)
+        {
+            for (int i = start.Count-1; i >= 0; i--)
+            {
+                var k = new KeyValuePair<int, int>(start.Keys.ElementAt(i), start.Values.ElementAt(i));
+                if (index > k.Key)
+                    return k.Value;
+
+            }
+            return 0;
+        }
+
         #region Visual
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
@@ -654,7 +666,7 @@ namespace TwitchChatCoroutines
                     {
                         List<string> emojis = new List<string>();
                         string current = "";
-                        for(int i = 0; i < a.Length; i++)
+                        for (int i = 0; i < a.Length; i++)
                         {
                             char c = a[i];
                             if (!Emojis.codeToEmoji.ContainsKey(current))
@@ -682,14 +694,18 @@ namespace TwitchChatCoroutines
                                 PictureBox pb = new PictureBox
                                 {
                                     Image = Emojis.codeToEmoji[s],
-                                    SizeMode = PictureBoxSizeMode.StretchImage
+                                    SizeMode = PictureBoxSizeMode.AutoSize
                                 };
                                 PictureBoxAndInts iss = new PictureBoxAndInts
                                 {
                                     pb = pb,
                                     ints = ints
                                 };
-                                emoteBoxes.Add(start, iss);
+                                try
+                                {
+                                    emoteBoxes.Add(start, iss);
+                                }
+                                catch { }
                             }
                     }
                 }
@@ -714,6 +730,17 @@ namespace TwitchChatCoroutines
             string[] emotes = m.twitchMessage.emotes.Split('/');
             if (emotes[0] != "")
             {
+                //Dictionary<int, int> whereToAdd = new Dictionary<int, int>();
+                //int untilNow = 0;
+                //for (int i = 0; i < m.twitchMessage.message.Length; i++)
+                //{
+                //    if (m.twitchMessage.message[i] > 200 || char.IsSymbol(m.twitchMessage.message[i]))
+                //    {
+                //        untilNow++;
+                //        whereToAdd.Add(i, untilNow);
+                //    }
+                //}
+                //whereToAdd[whereToAdd.Keys.Last()]--;
                 foreach (string s in emotes)
                 {
                     int start = s.IndexOf(":");
@@ -731,7 +758,8 @@ namespace TwitchChatCoroutines
                     {
                         int firstIndex = ints[i].Item1;
                         int secondIndex = ints[i].Item2;
-                        string code = m.twitchMessage.message.Substring(firstIndex, secondIndex - firstIndex + 1);
+                        int length = secondIndex - firstIndex + 1;
+                        string code = m.twitchMessage.message.Substring(firstIndex, firstIndex+length > m.twitchMessage.message.Length-1 ? m.twitchMessage.message.Length-1-firstIndex : length);
                         string theId = s.Substring(0, start);
                         string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
                         PictureBox b = new PictureBox();
