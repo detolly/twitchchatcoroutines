@@ -129,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes and Structs\TwitchSettings.cs" />
+    <None Include="Resources\1f1f4.png" />
     <None Include="Resources\1f1ec-1f1e7.png" />
     <None Include="Resources\1f1ec.png" />
     <None Include="Resources\1f1e6.png" />
@@ -981,7 +982,6 @@
     <None Include="Resources\1f1f7.png" />
     <None Include="Resources\1f1f6.png" />
     <None Include="Resources\1f1f5.png" />
-    <None Include="Resources\1f1f4.png" />
     <None Include="Resources\1f1f3.png" />
     <None Include="Resources\1f1f2.png" />
     <None Include="Resources\1f1f1.png" />

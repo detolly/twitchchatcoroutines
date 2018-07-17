@@ -652,37 +652,38 @@ namespace TwitchChatCoroutines
                     }
                     else if (useEmoji)
                     {
-                        //List<string> emojis = new List<string>();
-                        //string current = "";
-                        //bool still = true;
-                        //foreach(char c in a)
-                        //{
-                        //    if (char.IsSymbol(c) && still)
-                        //    {
-                        //        current += c;
-                        //        still = true;
-                        //        continue;
-                        //    }
-                        //    still = false;
-                        //    if (current.Length > 0)
-                        //        emojis.Add(current);
-                        //    current = "";
-                        //}
-                        //if (current.Length > 0)
-                        //    emojis.Add(current);
-                        //foreach (string s in emojis)
-                            if (Emojis.codeToEmoji.ContainsKey(a))
+                        List<string> emojis = new List<string>();
+                        string current = "";
+                        for(int i = 0; i < a.Length; i++)
+                        {
+                            char c = a[i];
+                            if (!Emojis.codeToEmoji.ContainsKey(current))
+                                if (c > 255)
+                                {
+                                    current += c;
+                                    continue;
+                                }
+                            if (current.Length > 0)
                             {
-                                int start = m.twitchMessage.message.IndexOf(a, lastLoc);
-                                int stop = start + a.Length - 1;
+                                i--;
+                                emojis.Add(current);
+                            }
+                            current = "";
+                        }
+                        if (current.Length > 0)
+                            emojis.Add(current);
+                        foreach (string s in emojis)
+                            if (Emojis.codeToEmoji.ContainsKey(s))
+                            {
+                                int start = m.twitchMessage.message.IndexOf(s, lastLoc);
+                                int stop = start + s.Length - 1;
                                 Tuple<int, int> ints = new Tuple<int, int>(start, stop);
                                 lastLoc = stop;
                                 PictureBox pb = new PictureBox
                                 {
-                                    Image = Emojis.codeToEmoji[a],
+                                    Image = Emojis.codeToEmoji[s],
                                     SizeMode = PictureBoxSizeMode.StretchImage
                                 };
-                                pb.Size = new Size(18, 18);
                                 PictureBoxAndInts iss = new PictureBoxAndInts
                                 {
                                     pb = pb,
