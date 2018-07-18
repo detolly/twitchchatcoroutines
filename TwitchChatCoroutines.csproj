@@ -57,7 +57,10 @@
     <Compile Include="Classes and Structs\HelperFunctions.cs" />
     <Compile Include="Classes and Structs\MessageControl.cs" />
     <Compile Include="Classes and Structs\PictureBoxAndInts.cs" />
-    <Compile Include="Classes and Structs\TwitchLabel.cs">
+    <Compile Include="Controls\ToolTip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\TwitchLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Classes and Structs\Coroutines.cs" />

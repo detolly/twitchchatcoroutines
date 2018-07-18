@@ -600,18 +600,6 @@ namespace TwitchChatCoroutines
         }
         #endregion
 
-        int getOffset(int index, Dictionary<int, int> start)
-        {
-            for (int i = start.Count-1; i >= 0; i--)
-            {
-                var k = new KeyValuePair<int, int>(start.Keys.ElementAt(i), start.Values.ElementAt(i));
-                if (index > k.Key)
-                    return k.Value;
-
-            }
-            return 0;
-        }
-
         #region Visual
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
@@ -724,6 +712,18 @@ namespace TwitchChatCoroutines
                         box.SizeMode = PictureBoxSizeMode.AutoSize;
                         badges.Add(box);
                         m.badges.Add(box);
+                        Controls.ToolTip tip = new Controls.ToolTip()
+                        {
+                            Text = cachedBadges[parts[0]].versions[parts[1]].description + "greetings from beyond the grave"
+                        };
+                        box.MouseEnter += (o, e) =>
+                        {
+
+                        };
+                        box.MouseLeave += (o, e) =>
+                        {
+
+                        };
                     }
                 }
             }
@@ -1052,6 +1052,18 @@ namespace TwitchChatCoroutines
             const int MaxAnsiCode = 255;
 
             return c > MaxAnsiCode;
+        }
+
+        int getOffset(int index, Dictionary<int, int> start)
+        {
+            for (int i = start.Count - 1; i >= 0; i--)
+            {
+                var k = new KeyValuePair<int, int>(start.Keys.ElementAt(i), start.Values.ElementAt(i));
+                if (index > k.Key)
+                    return k.Value;
+
+            }
+            return 0;
         }
         #endregion
     }
