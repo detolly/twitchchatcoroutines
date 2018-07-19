@@ -363,7 +363,8 @@ namespace TwitchChatCoroutines
                         BadgeVersion v = new BadgeVersion()
                         {
                             url_1x = url,
-                            image = img
+                            image = img,
+                            description = entry.Value["versions"][keys[i]]["description"]
                         };
                         b.versions.Add(keys[i], v);
                     }
@@ -402,7 +403,8 @@ namespace TwitchChatCoroutines
                     BadgeVersion v = new BadgeVersion()
                     {
                         url_1x = url,
-                        image = img
+                        image = img,
+                        description = entry.Value["versions"][keys[i]]["description"]
                     };
                     b.versions[keys[i]] = v;
                 }
@@ -601,6 +603,26 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Visual
+        public void AddTooltip(Control box, Controls.ToolTip tip, Panel p)
+        {
+            box.MouseEnter += (o, e) =>
+            {
+                if (!tip.IsCreated)
+                {
+                    Controls.Add(tip);
+                    tip.BringToFront();
+                    tip.IsCreated = true;
+                }
+                int spacing = TwitchChatCoroutines.Controls.ToolTip.spacing;
+                tip.Location = new Point(Math.Max(tip.CustomParent.Location.X + tip.CustomParent.Size.Width / 2 - tip.Size.Width / 2 + spacing, spacing), p.Location.Y + box.Top - spacing - p.Size.Height);
+                tip.Visible = true;
+            };
+            box.MouseLeave += (o, e) =>
+            {
+                tip.Visible = false;
+            };
+        }
+
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
@@ -620,14 +642,22 @@ namespace TwitchChatCoroutines
                         int stop = start + a.Length - 1;
                         Tuple<int, int> ints = new Tuple<int, int>(start, stop);
                         lastLoc = stop;
-                        PictureBox pb = new PictureBox
+                        PictureBox box = new PictureBox
                         {
                             Image = cachedBTTVEmotes[a],
                             SizeMode = PictureBoxSizeMode.AutoSize
                         };
+                        Controls.ToolTip tip = new Controls.ToolTip(box)
+                        {
+                            BackColor = Color.Black,
+                            ForeColor = Color.White,
+                            Image = box.Image,
+                            Text = "BetterTTV Emote: " + a,
+                        };
+                        AddTooltip(box, tip, p);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
-                            pb = pb,
+                            pb = box,
                             ints = ints
                         };
                         emoteBoxes.Add(start, iss);
@@ -638,14 +668,22 @@ namespace TwitchChatCoroutines
                         int stop = start + a.Length - 1;
                         Tuple<int, int> ints = new Tuple<int, int>(start, stop);
                         lastLoc = stop;
-                        PictureBox pb = new PictureBox
+                        PictureBox box = new PictureBox
                         {
                             Image = cachedFFZEmotes[a],
                             SizeMode = PictureBoxSizeMode.AutoSize
                         };
+                        Controls.ToolTip tip = new Controls.ToolTip(box)
+                        {
+                            BackColor = Color.Black,
+                            ForeColor = Color.White,
+                            Image = box.Image,
+                            Text = "FrankerFaceZ Emote: " + a,
+                        };
+                        AddTooltip(box, tip, p);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
-                            pb = pb,
+                            pb = box,
                             ints = ints
                         };
                         emoteBoxes.Add(start, iss);
@@ -679,14 +717,22 @@ namespace TwitchChatCoroutines
                                 int stop = start + s.Length - 1;
                                 Tuple<int, int> ints = new Tuple<int, int>(start, stop);
                                 lastLoc = stop;
-                                PictureBox pb = new PictureBox
+                                PictureBox box = new PictureBox
                                 {
                                     Image = Emojis.codeToEmoji[s],
                                     SizeMode = PictureBoxSizeMode.AutoSize
                                 };
+                                Controls.ToolTip tip = new Controls.ToolTip(box)
+                                {
+                                    BackColor = Color.Black,
+                                    ForeColor = Color.White,
+                                    Image = box.Image,
+                                    Text = "Emoji: " + s,
+                                };
+                                AddTooltip(box, tip, p);
                                 PictureBoxAndInts iss = new PictureBoxAndInts
                                 {
-                                    pb = pb,
+                                    pb = box,
                                     ints = ints
                                 };
                                 try
@@ -712,35 +758,20 @@ namespace TwitchChatCoroutines
                         box.SizeMode = PictureBoxSizeMode.AutoSize;
                         badges.Add(box);
                         m.badges.Add(box);
-                        Controls.ToolTip tip = new Controls.ToolTip()
+                        Controls.ToolTip tip = new Controls.ToolTip(box)
                         {
-                            Text = cachedBadges[parts[0]].versions[parts[1]].description + "greetings from beyond the grave"
+                            BackColor = Color.Black,
+                            ForeColor = Color.White,
+                            Image = box.Image,
+                            Text = cachedBadges[parts[0]].versions[parts[1]].description,
                         };
-                        box.MouseEnter += (o, e) =>
-                        {
-
-                        };
-                        box.MouseLeave += (o, e) =>
-                        {
-
-                        };
+                        AddTooltip(box, tip, p);
                     }
                 }
             }
             string[] emotes = m.twitchMessage.emotes.Split('/');
             if (emotes[0] != "")
             {
-                //Dictionary<int, int> whereToAdd = new Dictionary<int, int>();
-                //int untilNow = 0;
-                //for (int i = 0; i < m.twitchMessage.message.Length; i++)
-                //{
-                //    if (m.twitchMessage.message[i] > 200 || char.IsSymbol(m.twitchMessage.message[i]))
-                //    {
-                //        untilNow++;
-                //        whereToAdd.Add(i, untilNow);
-                //    }
-                //}
-                //whereToAdd[whereToAdd.Keys.Last()]--;
                 foreach (string s in emotes)
                 {
                     int start = s.IndexOf(":");
@@ -759,10 +790,10 @@ namespace TwitchChatCoroutines
                         int firstIndex = ints[i].Item1;
                         int secondIndex = ints[i].Item2;
                         int length = secondIndex - firstIndex + 1;
-                        string code = m.twitchMessage.message.Substring(firstIndex, firstIndex+length > m.twitchMessage.message.Length-1 ? m.twitchMessage.message.Length-1-firstIndex : length);
+                        string code = m.twitchMessage.message.Substring(firstIndex, firstIndex + length > m.twitchMessage.message.Length - 1 ? m.twitchMessage.message.Length - firstIndex : length);
                         string theId = s.Substring(0, start);
                         string theUrl = "http://static-cdn.jtvnw.net/emoticons/v1/" + theId + "/1.0";
-                        PictureBox b = new PictureBox();
+                        PictureBox box = new PictureBox();
                         if (MainForm.generalSettings.twitchEmoteCaching)
                         {
                             string path = "./emotes/Twitch/Twitch" + theId + ".png";
@@ -773,18 +804,26 @@ namespace TwitchChatCoroutines
                             Image image = Image.FromFile(path);
                             //if (!cachedTwitchEmotes.ContainsKey(code))
                             //    cachedTwitchEmotes.Add(code, image);
-                            b.Image = image;
-                            b.SizeMode = PictureBoxSizeMode.AutoSize;
+                            box.Image = image;
+                            box.SizeMode = PictureBoxSizeMode.AutoSize;
                         }
                         if (!MainForm.generalSettings.twitchEmoteCaching)
                         {
-                            b.ImageLocation = theUrl;
-                            b.Size = new Size(28, 28);
-                            b.SizeMode = PictureBoxSizeMode.StretchImage;
+                            box.ImageLocation = theUrl;
+                            box.Size = new Size(28, 28);
+                            box.SizeMode = PictureBoxSizeMode.StretchImage;
                         }
+                        Controls.ToolTip tip = new Controls.ToolTip(box)
+                        {
+                            BackColor = Color.Black,
+                            ForeColor = Color.White,
+                            Image = box.Image,
+                            Text = "Twitch Emote: " + code,
+                        };
+                        AddTooltip(box, tip, p);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
-                            pb = b,
+                            pb = box,
                             ints = ints[i]
                         };
                         try
@@ -803,7 +842,7 @@ namespace TwitchChatCoroutines
                 s.Location = new Point(tStart + border, 100);
                 tStart += s.Size.Width + border;
             }
-            TwitchLabel userNameLabel = new TwitchLabel(this)
+            TwitchLabel userNameLabel = new TwitchLabel(this.BackColor)
             {
                 Font = font,
                 Text = m.twitchMessage.display_name + (m.twitchMessage.username != m.twitchMessage.display_name.ToLower() ? " (" + m.twitchMessage.username + ")" : ""),
@@ -822,7 +861,7 @@ namespace TwitchChatCoroutines
             {
                 Tuple<int, int> ints = pbandInt.Value.ints;
                 PictureBox pb = pbandInt.Value.pb;
-                TwitchLabel thel = new TwitchLabel(this);
+                TwitchLabel thel = new TwitchLabel(this.BackColor);
                 if (first)
                 {
                     thel.Text = ": ";
@@ -873,7 +912,7 @@ namespace TwitchChatCoroutines
                                 }
                                 comparison.Text = old;
                                 yoffset += comparison.Height + (28 / 2 - comparison.Size.Height / 2);
-                                TwitchLabel newLabel = new TwitchLabel(this)
+                                TwitchLabel newLabel = new TwitchLabel(this.BackColor)
                                 {
                                     Font = font,
                                     ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor
@@ -909,7 +948,7 @@ namespace TwitchChatCoroutines
                 lastLocation = pb.Right + emoteSpacing;
                 p.Controls.Add(pb);
             }
-            TwitchLabel lastLabel = new TwitchLabel(this)
+            TwitchLabel lastLabel = new TwitchLabel(this.BackColor)
             {
                 ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
                 Font = font
@@ -955,7 +994,7 @@ namespace TwitchChatCoroutines
                         }
                         labelToCompare.Text = old;
                         yoffset += labelToCompare.Height + (28 / 2 - labelToCompare.Size.Height / 2);
-                        TwitchLabel l = new TwitchLabel(this)
+                        TwitchLabel l = new TwitchLabel(this.BackColor)
                         {
                             Location = new Point(border, userNameLabel.Location.Y + yoffset),
                             Font = font,

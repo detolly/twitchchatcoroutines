@@ -6,13 +6,10 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 {
     class TwitchLabel : TextBox
     {
-        private ChatForm owner;
-
-        public TwitchLabel(ChatForm form)
+        public TwitchLabel(Color backColor)
         {
-            owner = form;
             BorderStyle = BorderStyle.None;
-            BackColor = owner.BackColor;
+            BackColor = backColor;
             ReadOnly = true;
         }
 
