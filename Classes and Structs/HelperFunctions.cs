@@ -5,7 +5,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 {
     public static class HelperFunctions
     {
-        public static string ReplaceFirst(string text, string search, string replace)
+        public static string ReplaceFirst(this string text, string search, string replace)
         {
             int pos = text.IndexOf(search);
             if (pos < 0)

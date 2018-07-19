@@ -11,6 +11,7 @@ using System.Net;
 
 using TwitchChatCoroutines.ClassesAndStructs;
 using TwitchChatCoroutines.Forms;
+using TwitchChatCoroutines.Controls;
 using static TwitchChatCoroutines.ClassesAndStructs.HelperFunctions;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -377,7 +378,7 @@ namespace TwitchChatCoroutines
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
                 {
-                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
+                    string url = entry.Value["versions"][keys[i]]["image_url_4x"];
                     string path = "emotes/Badges/" + channelToJoin + "_" + entry.Key + "_" + keys[i] + ".png";
                     if (!File.Exists(path))
                         client.DownloadFile(url, path);
@@ -440,7 +441,7 @@ namespace TwitchChatCoroutines
                     if (extractedMessage.StartsWith("\u0001"))
                     {
                         extractedMessage = extractedMessage.Replace("\u0001", "");
-                        extractedMessage = ReplaceFirst(extractedMessage, "ACTION ", "");
+                        extractedMessage = extractedMessage.ReplaceFirst("ACTION ", "");
                         isAction = true;
                     }
                     user.message = extractedMessage;
@@ -717,10 +718,12 @@ namespace TwitchChatCoroutines
                                 int stop = start + s.Length - 1;
                                 Tuple<int, int> ints = new Tuple<int, int>(start, stop);
                                 lastLoc = stop;
-                                PictureBox box = new PictureBox
+                                PictureBoxWithInterpolation box = new PictureBoxWithInterpolation
                                 {
+                                    InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear,
                                     Image = Emojis.codeToEmoji[s],
-                                    SizeMode = PictureBoxSizeMode.AutoSize
+                                    SizeMode = PictureBoxSizeMode.StretchImage,
+                                    Size = new Size(18,18)
                                 };
                                 Controls.ToolTip tip = new Controls.ToolTip(box)
                                 {
@@ -1022,7 +1025,7 @@ namespace TwitchChatCoroutines
             {
                 Image = splitter,
                 SizeMode = PictureBoxSizeMode.StretchImage,
-                Size = new Size(2*Width, 1)
+                Size = new Size(2 * Width, 1)
             };
             Control lowestC = null;
             int lowestCS = 1000;
@@ -1049,7 +1052,7 @@ namespace TwitchChatCoroutines
                 lowest -= (28 - diff) / 2;
                 highest += (28 - diff) / 2;
             }
-            p.Size = new Size(2*Width, highest - lowest + panelBorder);
+            p.Size = new Size(2 * Width, highest - lowest + panelBorder);
             splitterbox.Location = new Point(0, lowest /* can be lowestCS */ - panelBorder / 2);
             lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest;
             p.Controls.Add(splitterbox);

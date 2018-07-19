@@ -49,7 +49,7 @@ namespace TwitchChatCoroutines.Controls
                 Text = Text,
             };
             l.ForeColor = ForeColor;
-            l.Location = new Point(b.Right+spacing, b.Location.Y+b.Size.Height/2-l.Size.Height/2);
+            l.Location = new Point(b.Right+border, b.Location.Y+b.Size.Height/2-l.Size.Height/2);
             Controls.Add(l);
             Size = new Size(l.Right + border, Math.Max(l.Bottom, b.Bottom)+border);
         }
