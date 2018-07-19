@@ -363,7 +363,9 @@ namespace TwitchChatCoroutines
                     {
                         BadgeVersion v = new BadgeVersion()
                         {
-                            url_1x = url,
+                            url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
+                            url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
+                            url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
                             image = img,
                             description = entry.Value["versions"][keys[i]]["description"]
                         };
@@ -378,7 +380,7 @@ namespace TwitchChatCoroutines
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
                 {
-                    string url = entry.Value["versions"][keys[i]]["image_url_4x"];
+                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
                     string path = "emotes/Badges/" + channelToJoin + "_" + entry.Key + "_" + keys[i] + ".png";
                     if (!File.Exists(path))
                         client.DownloadFile(url, path);
@@ -403,7 +405,9 @@ namespace TwitchChatCoroutines
                     }
                     BadgeVersion v = new BadgeVersion()
                     {
-                        url_1x = url,
+                        url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
+                        url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
+                        url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
                         image = img,
                         description = entry.Value["versions"][keys[i]]["description"]
                     };
@@ -720,7 +724,7 @@ namespace TwitchChatCoroutines
                                 lastLoc = stop;
                                 PictureBoxWithInterpolation box = new PictureBoxWithInterpolation
                                 {
-                                    InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear,
+                                    InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High,
                                     Image = Emojis.codeToEmoji[s],
                                     SizeMode = PictureBoxSizeMode.StretchImage,
                                     Size = new Size(18,18)
@@ -746,7 +750,6 @@ namespace TwitchChatCoroutines
                             }
                     }
                 }
-            List<PictureBox> badges = new List<PictureBox>();
             string[] tBadges = m.twitchMessage.badges.Split(',');
             if (tBadges[0] != null)
             {
@@ -755,11 +758,12 @@ namespace TwitchChatCoroutines
                     string[] parts = s.Split('/');
                     if (cachedBadges.ContainsKey(parts[0]))
                     {
-                        PictureBox box = new PictureBox();
+                        PictureBoxWithInterpolation box = new PictureBoxWithInterpolation
+                        {
+                            Image = cachedBadges[parts[0]].versions[parts[1]].image,
+                            SizeMode = PictureBoxSizeMode.AutoSize
+                        };
                         p.Controls.Add(box);
-                        box.Image = cachedBadges[parts[0]].versions[parts[1]].image;
-                        box.SizeMode = PictureBoxSizeMode.AutoSize;
-                        badges.Add(box);
                         m.badges.Add(box);
                         Controls.ToolTip tip = new Controls.ToolTip(box)
                         {
@@ -839,7 +843,7 @@ namespace TwitchChatCoroutines
             }
             int tStart = 0;
             bool exists = false;
-            foreach (var s in badges)
+            foreach (var s in m.badges)
             {
                 exists = true;
                 s.Location = new Point(tStart + border, 100);
@@ -851,7 +855,7 @@ namespace TwitchChatCoroutines
                 Text = m.twitchMessage.display_name + (m.twitchMessage.username != m.twitchMessage.display_name.ToLower() ? " (" + m.twitchMessage.username + ")" : ""),
                 ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color)
             };
-            userNameLabel.Location = new Point(tStart + border, 100 + (exists ? badges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
+            userNameLabel.Location = new Point(tStart + border, 100 + (exists ? m.badges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
             p.Controls.Add(userNameLabel);
             string text = m.twitchMessage.message;
 
