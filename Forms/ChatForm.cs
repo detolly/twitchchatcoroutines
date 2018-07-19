@@ -614,7 +614,7 @@ namespace TwitchChatCoroutines
                     tip.IsCreated = true;
                 }
                 int spacing = TwitchChatCoroutines.Controls.ToolTip.spacing;
-                tip.Location = new Point(Math.Max(tip.CustomParent.Location.X + tip.CustomParent.Size.Width / 2 - tip.Size.Width / 2 + spacing, spacing), p.Location.Y + box.Top - spacing - p.Size.Height);
+                tip.Location = new Point(Math.Max(tip.CustomParent.Location.X + tip.CustomParent.Size.Width / 2 - tip.Size.Width / 2 + spacing, spacing), p.Location.Y + box.Location.Y - tip.Size.Height);
                 tip.Visible = true;
             };
             box.MouseLeave += (o, e) =>
@@ -1022,7 +1022,7 @@ namespace TwitchChatCoroutines
             {
                 Image = splitter,
                 SizeMode = PictureBoxSizeMode.StretchImage,
-                Size = new Size(Width, 1)
+                Size = new Size(2*Width, 1)
             };
             Control lowestC = null;
             int lowestCS = 1000;
@@ -1049,7 +1049,7 @@ namespace TwitchChatCoroutines
                 lowest -= (28 - diff) / 2;
                 highest += (28 - diff) / 2;
             }
-            p.Size = new Size(Width, highest - lowest + panelBorder);
+            p.Size = new Size(2*Width, highest - lowest + panelBorder);
             splitterbox.Location = new Point(0, lowest /* can be lowestCS */ - panelBorder / 2);
             lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest;
             p.Controls.Add(splitterbox);
