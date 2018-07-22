@@ -367,7 +367,8 @@ namespace TwitchChatCoroutines
                             url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
                             url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
                             image = img,
-                            description = entry.Value["versions"][keys[i]]["description"]
+                            description = entry.Value["versions"][keys[i]]["description"],
+                            title = entry.Value["versions"][keys[i]]["description"]
                         };
                         b.versions.Add(keys[i], v);
                     }
@@ -409,7 +410,8 @@ namespace TwitchChatCoroutines
                         url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
                         url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
                         image = img,
-                        description = entry.Value["versions"][keys[i]]["description"]
+                        description = entry.Value["versions"][keys[i]]["description"],
+                        title = entry.Value["versions"][keys[i]]["title"]
                     };
                     b.versions[keys[i]] = v;
                 }
@@ -770,7 +772,7 @@ namespace TwitchChatCoroutines
                             BackColor = Color.Black,
                             ForeColor = Color.White,
                             Image = box.Image,
-                            Text = cachedBadges[parts[0]].versions[parts[1]].description,
+                            Text = cachedBadges[parts[0]].versions[parts[1]].title,
                         };
                         AddTooltip(box, tip, p);
                     }
