@@ -8,6 +8,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public SortedList<int, PictureBoxAndInts> emotes;
         public List<PictureBox> badges;
         public List<TwitchLabel> messages;
+        public List<Controls.ToolTip> tooltips;
         public Panel panel;
         public TwitchLabel username;
 

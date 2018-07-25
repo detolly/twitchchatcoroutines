@@ -55,6 +55,10 @@ namespace TwitchChatCoroutines.Forms
                 Directory.Delete("./.AutoUpdater");
                 MessageBox.Show("Update Complete!");
             }
+            new Thread(() =>
+            {
+                Emojis.codeToEmoji.ToString();
+            }).Start();
 #if !DEBUG
             using (WebClient client = new WebClient())
             {

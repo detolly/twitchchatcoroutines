@@ -14,7 +14,6 @@ using TwitchChatCoroutines.Forms;
 using TwitchChatCoroutines.Controls;
 using static TwitchChatCoroutines.ClassesAndStructs.HelperFunctions;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TwitchChatCoroutines
 {
@@ -26,6 +25,7 @@ namespace TwitchChatCoroutines
         private string botUsername;
         private string oauth;
         private string channelToJoin = "";
+        private bool initialized = false;
 
         private int panelBorder = 15;
 
@@ -84,15 +84,355 @@ namespace TwitchChatCoroutines
         private ChatFormSettings chatFormSettings;
 
         private string channelId;
+        private Animation enterChatAnimation;
 
 
         private WebClient client;
         #endregion
 
         #region Enumerators
+        void addEnterLineAnimation()
+        {
+            int comparison = -Width;
+            Animation animation = new Animation();
+            enterChatAnimation = animation;
+            while (comparison < 0)
+            {
+                if ((comparison + (1 + Math.Abs(comparison * 0.1f))) > 0)
+                {
+                    comparison = 0;
+                    continue;
+                }
+                else
+                    comparison = (int)(comparison + (1 + Math.Abs(comparison * 0.1f)));
+                animation.AddStep(comparison);
+            }
+            animation.Finish();
+        }
+
+        IEnumerator Init()
+        {
+            if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
+            {
+                panel1.BackColor = chatFormSettings.BackgroundColor;
+                panel1.ForeColor = chatFormSettings.ForegroundColor;
+
+                int h = SystemInformation.PrimaryMonitorSize.Height - 150;
+                Height = h;
+
+                panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
+                panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top;
+                panel1.BringToFront();
+
+                comboBox1.Items.Clear();
+                foreach (string s in Authentication.GetLogins())
+                {
+                    comboBox1.Items.Add(s);
+                }
+                if (comboBox1.Items.Count > 0)
+                    comboBox1.SelectedIndex = 0;
+                coroutineManager.StartLateCoroutine(enterLoginPanel(panel1));
+            }
+            else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
+            {
+                Controls.Remove(panel1);
+            }
+            //Misc Coloring Stuff
+            outlineColor = chatFormSettings.BackgroundColor;
+            textColor = chatFormSettings.ForegroundColor;
+            // Login Panel Logic
+            ChangeInformationalLabel("Starting...");
+            label2.ForeColor = textColor;
+
+            //Create Directories
+            ChangeInformationalLabel("Creating Directories...");
+            yield return new WaitForMilliseconds(1);
+            Directory.CreateDirectory("./emotes/BetterTTV");
+            Directory.CreateDirectory("./emotes/FFZ");
+            Directory.CreateDirectory("./emotes/Twitch");
+            Directory.CreateDirectory("./emotes/Badges");
+
+
+            //Apply settings
+            ChangeInformationalLabel("Applying settings...");
+            yield return new WaitForMilliseconds(1);
+            channelToJoin = chatFormSettings.Channel;
+
+            ChangeInformationalLabel("Calculating Animations");
+            yield return new WaitForMilliseconds(1);
+            addEnterLineAnimation();
+
+            headers = new string[] {
+                    "Client-ID: " + client_id
+            };
+            font = chatFormSettings.Font;
+            doAnimations = chatFormSettings.Animations;
+            emoteSpacing = chatFormSettings.EmoteSpacing;
+            chatFormSettings.Changed += ChangedEvent;
+
+            cachedBadges = new SortedList<string, Badge>();
+            BackColor = outlineColor;
+            client = new WebClient();
+            //Download Badges
+            ChangeInformationalLabel("Downloading Twitch Badges Information...");
+            yield return new WaitForMilliseconds(1);
+            badgeJson = JsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
+
+            //Download BTTV Emotes Information
+            //Download BTTV Global Emotes Information
+            ChangeInformationalLabel("Download BTTV Global Emotes Information...");
+            yield return new WaitForMilliseconds(1);
+            try
+            {
+                bttvEmotesJson = JsonGet("https://api.betterttv.net/2/emotes").emotes;
+            }
+            catch
+            {
+                useBTTV = false;
+            }
+            //Download BTTV Channel Enabled Emotes Information
+            ChangeInformationalLabel("Download BTTV Channel Enabled Emotes Information...");
+            yield return new WaitForMilliseconds(1);
+            try
+            {
+                bttvChannelEmotesJson = JsonGet("https://api.betterttv.net/2/channels/" + channelToJoin).emotes;
+            }
+            catch
+            {
+                useBTTV = false;
+            }
+            //Download FFZ Emotes Information
+            //Downloading FFZ Channel Enabled Emotes Information
+            ChangeInformationalLabel("Downloading FFZ Channel Enabled Emotes Information...");
+            yield return new WaitForMilliseconds(1);
+            try
+            {
+                FFZChannelEmotesJson = JsonGet("https://api.frankerfacez.com/v1/room/" + channelToJoin);
+                FFZChannelEmotesJson = FFZChannelEmotesJson.sets[(string)(FFZChannelEmotesJson.room.set)].emoticons;
+            }
+            catch
+            {
+                useFFZ = false;
+            }
+            //Downloading FFZ Global Emotes Information
+            ChangeInformationalLabel("Downloading FFZ Global Emotes Information");
+            yield return new WaitForMilliseconds(1);
+            try
+            {
+                FFZEmotesJson = JsonGet("https://api.frankerfacez.com/v1/set/global");
+            }
+            catch
+            {
+                useFFZ = false;
+            }
+            //Download channel information
+            channelInformationJson = JsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
+            channelId = channelInformationJson.data[0].id;
+            //Download channel specific badge information
+            channelBadgeJson = JsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
+
+            if (useBTTV)
+            {
+                //Downloading BTTV Global Emotes
+                ChangeInformationalLabel("Downloading BTTV Global Emotes...");
+                yield return new WaitForMilliseconds(1);
+                var temporary = JArray.FromObject(bttvEmotesJson);
+                foreach (var entry in temporary)
+                {
+                    string channel = entry.channel;
+                    string emote = entry.id;
+                    string code = entry.code;
+                    string imageType = entry.imageType;
+                    string path = "./emotes/BetterTTV/BTTV" + emote + "." + imageType;
+                    ChangeInformationalLabel("Downloading BTTV Global Emotes: \"" + code + "\"...");
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedBTTVEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+            }
+            if (useBTTV)
+            {
+                //Downloading BTTV Channel specific emotes
+                ChangeInformationalLabel("Downloading BTT Channel specific emotes...");
+                yield return new WaitForMilliseconds(1);
+                var temporary2 = JArray.FromObject(bttvChannelEmotesJson);
+                foreach (var entry in temporary2)
+                {
+                    string channel = entry.channel;
+                    string emote = entry.id;
+                    string code = entry.code;
+                    string imageType = entry.imageType;
+                    string path = "./emotes/BetterTTV/BTTV" + emote + "." + imageType;
+                    ChangeInformationalLabel("Downloading BTTV Channel specific emote: \"" + code + "\"...");
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedBTTVEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+            }
+            if (useFFZ)
+            {
+                //Downloading FFZ Channel Enabled Emotes
+                ChangeInformationalLabel("Downloading FFZ Channel Enabled Emotes...");
+                yield return new WaitForMilliseconds(1);
+                var temporary3 = JArray.FromObject(FFZChannelEmotesJson);
+                foreach (var entry in temporary3)
+                {
+                    string code = entry.name;
+                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
+                    ChangeInformationalLabel("Downloading FFZ Channel Enabled Emote: \"" + code + "\"...");
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri(url), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+                //Downloading FFZ Global Emotes
+                ChangeInformationalLabel("Downloading FFZ Global Emotes");
+                yield return new WaitForMilliseconds(1);
+                var temporary4 = JArray.FromObject(FFZEmotesJson.sets["3"].emoticons);
+                foreach (var entry in temporary4)
+                {
+                    string code = entry.name;
+                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
+                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
+                    ChangeInformationalLabel("Downloading FFZ Global Emote: \"" + code + "\"...");
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(new Uri(url), path);
+                    Image image = Image.FromFile(path);
+                    try
+                    {
+                        cachedFFZEmotes.Add(code, image);
+                    }
+                    catch { }
+                }
+            }
+            var strings = badgeJson.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
+            //Downloading global badges
+            ChangeInformationalLabel("Downloading Twitch Global Badges...");
+            yield return new WaitForMilliseconds(1);
+            foreach (var entry in strings)
+            {
+                List<string> keys = new List<string>(entry.Value["versions"].Keys);
+                for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
+                {
+                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
+                    string path = "emotes/Badges/" + entry.Key + "_" + keys[i] + ".png";
+                    Badge b;
+                    if (cachedBadges.ContainsKey(entry.Key))
+                        b = cachedBadges[entry.Key];
+                    else
+                    {
+                        b = new Badge()
+                        {
+                            versions = new Dictionary<string, BadgeVersion>()
+                        };
+                        cachedBadges.Add(entry.Key, b);
+                    }
+                    ChangeInformationalLabel("Downloading Twitch Global Badge: " + entry.Value["versions"][keys[i]]["description"]);
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(url, path);
+                    Image img = default(Image);
+                    try
+                    {
+                        img = Image.FromFile(path);
+                    }
+                    catch { continue; }
+                    if (!b.versions.ContainsKey(keys[i]))
+                    {
+                        BadgeVersion v = new BadgeVersion()
+                        {
+                            url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
+                            url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
+                            url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
+                            image = img,
+                            description = entry.Value["versions"][keys[i]]["description"],
+                            title = entry.Value["versions"][keys[i]]["description"]
+                        };
+                        b.versions.Add(keys[i], v);
+                    }
+                }
+            }
+            Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> strings2 = channelBadgeJson.badge_sets.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
+            //Downloading channel badges
+            ChangeInformationalLabel("Downloading Twitch Channel Specific Badges...");
+            yield return new WaitForMilliseconds(1);
+            foreach (var entry in strings2)
+            {
+                List<string> keys = new List<string>(entry.Value["versions"].Keys);
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
+                {
+                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
+                    string path = "emotes/Badges/" + channelToJoin + "_" + entry.Key + "_" + keys[i] + ".png";
+                    ChangeInformationalLabel("Downloading Twitch Channel Specific Badge: \"" + entry.Value["versions"][keys[i]]["description"] + "\"...");
+                    yield return new WaitForMilliseconds(1);
+                    if (!File.Exists(path))
+                        client.DownloadFile(url, path);
+                    Image img = default(Image);
+                    try
+                    {
+                        img = Image.FromFile(path);
+                    }
+                    catch { continue; }
+                    Badge b;
+                    if (cachedBadges.ContainsKey(entry.Key))
+                    {
+                        b = cachedBadges[entry.Key];
+                    }
+                    else
+                    {
+                        b = new Badge()
+                        {
+                            versions = new Dictionary<string, BadgeVersion>()
+                        };
+                        cachedBadges.Add(entry.Key, b);
+                    }
+                    BadgeVersion v = new BadgeVersion()
+                    {
+                        url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
+                        url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
+                        url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
+                        image = img,
+                        description = entry.Value["versions"][keys[i]]["description"],
+                        title = entry.Value["versions"][keys[i]]["title"]
+                    };
+                    b.versions[keys[i]] = v;
+                }
+            }
+            ChangeInformationalLabel("Initializing Emoji... (this might take a while)");
+            yield return new WaitForMilliseconds(1);
+            Emojis.codeToEmoji.ToString();
+            ChangeInformationalLabel("Done!");
+            yield return new WaitForSeconds(1);
+
+            //Dispose of the Update label
+            label2.Dispose();
+            Controls.Remove(label2);
+            initialized = true;
+            yield break;
+        }
         IEnumerator enterLoginPanel(Panel p)
         {
-            int v = Height / 2 - p.Size.Height;
+            int v = 244;
             while (p.Location.Y + p.Size.Height / 2 > v)
             {
                 if (p.Location.Y - (int)(1 + Math.Abs((p.Location.Y - v) * 0.1f)) > v)
@@ -122,21 +462,29 @@ namespace TwitchChatCoroutines
 
         IEnumerator enterChatLine(MessageControl greetings)
         {
-            while (greetings.panel.Location.X < 0)
-            {
-                if (!doAnimations)
-                    greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-                else if (doAnimations)
+            //while (greetings.panel.Location.X < 0)
+            //{
+            //    if (!doAnimations)
+            //        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
+            //    else if (doAnimations)
+            //    {
+            //        if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
+            //        {
+            //            greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
+            //            continue;
+            //        }
+            //        greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+            //    }
+            //    yield return new WaitForMilliseconds(5);
+            //}
+            if (doAnimations)
+                for(int i = 0; i < enterChatAnimation.StepCount-1; i++)
                 {
-                    if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
-                    {
-                        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-                        continue;
-                    }
-                    greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
+                    greetings.panel.Location = new Point(enterChatAnimation.GetNext(i), greetings.panel.Location.Y);
+                    yield return new WaitForMilliseconds(5);
                 }
-                yield return new WaitForMilliseconds(5);
-            }
+            else
+                greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
             yield break;
         }
 
@@ -171,6 +519,10 @@ namespace TwitchChatCoroutines
                         {
                             toRemove[i].badges[x].Dispose();
                         }
+                        for (int x = 0; x < toRemove[i].tooltips.Count; x++)
+                        {
+                            toRemove[i].tooltips[x].Dispose();
+                        }
                         Controls.Remove(toRemove[i].panel);
                         toRemove[i].panel.Dispose();
                     }
@@ -186,236 +538,7 @@ namespace TwitchChatCoroutines
             this.chatFormSettings = chatFormSettings;
             coroutineManager.Init();
             Text = chatFormSettings.Channel;
-
-            if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
-            {
-                panel1.BackColor = chatFormSettings.BackgroundColor;
-                panel1.ForeColor = chatFormSettings.ForegroundColor;
-
-                int h = SystemInformation.PrimaryMonitorSize.Height - 150;
-                Height = h;
-
-                panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
-                panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top & AnchorStyles.Bottom;
-
-                comboBox1.Items.Clear();
-                foreach (string s in Authentication.GetLogins())
-                {
-                    comboBox1.Items.Add(s);
-                }
-                if (comboBox1.Items.Count > 0)
-                    comboBox1.SelectedIndex = 0;
-                coroutineManager.StartCoroutine(enterLoginPanel(panel1));
-            }
-            else if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.Anonymous)
-            {
-                Controls.Remove(panel1);
-            }
-
-            Directory.CreateDirectory("./emotes/BetterTTV");
-            Directory.CreateDirectory("./emotes/FFZ");
-            Directory.CreateDirectory("./emotes/Twitch");
-            Directory.CreateDirectory("./emotes/Badges");
-
-            outlineColor = chatFormSettings.BackgroundColor;
-            textColor = chatFormSettings.ForegroundColor;
-
-            channelToJoin = chatFormSettings.Channel;
-
-            headers = new string[] {
-                    "Client-ID: " + client_id
-            };
-            font = chatFormSettings.Font;
-            doAnimations = chatFormSettings.Animations;
-            emoteSpacing = chatFormSettings.EmoteSpacing;
-            chatFormSettings.Changed += ChangedEvent;
-
-            cachedBadges = new SortedList<string, Badge>();
-            BackColor = outlineColor;
-            //TransparencyKey = BackColor;
-            client = new WebClient();
-            badgeJson = JsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
-            try
-            {
-                bttvEmotesJson = JsonGet("https://api.betterttv.net/2/emotes").emotes;
-                bttvChannelEmotesJson = JsonGet("https://api.betterttv.net/2/channels/" + channelToJoin).emotes;
-            }
-            catch
-            {
-                useBTTV = false;
-            }
-            //FFZEmotesJson = jsonGet("https://api.betterttv.net/2/emotes").emotes;
-            try
-            {
-                FFZChannelEmotesJson = JsonGet("https://api.frankerfacez.com/v1/room/" + channelToJoin);
-                FFZChannelEmotesJson = FFZChannelEmotesJson.sets[(string)(FFZChannelEmotesJson.room.set)].emoticons;
-                FFZEmotesJson = JsonGet("https://api.frankerfacez.com/v1/set/global");
-            }
-            catch
-            {
-                useFFZ = false;
-            }
-            channelInformationJson = JsonGet("https://api.twitch.tv/helix/users?login=" + channelToJoin, headers);
-            channelId = channelInformationJson.data[0].id;
-            channelBadgeJson = JsonGet("https://badges.twitch.tv/v1/badges/channels/" + channelId + "/display", headers);
-
-            if (useBTTV)
-            {
-                var temporary = JArray.FromObject(bttvEmotesJson);
-                foreach (var entry in temporary)
-                {
-                    string channel = entry.channel;
-                    string emote = entry.id;
-                    string code = entry.code;
-                    string imageType = entry.imageType;
-                    string path = "./emotes/BetterTTV/BTTV" + emote + "." + imageType;
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedBTTVEmotes.Add(code, image);
-                    }
-                    catch { }
-                }
-            }
-            if (useBTTV)
-            {
-                var temporary2 = JArray.FromObject(bttvChannelEmotesJson);
-                foreach (var entry in temporary2)
-                {
-                    string channel = entry.channel;
-                    string emote = entry.id;
-                    string code = entry.code;
-                    string imageType = entry.imageType;
-                    string path = "./emotes/BetterTTV/BTTV" + emote + "." + imageType;
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedBTTVEmotes.Add(code, image);
-                    }
-                    catch { }
-                }
-            }
-            if (useFFZ)
-            {
-                var temporary3 = JArray.FromObject(FFZChannelEmotesJson);
-                foreach (var entry in temporary3)
-                {
-                    string code = entry.name;
-                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
-                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri(url), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedFFZEmotes.Add(code, image);
-                    }
-                    catch { }
-                }
-                var temporary4 = JArray.FromObject(FFZEmotesJson.sets["3"].emoticons);
-                foreach (var entry in temporary4)
-                {
-                    string code = entry.name;
-                    string url = "http://cdn.frankerfacez.com/emoticon/" + entry.id + "/1";
-                    string path = "./emotes/FFZ/FFZ" + entry.id + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(new Uri(url), path);
-                    Image image = Image.FromFile(path);
-                    try
-                    {
-                        cachedFFZEmotes.Add(code, image);
-                    }
-                    catch { }
-                }
-            }
-            var strings = badgeJson.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
-            foreach (var entry in strings)
-            {
-                List<string> keys = new List<string>(entry.Value["versions"].Keys);
-                for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
-                {
-                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
-                    string path = "emotes/Badges/" + entry.Key + "_" + keys[i] + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(url, path);
-                    Image img = default(Image);
-                    try
-                    {
-                        img = Image.FromFile(path);
-                    }
-                    catch { continue; }
-                    Badge b;
-                    if (cachedBadges.ContainsKey(entry.Key))
-                        b = cachedBadges[entry.Key];
-                    else
-                    {
-                        b = new Badge()
-                        {
-                            versions = new Dictionary<string, BadgeVersion>()
-                        };
-                        cachedBadges.Add(entry.Key, b);
-                    }
-                    if (!b.versions.ContainsKey(keys[i]))
-                    {
-                        BadgeVersion v = new BadgeVersion()
-                        {
-                            url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
-                            url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
-                            url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
-                            image = img,
-                            description = entry.Value["versions"][keys[i]]["description"],
-                            title = entry.Value["versions"][keys[i]]["description"]
-                        };
-                        b.versions.Add(keys[i], v);
-                    }
-                }
-            }
-            Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>> strings2 = channelBadgeJson.badge_sets.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>();
-            foreach (var entry in strings2)
-            {
-                List<string> keys = new List<string>(entry.Value["versions"].Keys);
-                Dictionary<string, string> dict = new Dictionary<string, string>();
-                for (int i = 0; i < entry.Value["versions"].Keys.Count; i++)
-                {
-                    string url = entry.Value["versions"][keys[i]]["image_url_1x"];
-                    string path = "emotes/Badges/" + channelToJoin + "_" + entry.Key + "_" + keys[i] + ".png";
-                    if (!File.Exists(path))
-                        client.DownloadFile(url, path);
-                    Image img = default(Image);
-                    try
-                    {
-                        img = Image.FromFile(path);
-                    }
-                    catch { continue; }
-                    Badge b;
-                    if (cachedBadges.ContainsKey(entry.Key))
-                    {
-                        b = cachedBadges[entry.Key];
-                    }
-                    else
-                    {
-                        b = new Badge()
-                        {
-                            versions = new Dictionary<string, BadgeVersion>()
-                        };
-                        cachedBadges.Add(entry.Key, b);
-                    }
-                    BadgeVersion v = new BadgeVersion()
-                    {
-                        url_1x = entry.Value["versions"][keys[i]]["image_url_1x"],
-                        url_2x = entry.Value["versions"][keys[i]]["image_url_2x"],
-                        url_4x = entry.Value["versions"][keys[i]]["image_url_4x"],
-                        image = img,
-                        description = entry.Value["versions"][keys[i]]["description"],
-                        title = entry.Value["versions"][keys[i]]["title"]
-                    };
-                    b.versions[keys[i]] = v;
-                }
-            }
+            coroutineManager.StartCoroutine(Init());
         }
         #endregion
 
@@ -423,6 +546,7 @@ namespace TwitchChatCoroutines
         public void CustomUpdate()
         {
             coroutineManager.Interval();
+            if (!initialized) return;
             if (!twitchClient.Connected)
             {
                 Connect();
@@ -575,6 +699,7 @@ namespace TwitchChatCoroutines
                 m.panel.Size = new Size(Width, m.panel.Size.Height);
                 m.splitter.Size = new Size(Width, m.splitter.Size.Height);
             }
+            addEnterLineAnimation();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -610,7 +735,13 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Visual
-        public void AddTooltip(Control box, Controls.ToolTip tip, Panel p)
+        private void ChangeInformationalLabel(string newText)
+        {
+            label2.Text = newText;
+            label2.Location = new Point(Size.Width / 2 - label2.Size.Width / 2, label2.Location.Y);
+        }
+
+        public void AddTooltip(Control box, Controls.ToolTip tip, Panel p, List<Controls.ToolTip> tips)
         {
             box.MouseEnter += (o, e) =>
             {
@@ -628,6 +759,7 @@ namespace TwitchChatCoroutines
             {
                 tip.Visible = false;
             };
+            tips.Add(tip);
         }
 
         private TwitchLabel MakeAndInsertLabel(MessageControl m)
@@ -636,6 +768,7 @@ namespace TwitchChatCoroutines
             //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
             SortedList<int, PictureBoxAndInts> emoteBoxes = new SortedList<int, PictureBoxAndInts>();
             List<TwitchLabel> labelsToAdd = new List<TwitchLabel>();
+            List<Controls.ToolTip> tooltips = new List<Controls.ToolTip>();
             Panel p = new Panel();
             Controls.Add(p);
             string[] array = m.twitchMessage.message.Split(' ');
@@ -661,7 +794,7 @@ namespace TwitchChatCoroutines
                             Image = box.Image,
                             Text = "BetterTTV Emote: " + a,
                         };
-                        AddTooltip(box, tip, p);
+                        AddTooltip(box, tip, p, tooltips);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
                             pb = box,
@@ -687,7 +820,7 @@ namespace TwitchChatCoroutines
                             Image = box.Image,
                             Text = "FrankerFaceZ Emote: " + a,
                         };
-                        AddTooltip(box, tip, p);
+                        AddTooltip(box, tip, p, tooltips);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
                             pb = box,
@@ -729,7 +862,7 @@ namespace TwitchChatCoroutines
                                     InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High,
                                     Image = Emojis.codeToEmoji[s],
                                     SizeMode = PictureBoxSizeMode.StretchImage,
-                                    Size = new Size(18,18)
+                                    Size = new Size(18, 18)
                                 };
                                 Controls.ToolTip tip = new Controls.ToolTip(box)
                                 {
@@ -738,7 +871,7 @@ namespace TwitchChatCoroutines
                                     Image = box.Image,
                                     Text = "Emoji: " + s,
                                 };
-                                AddTooltip(box, tip, p);
+                                AddTooltip(box, tip, p, tooltips);
                                 PictureBoxAndInts iss = new PictureBoxAndInts
                                 {
                                     pb = box,
@@ -774,7 +907,7 @@ namespace TwitchChatCoroutines
                             Image = box.Image,
                             Text = cachedBadges[parts[0]].versions[parts[1]].title,
                         };
-                        AddTooltip(box, tip, p);
+                        AddTooltip(box, tip, p, tooltips);
                     }
                 }
             }
@@ -810,7 +943,12 @@ namespace TwitchChatCoroutines
                             {
                                 client.DownloadFile(theUrl, path);
                             }
-                            Image image = Image.FromFile(path);
+                            Image image = null;
+                            try
+                            {
+                                image = Image.FromFile(path);
+                            }
+                            catch { }
                             //if (!cachedTwitchEmotes.ContainsKey(code))
                             //    cachedTwitchEmotes.Add(code, image);
                             box.Image = image;
@@ -829,7 +967,7 @@ namespace TwitchChatCoroutines
                             Image = box.Image,
                             Text = "Twitch Emote: " + code,
                         };
-                        AddTooltip(box, tip, p);
+                        AddTooltip(box, tip, p, tooltips);
                         PictureBoxAndInts iss = new PictureBoxAndInts
                         {
                             pb = box,
@@ -1069,6 +1207,7 @@ namespace TwitchChatCoroutines
             }
             m.panel = p;
             m.splitter = splitterbox;
+            m.tooltips = tooltips;
             m.emotes = emoteBoxes;
             m.messages = labelsToAdd;
             m.username = userNameLabel;
