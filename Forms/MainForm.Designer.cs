@@ -56,21 +56,23 @@
             this.label3 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.SplitterBoxBox = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.radioButton7 = new System.Windows.Forms.RadioButton();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label9 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.PanelBorderUpDown = new System.Windows.Forms.NumericUpDown();
             this.label10 = new System.Windows.Forms.Label();
             this.button7 = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.ChatmodeBox = new System.Windows.Forms.ComboBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.BorderstyleBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.Emotespacing)).BeginInit();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PanelBorderUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -78,7 +80,7 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(8, 249);
+            this.label1.Location = new System.Drawing.Point(8, 272);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(105, 13);
             this.label1.TabIndex = 0;
@@ -90,7 +92,7 @@
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox1.ForeColor = System.Drawing.Color.White;
-            this.textBox1.Location = new System.Drawing.Point(124, 249);
+            this.textBox1.Location = new System.Drawing.Point(122, 272);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(160, 13);
             this.textBox1.TabIndex = 8;
@@ -100,7 +102,7 @@
             // 
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(290, 244);
+            this.button1.Location = new System.Drawing.Point(290, 267);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(138, 23);
             this.button1.TabIndex = 9;
@@ -236,7 +238,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.ForeColor = System.Drawing.Color.White;
-            this.label7.Location = new System.Drawing.Point(55, 34);
+            this.label7.Location = new System.Drawing.Point(58, 34);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(58, 13);
             this.label7.TabIndex = 13;
@@ -378,17 +380,17 @@
             this.button6.Text = "Settings";
             this.button6.UseVisualStyleBackColor = true;
             // 
-            // checkBox1
+            // SplitterBoxBox
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(122, 113);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(15, 14);
-            this.checkBox1.TabIndex = 23;
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
+            this.SplitterBoxBox.AutoSize = true;
+            this.SplitterBoxBox.Checked = true;
+            this.SplitterBoxBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.SplitterBoxBox.Location = new System.Drawing.Point(122, 113);
+            this.SplitterBoxBox.Name = "SplitterBoxBox";
+            this.SplitterBoxBox.Size = new System.Drawing.Size(15, 14);
+            this.SplitterBoxBox.TabIndex = 23;
+            this.SplitterBoxBox.UseVisualStyleBackColor = true;
+            this.SplitterBoxBox.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
             // 
             // label8
             // 
@@ -451,27 +453,27 @@
             this.label9.TabIndex = 30;
             this.label9.Text = "(in pixels)";
             // 
-            // numericUpDown1
+            // PanelBorderUpDown
             // 
-            this.numericUpDown1.BackColor = System.Drawing.Color.LightSlateGray;
-            this.numericUpDown1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.numericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.numericUpDown1.ForeColor = System.Drawing.Color.White;
-            this.numericUpDown1.Location = new System.Drawing.Point(122, 196);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
+            this.PanelBorderUpDown.BackColor = System.Drawing.Color.LightSlateGray;
+            this.PanelBorderUpDown.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.PanelBorderUpDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PanelBorderUpDown.ForeColor = System.Drawing.Color.White;
+            this.PanelBorderUpDown.Location = new System.Drawing.Point(122, 196);
+            this.PanelBorderUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(160, 16);
-            this.numericUpDown1.TabIndex = 28;
-            this.numericUpDown1.Value = new decimal(new int[] {
+            this.PanelBorderUpDown.Name = "PanelBorderUpDown";
+            this.PanelBorderUpDown.Size = new System.Drawing.Size(160, 16);
+            this.PanelBorderUpDown.TabIndex = 28;
+            this.PanelBorderUpDown.Value = new decimal(new int[] {
             15,
             0,
             0,
             0});
-            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.PanelBorderUpDown.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // label10
             // 
@@ -506,33 +508,58 @@
             this.label11.TabIndex = 33;
             this.label11.Text = "Mode:";
             // 
-            // comboBox1
+            // ChatmodeBox
             // 
-            this.comboBox1.BackColor = System.Drawing.Color.LightSlateGray;
-            this.comboBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBox1.ForeColor = System.Drawing.Color.White;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(122, 136);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(160, 21);
-            this.comboBox1.TabIndex = 34;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.ChatmodeBox.BackColor = System.Drawing.Color.LightSlateGray;
+            this.ChatmodeBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ChatmodeBox.ForeColor = System.Drawing.Color.White;
+            this.ChatmodeBox.FormattingEnabled = true;
+            this.ChatmodeBox.Location = new System.Drawing.Point(122, 136);
+            this.ChatmodeBox.Name = "ChatmodeBox";
+            this.ChatmodeBox.Size = new System.Drawing.Size(160, 21);
+            this.ChatmodeBox.TabIndex = 34;
+            this.ChatmodeBox.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label12.ForeColor = System.Drawing.Color.White;
+            this.label12.Location = new System.Drawing.Point(49, 245);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(67, 13);
+            this.label12.TabIndex = 35;
+            this.label12.Text = "Border Style:";
+            // 
+            // BorderstyleBox
+            // 
+            this.BorderstyleBox.BackColor = System.Drawing.Color.LightSlateGray;
+            this.BorderstyleBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BorderstyleBox.ForeColor = System.Drawing.Color.White;
+            this.BorderstyleBox.FormattingEnabled = true;
+            this.BorderstyleBox.Location = new System.Drawing.Point(122, 242);
+            this.BorderstyleBox.Name = "BorderstyleBox";
+            this.BorderstyleBox.Size = new System.Drawing.Size(160, 21);
+            this.BorderstyleBox.TabIndex = 36;
+            this.BorderstyleBox.SelectedIndexChanged += new System.EventHandler(this.BorderstyleBox_SelectedIndexChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.SlateGray;
-            this.ClientSize = new System.Drawing.Size(527, 275);
-            this.Controls.Add(this.comboBox1);
+            this.ClientSize = new System.Drawing.Size(527, 303);
+            this.Controls.Add(this.BorderstyleBox);
+            this.Controls.Add(this.label12);
+            this.Controls.Add(this.ChatmodeBox);
             this.Controls.Add(this.button7);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.numericUpDown1);
+            this.Controls.Add(this.PanelBorderUpDown);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.radioButton7);
             this.Controls.Add(this.button6);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.SplitterBoxBox);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.label3);
@@ -566,7 +593,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.Emotespacing)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PanelBorderUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -602,17 +629,19 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox SplitterBoxBox;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.RadioButton radioButton7;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generalToolStripMenuItem;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown PanelBorderUpDown;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox ChatmodeBox;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ComboBox BorderstyleBox;
     }
 }

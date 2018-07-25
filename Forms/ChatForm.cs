@@ -91,25 +91,6 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Enumerators
-        void addEnterLineAnimation()
-        {
-            int comparison = -Width;
-            Animation animation = new Animation();
-            enterChatAnimation = animation;
-            while (comparison < 0)
-            {
-                if ((comparison + (1 + Math.Abs(comparison * 0.1f))) > 0)
-                {
-                    comparison = 0;
-                    continue;
-                }
-                else
-                    comparison = (int)(comparison + (1 + Math.Abs(comparison * 0.1f)));
-                animation.AddStep(comparison);
-            }
-            animation.Finish();
-        }
-
         IEnumerator Init()
         {
             if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
@@ -160,7 +141,7 @@ namespace TwitchChatCoroutines
 
             ChangeInformationalLabel("Calculating Animations");
             yield return new WaitForMilliseconds(1);
-            addEnterLineAnimation();
+            AddEnterLineAnimation();
 
             headers = new string[] {
                     "Client-ID: " + client_id
@@ -430,6 +411,7 @@ namespace TwitchChatCoroutines
             initialized = true;
             yield break;
         }
+
         IEnumerator enterLoginPanel(Panel p)
         {
             int v = 244;
@@ -478,7 +460,7 @@ namespace TwitchChatCoroutines
             //    yield return new WaitForMilliseconds(5);
             //}
             if (doAnimations)
-                for(int i = 0; i < enterChatAnimation.StepCount-1; i++)
+                for (int i = 0; i < enterChatAnimation.StepCount - 1; i++)
                 {
                     greetings.panel.Location = new Point(enterChatAnimation.GetNext(i), greetings.panel.Location.Y);
                     yield return new WaitForMilliseconds(5);
@@ -550,10 +532,6 @@ namespace TwitchChatCoroutines
             if (!twitchClient.Connected)
             {
                 Connect();
-                //MessageControl m = new MessageControl();
-                //m.oneMessage = "Disconnected from chat. Reconnecting.";
-                //Label l = MakeAndInsertLabel(m);
-                //l.ForeColor = Color.Red;
             }
             else if (twitchClient.Available > 0)
             {
@@ -653,7 +631,7 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Events
-        void ChangedEvent(object o, EventArgs e)
+        public void ChangedEvent(object o, EventArgs e)
         {
             outlineColor = chatFormSettings.BackgroundColor;
             BackColor = outlineColor;
@@ -674,6 +652,11 @@ namespace TwitchChatCoroutines
                             }));
                     }));
             }
+            if (IsHandleCreated)
+                Invoke((MethodInvoker)(() =>
+                {
+                    FormBorderStyle = chatFormSettings.BorderStyle;
+                }));
             emoteSpacing = chatFormSettings.EmoteSpacing;
         }
 
@@ -699,7 +682,7 @@ namespace TwitchChatCoroutines
                 m.panel.Size = new Size(Width, m.panel.Size.Height);
                 m.splitter.Size = new Size(Width, m.splitter.Size.Height);
             }
-            addEnterLineAnimation();
+            AddEnterLineAnimation();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -943,7 +926,7 @@ namespace TwitchChatCoroutines
                             {
                                 client.DownloadFile(theUrl, path);
                             }
-                            Image image = null;
+                            Image image = default(Image);
                             try
                             {
                                 image = Image.FromFile(path);
@@ -1234,6 +1217,25 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Misc
+        void AddEnterLineAnimation()
+        {
+            int comparison = -Width;
+            Animation animation = new Animation();
+            enterChatAnimation = animation;
+            while (comparison < 0)
+            {
+                if ((comparison + (1 + Math.Abs(comparison * 0.1f))) > 0)
+                {
+                    comparison = 0;
+                    continue;
+                }
+                else
+                    comparison = (int)(comparison + (1 + Math.Abs(comparison * 0.1f)));
+                animation.AddStep(comparison);
+            }
+            animation.Finish();
+        }
+
         public bool IsUnicodeCharacter(char c)
         {
             const int MaxAnsiCode = 255;

@@ -100,7 +100,11 @@ namespace TwitchChatCoroutines.Forms
             }
             foreach (var s in (ChatModes[])Enum.GetValues(typeof(ChatModes)))
             {
-                comboBox1.Items.Add(s);
+                ChatmodeBox.Items.Add(s);
+            }
+            foreach (var s in (FormBorderStyle[])Enum.GetValues(typeof(FormBorderStyle)))
+            {
+                BorderstyleBox.Items.Add(s);
             }
             radioButton1.Checked = true;
         }
@@ -142,17 +146,14 @@ namespace TwitchChatCoroutines.Forms
             int index = selectedIndex;
             radios[index].Text = textBox1.Text;
             button1.Enabled = false;
-            chatFormSettings[index].Animations = AnimationsCheckBox.Checked;
-            chatFormSettings[index].EmoteSpacing = (int)Emotespacing.Value;
             chatFormSettings[index].Channel = textBox1.Text;
-            chatFormSettings[index].ForegroundColor = (Color)cc.ConvertFromString(ForegroundColorBox.Text);
-            chatFormSettings[index].BackgroundColor = (Color)cc.ConvertFromString(BackgroundColorBox.Text);
 
             Thread t = new Thread(() =>
             {
                 var settings = chatFormSettings[index];
                 var a = new ChatForm(settings);
                 chatFormSettings[index].Current = a;
+                a.ChangedEvent(this, new EventArgs());
                 a.Show();
                 while (true)
                 {
@@ -208,9 +209,10 @@ namespace TwitchChatCoroutines.Forms
             Emotespacing.Value = chatFormSettings[selectedIndex].EmoteSpacing;
             AnimationsCheckBox.Checked = chatFormSettings[selectedIndex].Animations;
             Fontlabel.Text = chatFormSettings[selectedIndex].Font.Name + ", " + chatFormSettings[selectedIndex].Font.Size;
-            checkBox1.Checked = chatFormSettings[selectedIndex].Splitter;
-            comboBox1.SelectedIndex = chatFormSettings[selectedIndex].ChatMode.currentIndex;
-            numericUpDown1.Value = chatFormSettings[selectedIndex].PanelBorder;
+            SplitterBoxBox.Checked = chatFormSettings[selectedIndex].Splitter;
+            ChatmodeBox.SelectedIndex = chatFormSettings[selectedIndex].ChatMode.currentIndex;
+            BorderstyleBox.SelectedIndex = (int)chatFormSettings[selectedIndex].BorderStyle;
+            PanelBorderUpDown.Value = chatFormSettings[selectedIndex].PanelBorder;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -225,7 +227,7 @@ namespace TwitchChatCoroutines.Forms
 
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
-            chatFormSettings[selectedIndex].Splitter = checkBox1.Checked;
+            chatFormSettings[selectedIndex].Splitter = SplitterBoxBox.Checked;
         }
 
         private void generalToolStripMenuItem_Click(object sender, EventArgs e2)
@@ -240,13 +242,18 @@ namespace TwitchChatCoroutines.Forms
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            chatFormSettings[selectedIndex].PanelBorder = (int)numericUpDown1.Value;
+            chatFormSettings[selectedIndex].PanelBorder = (int)PanelBorderUpDown.Value;
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            chatFormSettings[selectedIndex].ChatMode.currentIndex = comboBox1.SelectedIndex;
+            chatFormSettings[selectedIndex].ChatMode.currentIndex = ((ComboBox)sender).SelectedIndex;
         }
         #endregion
+
+        private void BorderstyleBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            chatFormSettings[selectedIndex].BorderStyle = (FormBorderStyle)((ComboBox)sender).SelectedIndex;
+        }
     }
 }
