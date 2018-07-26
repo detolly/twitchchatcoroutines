@@ -18,6 +18,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public Color BackColor { get; set; }
 
         public int DesiredWidth { get; set; }
+        public int EmoteSpacing { get; set; }
         public bool DoSplitter { get; set; }
         public bool IsAction { get; set; }
         public int PanelBorder { get; set; }
@@ -64,9 +65,13 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             string text = twitchMessage.message;
 
             bool first = true;
-            int textOffset = 0;
+            int currentOffset = 0;
+            int theWidth = DesiredWidth - 2 * border;
 
-            for (int i = 0; i < emotes.Count+1; i++)
+            int lastX = 0;
+            int yoffset = 0;
+
+            for (int i = 0; i < emotes.Count + 1; i++)
             {
                 string currentText = "";
                 if (first)
@@ -74,16 +79,47 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                     first = false;
                     currentText += ": ";
                 }
-                int start = textOffset;
+                var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
+                var theTuple = thing.ints;
+                int next = i != emotes.Count ? thing.ints.Item1 : text.Length-1;
+                string offsetText = text.Substring(currentOffset, next - currentOffset);
+                currentOffset = i != emotes.Count ? thing.ints.Item2 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
+                string[] args = offsetText.Split(' ');
+
+                string current = "";
+                for (int x = 0; x < args.Length; x++)
+                {
+                    string old = current;
+                    current += args[x];
+                    Size currentTextWidth = TextRenderer.MeasureText(current, Font);
+                    if (currentTextWidth.Width > theWidth)
+                    {
+                        Size currentArgsWidth = TextRenderer.MeasureText(args[x], Font);
+                        if (currentArgsWidth.Width > theWidth)
+                        {
+                            //some things that I can't really remember goes here.
+                        }
+                        e.Graphics.DrawString(old, Font, foreColorBrush, new Point(lastX, yoffset));
+                        lastX = border;
+                        yoffset += currentTextWidth.Height;
+                        current = "";
+                        x--;
+                    }
+                    if (x == args.Length - 1)
+                    {
+                        e.Graphics.DrawString(current, Font, foreColorBrush, new Point(lastX, yoffset));
+                    }
+                }
                 if (i != emotes.Count)
                 {
-                    var thing = emotes.Values[i];
-                    var theTuple = thing.ints;
+                    e.Graphics.DrawImage(thing.img, new Point(lastX + EmoteSpacing, yoffset));
+                    lastX += EmoteSpacing;
                 }
             }
         }
-
-        
     }
+
+
+}
 }

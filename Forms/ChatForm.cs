@@ -897,7 +897,8 @@ namespace TwitchChatCoroutines
                 ForeColor = textColor,
                 BackColor = backColor,
                 DesiredWidth = Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
-                PanelBorder = panelBorder/2
+                PanelBorder = panelBorder/2,
+                EmoteSpacing = emoteSpacing
             };
             Controls.Add(m);
             m.Location = new Point(-Width, Height - m.Size.Height - 50);
