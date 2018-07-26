@@ -1,44 +1,72 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
     class MessageControl : Panel
     {
-        public SortedList<int, PictureBoxAndInts> emotes;
-        public List<PictureBox> badges;
-        public List<TwitchLabel> messages;
+        public List<Image> badges;
+
+        public string username;
+        public SortedList<int, ImageAndInts> emotes;
+        public List<string> messages;
+
         public List<Controls.ToolTip> tooltips;
-        public TwitchLabel username;
+
+        public Font font;
+
+        public Color ForeColor;
+        public Color BackColor;
 
         public bool isAction;
         public bool doSplitter = false;
 
         public TwitchMessage twitchMessage;
-        public PictureBox splitter;
+        public Image splitter;
+
+        public ColorConverter cc;
+
+        public void Init()
+        {
+            cc = new ColorConverter();
+        }
+
+        public MessageControl(Font font, List<Image> badges, List<string> messages, SortedList<int, ImageAndInts> emotes)
+        {
+            Init();
+            this.font = font;
+            this.badges = badges;
+            this.messages = messages;
+            this.emotes = emotes;
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             int tStart = 0;
+            int border = 5;
             bool exists = false;
-            foreach (var s in m.badges)
+            foreach (var s in badges)
             {
                 exists = true;
-                s.Location = new Point(tStart + border, 100);
+                e.Graphics.DrawImage(s, new Point(tStart + border, 100));
                 tStart += s.Size.Width + border;
             }
-            TwitchLabel userNameLabel = new TwitchLabel(this.BackColor)
-            {
-                Font = font,
-                Text = m.twitchMessage.display_name + (m.twitchMessage.username != m.twitchMessage.display_name.ToLower() ? " (" + m.twitchMessage.username + ")" : ""),
-                ForeColor = (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? getRandomColor() : m.twitchMessage.color)
-            };
-            userNameLabel.Location = new Point(tStart + border, 100 + (exists ? m.badges[0].Size.Height / 2 - userNameLabel.Size.Height / 2 : 0));
-            p.Controls.Add(userNameLabel);
-            string text = m.twitchMessage.message;
+
+            var aForeColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
+            Brush foreColorBrush = new SolidBrush(ForeColor);
+            Brush usernameBrush = new SolidBrush(aForeColor);
+
+            string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
+            Size s = TextRenderer.MeasureText(usernameText, font);
+            var location = new Point(tStart + border, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
+            e.Graphics.DrawString(usernameText, font, usernameBrush, location);
+            
+            string text = twitchMessage.message;
 
             int nextStart = 0;
-            int lastLocation = userNameLabel.Right;
+            int lastLocation = location.X + s.Width;
             bool first = true;
             int yoffset = 0;
 
@@ -54,7 +82,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 }
                 thel.Font = font;
                 thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                thel.Text += text.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
+                thel.Text += usernameText.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
                 TwitchLabel comparison = thel;
                 if (thel.Text != "" && thel.Text != " ")
                 {
@@ -139,7 +167,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 Font = font
             };
             lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
-            string theT = text.Substring(nextStart > text.Length ? text.Length - 1 : nextStart, (text.Length - nextStart < 0) ? 0 : text.Length - nextStart);
+            string theT = usernameText.Substring(nextStart > usernameText.Length ? usernameText.Length - 1 : nextStart, (usernameText.Length - nextStart < 0) ? 0 : usernameText.Length - nextStart);
             lastLabel.Text = first ? ": " + theT : theT;
             if (first || theT.Length > 0)
             {

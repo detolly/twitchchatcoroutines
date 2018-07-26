@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Windows.Forms;
+using System.Drawing;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
-    struct PictureBoxAndInts
+    struct ImageAndInts
     {
-        public PictureBox pb;
+        public Image img;
         public Tuple<int, int> ints;
     }
 }

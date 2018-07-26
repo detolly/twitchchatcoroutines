@@ -749,7 +749,7 @@ namespace TwitchChatCoroutines
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
             //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
-            SortedList<int, PictureBoxAndInts> emoteBoxes = new SortedList<int, PictureBoxAndInts>();
+            SortedList<int, ImageAndInts> emoteBoxes = new SortedList<int, ImageAndInts>();
             List<TwitchLabel> labelsToAdd = new List<TwitchLabel>();
             List<Controls.ToolTip> tooltips = new List<Controls.ToolTip>();
             Panel p = new Panel();
@@ -778,7 +778,7 @@ namespace TwitchChatCoroutines
                             Text = "BetterTTV Emote: " + a,
                         };
                         AddTooltip(box, tip, p, tooltips);
-                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        ImageAndInts iss = new ImageAndInts
                         {
                             pb = box,
                             ints = ints
@@ -804,7 +804,7 @@ namespace TwitchChatCoroutines
                             Text = "FrankerFaceZ Emote: " + a,
                         };
                         AddTooltip(box, tip, p, tooltips);
-                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        ImageAndInts iss = new ImageAndInts
                         {
                             pb = box,
                             ints = ints
@@ -855,7 +855,7 @@ namespace TwitchChatCoroutines
                                     Text = "Emoji: " + s,
                                 };
                                 AddTooltip(box, tip, p, tooltips);
-                                PictureBoxAndInts iss = new PictureBoxAndInts
+                                ImageAndInts iss = new ImageAndInts
                                 {
                                     pb = box,
                                     ints = ints
@@ -951,7 +951,7 @@ namespace TwitchChatCoroutines
                             Text = "Twitch Emote: " + code,
                         };
                         AddTooltip(box, tip, p, tooltips);
-                        PictureBoxAndInts iss = new PictureBoxAndInts
+                        ImageAndInts iss = new ImageAndInts
                         {
                             pb = box,
                             ints = ints[i]
@@ -976,7 +976,7 @@ namespace TwitchChatCoroutines
             return null;
         }
 
-        private string getRandomColor()
+        public static string getRandomColor()
         {
             string[] colors = new string[]
             {
