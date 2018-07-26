@@ -158,8 +158,7 @@ namespace TwitchChatCoroutines
             ChangeInformationalLabel("Downloading Twitch Badges Information...");
             yield return new WaitForMilliseconds(1);
             badgeJson = JsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
-
-            //Download BTTV Emotes Information
+            
             //Download BTTV Global Emotes Information
             ChangeInformationalLabel("Download BTTV Global Emotes Information...");
             yield return new WaitForMilliseconds(1);
@@ -479,7 +478,7 @@ namespace TwitchChatCoroutines
 
             for (int i = 0; i < currentChatMessages.Count; i++)
             {
-                if (currentChatMessages[i].messages == exclude.messages) continue;
+                if (currentChatMessages[i] == exclude) continue;
                 int border = -currentChatMessages[i].Size.Height - 5;
                 pixelsToMove = exclude.Size.Height;
                 currentChatMessages[i].Location = new Point(currentChatMessages[i].Location.X, currentChatMessages[i].Location.Y - pixelsToMove);
@@ -570,7 +569,7 @@ namespace TwitchChatCoroutines
                     foreach (MessageControl m in currentChatMessages)
                     {
                         if (m.twitchMessage.display_name.ToLower() == user.ToLower())
-                            m.font = f;
+                            m.Font = f;
                     }
                 }
             }

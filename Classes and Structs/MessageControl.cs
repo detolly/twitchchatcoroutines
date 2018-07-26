@@ -44,6 +44,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         {
             int tStart = 0;
             int border = 5;
+            int highest = 0;
             bool exists = false;
 
             foreach (var badge in badges)
@@ -51,6 +52,10 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 exists = true;
                 e.Graphics.DrawImage(badge, new Point(tStart + border, PanelBorder));
                 tStart += badge.Size.Width + border;
+                if (badge.Height > highest)
+                {
+                    highest = badge.Height;
+                }
             }
 
             var UserNameColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
@@ -59,31 +64,32 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
             Size s = TextRenderer.MeasureText(usernameText, Font);
-            var location = new Point(tStart + border, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : PanelBorder));
+            var location = new Point(tStart + border, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             e.Graphics.DrawString(usernameText, Font, usernameBrush, location);
 
             string text = twitchMessage.message;
-
-            bool first = true;
+            Size theTextSize = TextRenderer.MeasureText(text, Font);
+            
             int currentOffset = 0;
             int theWidth = DesiredWidth - 2 * border;
 
-            int lastX = 0;
-            int yoffset = 0;
+            int lastX = location.X + s.Width;
+            int yoffset = PanelBorder;
+
+            bool first = true;
 
             for (int i = 0; i < emotes.Count + 1; i++)
             {
-                string currentText = "";
+                var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
+                var theTuple = thing.ints;
+                int next = i != emotes.Count ? thing.ints.Item1: text.Length;
+                string offsetText = text.Substring(currentOffset, next - currentOffset);
                 if (first)
                 {
                     first = false;
-                    currentText += ": ";
+                    offsetText = ": " + offsetText;
                 }
-                var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
-                var theTuple = thing.ints;
-                int next = i != emotes.Count ? thing.ints.Item1 : text.Length-1;
-                string offsetText = text.Substring(currentOffset, next - currentOffset);
-                currentOffset = i != emotes.Count ? thing.ints.Item2 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
+                currentOffset = i != emotes.Count ? thing.ints.Item2 + 1 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
                 string[] args = offsetText.Split(' ');
 
@@ -108,18 +114,28 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                     }
                     if (x == args.Length - 1)
                     {
+                        if (currentTextWidth.Height + yoffset > highest)
+                        {
+                            highest = currentTextWidth.Height + yoffset;
+                        }
                         e.Graphics.DrawString(current, Font, foreColorBrush, new Point(lastX, yoffset));
+                        lastX += TextRenderer.MeasureText(current, Font).Width;
                     }
+                    else
+                        current += " ";
                 }
                 if (i != emotes.Count)
                 {
                     e.Graphics.DrawImage(thing.img, new Point(lastX + EmoteSpacing, yoffset));
-                    lastX += EmoteSpacing;
+                    if (thing.img.Size.Height + yoffset > highest)
+                    {
+                        highest = thing.img.Size.Height + yoffset;
+                    }
+                    lastX += thing.img.Size.Width;
+                    lastX += 2*EmoteSpacing;
                 }
             }
+            Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
         }
     }
-
-
-}
 }
