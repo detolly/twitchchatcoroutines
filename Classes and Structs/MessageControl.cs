@@ -2,28 +2,26 @@
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
     class MessageControl : Panel
     {
         public List<Image> badges;
-
         public string username;
         public SortedList<int, ImageAndInts> emotes;
-        public List<string> messages;
-
-        public List<Controls.ToolTip> tooltips;
-
-        public Font font;
-
-        public Color ForeColor;
-        public Color BackColor;
-
-        public bool isAction;
-        public bool doSplitter = false;
-
         public TwitchMessage twitchMessage;
+
+        public Font Font { get; set; }
+        public Color ForeColor { get; set; }
+        public Color BackColor { get; set; }
+
+        public int DesiredWidth { get; set; }
+        public bool DoSplitter { get; set; }
+        public bool IsAction { get; set; }
+        public int PanelBorder { get; set; }
+
         public Image splitter;
 
         public ColorConverter cc;
@@ -33,13 +31,12 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             cc = new ColorConverter();
         }
 
-        public MessageControl(Font font, List<Image> badges, List<string> messages, SortedList<int, ImageAndInts> emotes)
+        public MessageControl(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
         {
             Init();
-            this.font = font;
             this.badges = badges;
-            this.messages = messages;
             this.emotes = emotes;
+            twitchMessage = message;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -47,230 +44,46 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             int tStart = 0;
             int border = 5;
             bool exists = false;
-            foreach (var s in badges)
+
+            foreach (var badge in badges)
             {
                 exists = true;
-                e.Graphics.DrawImage(s, new Point(tStart + border, 100));
-                tStart += s.Size.Width + border;
+                e.Graphics.DrawImage(badge, new Point(tStart + border, PanelBorder));
+                tStart += badge.Size.Width + border;
             }
 
-            var aForeColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
+            var UserNameColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
             Brush foreColorBrush = new SolidBrush(ForeColor);
-            Brush usernameBrush = new SolidBrush(aForeColor);
+            Brush usernameBrush = new SolidBrush(UserNameColor);
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
-            Size s = TextRenderer.MeasureText(usernameText, font);
-            var location = new Point(tStart + border, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
-            e.Graphics.DrawString(usernameText, font, usernameBrush, location);
-            
+            Size s = TextRenderer.MeasureText(usernameText, Font);
+            var location = new Point(tStart + border, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : PanelBorder));
+            e.Graphics.DrawString(usernameText, Font, usernameBrush, location);
+
             string text = twitchMessage.message;
 
-            int nextStart = 0;
-            int lastLocation = location.X + s.Width;
             bool first = true;
-            int yoffset = 0;
+            int textOffset = 0;
 
-            foreach (var pbandInt in emoteBoxes)
+            for (int i = 0; i < emotes.Count+1; i++)
             {
-                Tuple<int, int> ints = pbandInt.Value.ints;
-                PictureBox pb = pbandInt.Value.pb;
-                TwitchLabel thel = new TwitchLabel(this.BackColor);
+                string currentText = "";
                 if (first)
                 {
-                    thel.Text = ": ";
                     first = false;
+                    currentText += ": ";
                 }
-                thel.Font = font;
-                thel.ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor;
-                thel.Text += usernameText.Substring(nextStart, (ints.Item1 - nextStart) < 0 ? 0 : ints.Item1 - nextStart);
-                TwitchLabel comparison = thel;
-                if (thel.Text != "" && thel.Text != " ")
+                int start = textOffset;
+
+                if (i != emotes.Count)
                 {
-                    if (thel.Text[0] == ' ')
-                        thel.Text = thel.Text.Substring(1);
-                    if (thel.Text[thel.Text.Length - 1] == ' ')
-                        thel.Text = thel.Text.Substring(0, thel.Text.Length - 1);
-                    p.Controls.Add(thel);
-                    thel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                    int startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                    if (TextRenderer.MeasureText(comparison.Text, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                    {
-                        var args = new List<string>(thel.Text.Split(' '));
-                        string upTillNow = "";
-                        for (int i = 0; i < args.Count; i++)
-                        {
-                            startingLoc = comparison.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                            string old = upTillNow;
-                            upTillNow += args[i];
-                            if (TextRenderer.MeasureText(upTillNow, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                            {
-                                var a = TextRenderer.MeasureText(args[i], font).Width;
-                                if (a + 2 * border > Width - vScrollBar1.Width)
-                                {
-                                    string current = "";
-                                    for (int x = 0; x < args[i].Length; x++)
-                                    {
-                                        string anotherold = current;
-                                        current += args[i][x];
-                                        if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                                        {
-                                            x = x < 0 ? 0 : x;
-                                            args.Insert(i + 1, args[i].Substring(x));
-                                            args[i] = args[i].Substring(0, x);
-                                            old += anotherold;
-                                            i++;
-                                            break;
-                                        }
-                                    }
-                                }
-                                comparison.Text = old;
-                                yoffset += comparison.Height + (28 / 2 - comparison.Size.Height / 2);
-                                TwitchLabel newLabel = new TwitchLabel(this.BackColor)
-                                {
-                                    Font = font,
-                                    ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor
-                                };
-                                p.Controls.Add(newLabel);
-                                newLabel.Location = new Point(border, userNameLabel.Location.Y + yoffset);
-                                comparison = newLabel;
-                                labelsToAdd.Add(newLabel);
-                                lastLocation = newLabel.Right;
-                                upTillNow = "";
-                                i--;
-                            }
-                            else
-                            {
-                                upTillNow += " ";
-                            }
-                            if (i == args.Count - 1)
-                            {
-                                comparison.Text = upTillNow.Substring(0, upTillNow.Length - 1);
-                            }
-                        }
-                    }
-                    int rightborder = comparison.Right + pb.Width;
-                    lastLocation = rightborder > Width ? border : rightborder - pb.Width + emoteSpacing;
-                    yoffset += rightborder > Width ? 28 / 2 : 0;
-                    labelsToAdd.Add(thel);
+                    var thing = emotes.Values[i];
+                    var theTuple = thing.ints;
                 }
-                nextStart = ints.Item2 + 1;
-                pb.Parent = comparison;
-                int theOr = lastLocation + (pb.Size.Width * 2) + border;
-                yoffset += theOr > Width ? Math.Max(28, comparison.Height) : 0;
-                pb.Location = new Point(theOr > Width ? border : lastLocation, userNameLabel.Location.Y + userNameLabel.Size.Height / 2 - pb.Size.Height / 2 + yoffset);
-                lastLocation = pb.Right + emoteSpacing;
-                p.Controls.Add(pb);
-            }
-            TwitchLabel lastLabel = new TwitchLabel(this.BackColor)
-            {
-                ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
-                Font = font
-            };
-            lastLabel.MaximumSize = new Size(Width - 20 - lastLabel.Size.Width - userNameLabel.Size.Width, 0);
-            string theT = usernameText.Substring(nextStart > usernameText.Length ? usernameText.Length - 1 : nextStart, (usernameText.Length - nextStart < 0) ? 0 : usernameText.Length - nextStart);
-            lastLabel.Text = first ? ": " + theT : theT;
-            if (first || theT.Length > 0)
-            {
-                if (lastLabel.Text[0] == ' ')
-                    lastLabel.Text = lastLabel.Text.Substring(1);
-                p.Controls.Add(lastLabel);
-                lastLabel.Location = new Point(lastLocation, userNameLabel.Location.Y + yoffset);
-                labelsToAdd.Add(lastLabel);
-                TwitchLabel labelToCompare = lastLabel;
-                var args = new List<string>(lastLabel.Text.Split(' '));
-                string stringCompare = "";
-                for (int i = 0; i < args.Count; i++)
-                {
-                    int startingLoc = labelToCompare.Location.X + border + TextRenderer.MeasureText(".", font).Width * 2;
-                    string old = stringCompare;
-                    stringCompare += args[i];
-                    if (TextRenderer.MeasureText(stringCompare, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                    {
-                        var a = TextRenderer.MeasureText(args[i], font).Width;
-                        if (a + 2 * border > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                        {
-                            string current = "";
-                            for (int x = 0; x < args[i].Length; x++)
-                            {
-                                string anotherold = current;
-                                current += args[i][x];
-                                if (TextRenderer.MeasureText(current + old, font).Width + startingLoc > Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0))
-                                {
-                                    x = x < 0 ? 0 : x;
-                                    args.Insert(i + 1, args[i].Substring(x));
-                                    args[i] = args[i].Substring(0, x);
-                                    old += anotherold;
-                                    i++;
-                                    break;
-                                }
-                            }
-                        }
-                        labelToCompare.Text = old;
-                        yoffset += labelToCompare.Height + (28 / 2 - labelToCompare.Size.Height / 2);
-                        TwitchLabel l = new TwitchLabel(this.BackColor)
-                        {
-                            Location = new Point(border, userNameLabel.Location.Y + yoffset),
-                            Font = font,
-                            ForeColor = m.isAction ? (Color)cc.ConvertFromString(m.twitchMessage.color == "" ? "#FFFFFF" : m.twitchMessage.color) : textColor,
-                            Parent = labelToCompare
-                        };
-                        p.Controls.Add(l);
-                        i--;
-                        stringCompare = "";
-                        labelsToAdd.Add(l);
-                        labelToCompare = l;
-                    }
-                    else
-                    {
-                        stringCompare += " ";
-                    }
-                    if (i == args.Count - 1)
-                        labelToCompare.Text = stringCompare;
-                }
-            }
-            int highest = 0;
-            int lowest = 1000;
-            PictureBox splitterbox = null;
-            splitterbox = new PictureBox
-            {
-                Image = splitter,
-                SizeMode = PictureBoxSizeMode.StretchImage,
-                Size = new Size(2 * Width, 1)
-            };
-            Control lowestC = null;
-            int lowestCS = 1000;
-            if (!doSplitter)
-                splitterbox.Visible = false;
-            for (int i = 0; i < p.Controls.Count; i++)
-            {
-                if (p.Controls[i].Size.Height + p.Controls[i].Location.Y > highest)
-                    highest = p.Controls[i].Bottom;
-                if (p.Controls[i].Location.Y < lowest)
-                    lowest = p.Controls[i].Location.Y;
-                if (p.Controls[i] is TwitchLabel)
-                {
-                    if (p.Controls[i].Location.Y < lowestCS)
-                    {
-                        lowestC = p.Controls[i];
-                        lowestCS = p.Controls[i].Location.Y;
-                    }
-                }
-            }
-            if (highest - lowest + panelBorder < 28)
-            {
-                int diff = highest - lowest;
-                lowest -= (28 - diff) / 2;
-                highest += (28 - diff) / 2;
-            }
-            p.Size = new Size(2 * Width, highest - lowest + panelBorder);
-            splitterbox.Location = new Point(0, lowest /* can be lowestCS */ - panelBorder / 2);
-            lowest = lowest > splitterbox.Location.Y ? splitterbox.Top : lowest;
-            p.Controls.Add(splitterbox);
-            splitterbox.SendToBack();
-            for (int i = 0; i < p.Controls.Count; i++)
-            {
-                p.Controls[i].Location = new Point(p.Controls[i].Location.X, p.Controls[i].Location.Y - lowest + panelBorder / 2);
             }
         }
+
+        
     }
 }
