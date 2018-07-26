@@ -38,19 +38,22 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             this.badges = badges;
             this.emotes = emotes;
             twitchMessage = message;
+            //MouseClick += (o, e) => Visible = !Visible;
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            int tStart = 0;
             int border = 5;
+            int tStart = border;
             int highest = 0;
             bool exists = false;
+
+            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
             foreach (var badge in badges)
             {
                 exists = true;
-                e.Graphics.DrawImage(badge, new Point(tStart + border, PanelBorder));
+                e.Graphics.DrawImage(badge, new Point(tStart, PanelBorder));
                 tStart += badge.Size.Width + border;
                 if (badge.Height > highest)
                 {
@@ -64,17 +67,18 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
             Size s = TextRenderer.MeasureText(usernameText, Font);
-            var location = new Point(tStart + border, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
+            var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             e.Graphics.DrawString(usernameText, Font, usernameBrush, location);
 
             string text = twitchMessage.message;
             Size theTextSize = TextRenderer.MeasureText(text, Font);
-            
+
             int currentOffset = 0;
             int theWidth = DesiredWidth - 2 * border;
 
-            int lastX = location.X + s.Width;
-            int yoffset = PanelBorder;
+            int lastX = location.X + s.Width - border;
+            //e.Graphics.FillRectangle(foreColorBrush, new Rectangle(new Point(lastX, location.Y), new Size(1,theTextSize.Height)));
+            int yoffset = location.Y;
 
             bool first = true;
 
@@ -82,13 +86,19 @@ namespace TwitchChatCoroutines.ClassesAndStructs
             {
                 var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
                 var theTuple = thing.ints;
-                int next = i != emotes.Count ? thing.ints.Item1: text.Length;
+                int next = i != emotes.Count ? thing.ints.Item1 : text.Length;
                 string offsetText = text.Substring(currentOffset, next - currentOffset);
                 if (first)
                 {
                     first = false;
                     offsetText = ": " + offsetText;
                 }
+                if (offsetText.Length > 0)
+                    if (offsetText[0] == ' ')
+                        offsetText = offsetText.Substring(1);
+                if (offsetText.Length > 0)
+                    if (offsetText[offsetText.Length - 1] == ' ')
+                        offsetText = offsetText.Substring(0, offsetText.Length - 1);
                 currentOffset = i != emotes.Count ? thing.ints.Item2 + 1 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
                 string[] args = offsetText.Split(' ');
@@ -96,11 +106,13 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 string current = "";
                 for (int x = 0; x < args.Length; x++)
                 {
+                    bool wasInside = false;
                     string old = current;
                     current += args[x];
                     Size currentTextWidth = TextRenderer.MeasureText(current, Font);
-                    if (currentTextWidth.Width > theWidth)
+                    if (currentTextWidth.Width + lastX > theWidth)
                     {
+                        wasInside = true;
                         Size currentArgsWidth = TextRenderer.MeasureText(args[x], Font);
                         if (currentArgsWidth.Width > theWidth)
                         {
@@ -108,7 +120,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                         }
                         e.Graphics.DrawString(old, Font, foreColorBrush, new Point(lastX, yoffset));
                         lastX = border;
-                        yoffset += currentTextWidth.Height;
+                        yoffset += currentTextWidth.Height + (28 / 2 - currentTextWidth.Height / 2);
                         current = "";
                         x--;
                     }
@@ -121,21 +133,28 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                         e.Graphics.DrawString(current, Font, foreColorBrush, new Point(lastX, yoffset));
                         lastX += TextRenderer.MeasureText(current, Font).Width;
                     }
-                    else
+                    else if (!wasInside)
                         current += " ";
                 }
                 if (i != emotes.Count)
                 {
-                    e.Graphics.DrawImage(thing.img, new Point(lastX + EmoteSpacing, yoffset));
+                    if (lastX + thing.img.Width + EmoteSpacing > theWidth)
+                    {
+                        lastX = border;
+                        yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
+                    }
+                    e.Graphics.DrawImage(thing.img, lastX + EmoteSpacing, yoffset, thing.img.Size.Width, thing.img.Size.Height);
                     if (thing.img.Size.Height + yoffset > highest)
                     {
                         highest = thing.img.Size.Height + yoffset;
                     }
                     lastX += thing.img.Size.Width;
-                    lastX += 2*EmoteSpacing;
+                    lastX += 2 * EmoteSpacing;
                 }
+                else
+                    break;
             }
-            Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
+            Size = new Size(DesiredWidth, highest + 2 * PanelBorder);
         }
     }
 }

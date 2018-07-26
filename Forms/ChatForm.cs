@@ -473,6 +473,7 @@ namespace TwitchChatCoroutines
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
+            exclude.Location = new Point(-Width, Height - exclude.Size.Height - 50);
             coroutineManager.StartLateCoroutine(enterChatLine(exclude));
             pixelsToMove = exclude.Size.Height + panelBorder;
 
@@ -900,7 +901,6 @@ namespace TwitchChatCoroutines
                 EmoteSpacing = emoteSpacing
             };
             Controls.Add(m);
-            m.Location = new Point(-Width, Height - m.Size.Height - 50);
             currentChatMessages.Add(m);
             coroutineManager.StartCoroutine(moveLabels(m));
         }
