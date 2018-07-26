@@ -147,9 +147,9 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
                     e.Graphics.DrawImage(thing.img, lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2, thing.img.Size.Width, thing.img.Size.Height);
-                    if (yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
+                    if (yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
                     {
-                        highest = yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2;
+                        highest = yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2;
                     }
                     lastX += thing.img.Size.Width;
                     lastX += 2 * EmoteSpacing;
