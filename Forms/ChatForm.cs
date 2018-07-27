@@ -899,7 +899,7 @@ namespace TwitchChatCoroutines
                 BackColor = backColor,
                 DesiredWidth = Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
                 PanelBorder = panelBorder/2,
-                EmoteSpacing = emoteSpacing
+                EmoteSpacing = emoteSpacing,
             };
             Controls.Add(m);
             currentChatMessages.Add(m);

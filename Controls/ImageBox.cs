@@ -32,10 +32,13 @@ namespace TwitchChatCoroutines.Controls
 
         ~ImageBox()
         {
-            if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
-                CurrentAnimations.CurrentlyAnimated.Remove(Image);
-            if (ImageAnimator.CanAnimate(Image))
-                ImageAnimator.StopAnimate(Image, OnFrameChanged);
+            try
+            {
+                if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
+                    CurrentAnimations.CurrentlyAnimated.Remove(Image);
+                if (ImageAnimator.CanAnimate(Image))
+                    ImageAnimator.StopAnimate(Image, OnFrameChanged);
+            } catch { }
         }
 
         protected override void Dispose(bool disposing)
@@ -64,7 +67,8 @@ namespace TwitchChatCoroutines.Controls
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            ImageAnimator.UpdateFrames();
+            if (!CurrentAnimations.CurrentlyAnimated.Contains(Image))
+                ImageAnimator.UpdateFrames();
             e.Graphics.DrawImage(Image, 0, 0, Image.Size.Width, Image.Size.Height);
             Size = new Size(Image.Size.Width, Image.Size.Height);
         }

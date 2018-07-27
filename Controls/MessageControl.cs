@@ -25,26 +25,43 @@ namespace TwitchChatCoroutines.Controls
         public int PanelBorder { get; set; }
 
         private ColorConverter cc;
-        private List<Tuple<Point, ImageBox>> imageList;
+        private bool initial = false;
+        private bool ready = false;
+
+        private List<ImageBox> badgeControlList = new List<ImageBox>();
+        private List<ImageBox> emoteControlList = new List<ImageBox>();
 
         public void Init()
         {
             cc = new ColorConverter();
-            imageList = new List<Tuple<Point, ImageBox>>();
+            foreach(var b in badges)
+            {
+                var currentBadge = new ImageBox(b);
+                Controls.Add(currentBadge);
+                badgeControlList.Add(currentBadge);
+            }
+            foreach(var e in emotes)
+            {
+                var theImage = new ImageBox(e.Value.img);
+                Controls.Add(theImage);
+                emoteControlList.Add(theImage);
+            }
+            ready = true;
         }
 
         public MessageControl(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
         {
-            Init();
             this.badges = badges;
             this.emotes = emotes;
             twitchMessage = message;
-            //MouseClick += (o, e) => Visible = !Visible;
+            Init();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            imageList.Clear();
+            if (!ready) return;
+            e.Graphics.Clear(BackColor);
+
             int border = 5;
             int tStart = border;
             int highest = 0;
@@ -55,16 +72,14 @@ namespace TwitchChatCoroutines.Controls
 
             e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-            foreach (var badge in badges)
+            foreach (var currentBadge in badgeControlList)
             {
                 exists = true;
-                var currentBadge = new ImageBox(badge);
-                Controls.Add(currentBadge);
                 currentBadge.Location = new Point(tStart, PanelBorder);
-                tStart += badge.Size.Width + border;
-                if (badge.Height > highest)
+                tStart += currentBadge.Image.Size.Width + border;
+                if (currentBadge.Image.Height > highest)
                 {
-                    highest = badge.Height;
+                    highest = currentBadge.Image.Height;
                 }
             }
 
@@ -167,8 +182,8 @@ namespace TwitchChatCoroutines.Controls
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
-                    var theimage = new ImageBox(thing.img);
-                    imageList.Add(new Tuple<Point, ImageBox>(new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2), theimage));
+                    var theimage = emoteControlList[i];
+                    theimage.Location = new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2);
                     if (yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
                     {
                         highest = yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2;
@@ -178,11 +193,6 @@ namespace TwitchChatCoroutines.Controls
                 }
                 else
                     break;
-            }
-            foreach(var tuple in imageList)
-            {
-                Controls.Add(tuple.Item2);
-                tuple.Item2.Location = tuple.Item1;
             }
             Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
             base.OnPaint(e);
