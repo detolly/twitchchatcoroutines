@@ -65,7 +65,7 @@
     <Compile Include="Controls\MessageControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Classes and Structs\PictureBoxAndInts.cs" />
+    <Compile Include="Classes and Structs\ImageAndInts.cs" />
     <Compile Include="Controls\PictureBoxWithInterpolation.cs">
       <SubType>Component</SubType>
     </Compile>

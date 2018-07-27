@@ -20,12 +20,21 @@ namespace TwitchChatCoroutines.Controls
             set
             {
                 text = value;
-                UpdateSizeAndLocation();
             }
         }
 
         public Image Image { get; set; }
-        public Control CustomParent { get; set; }
+        private Control customParent;
+        public Control CustomParent { get
+            {
+                return customParent;
+            }
+            set
+            {
+                customParent = value;
+                UpdateSizeAndLocation();
+            }
+        }
         public bool IsCreated { get; set; }
 
         public ToolTip() { }

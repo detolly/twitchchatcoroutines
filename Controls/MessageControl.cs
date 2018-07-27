@@ -58,7 +58,9 @@ namespace TwitchChatCoroutines.Controls
             foreach (var badge in badges)
             {
                 exists = true;
-                e.Graphics.DrawImage(badge, new Point(tStart, PanelBorder));
+                var currentBadge = new ImageBox(badge);
+                Controls.Add(currentBadge);
+                currentBadge.Location = new Point(tStart, PanelBorder);
                 tStart += badge.Size.Width + border;
                 if (badge.Height > highest)
                 {
@@ -106,10 +108,10 @@ namespace TwitchChatCoroutines.Controls
                         offsetText = offsetText.Substring(0, offsetText.Length - 1);
                 currentOffset = i != emotes.Count ? thing.ints.Item2 + 1 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
-                string[] args = offsetText.Split(' ');
+                List<string> args = new List<string>(offsetText.Split(' '));
 
                 string current = "";
-                for (int x = 0; x < args.Length; x++)
+                for (int x = 0; x < args.Count; x++)
                 {
                     bool wasInside = false;
                     string old = current;
@@ -121,7 +123,21 @@ namespace TwitchChatCoroutines.Controls
                         Size currentArgsWidth = TextRenderer.MeasureText(args[x], Font);
                         if (currentArgsWidth.Width > theWidth)
                         {
-                            //some things that I can't really remember goes here.
+                            string gurrent = "";
+                            for (int j = 0; j < args[x].Length; j++)
+                            {
+                                string anotherold = gurrent;
+                                gurrent += args[x][j];
+                                if (TextRenderer.MeasureText(gurrent + old, Font).Width + lastX > theWidth)
+                                {
+                                    j = j < 0 ? 0 : j;
+                                    args.Insert(x + 1, args[x].Substring(j));
+                                    args[x] = args[x].Substring(0, j);
+                                    old += anotherold;
+                                    x++;
+                                    break;
+                                }
+                            }
                         }
                         e.Graphics.DrawString(old, Font, foreColorBrush, new Point(lastX, yoffset));
                         lastX = border;
@@ -129,7 +145,7 @@ namespace TwitchChatCoroutines.Controls
                         current = "";
                         x--;
                     }
-                    if (x == args.Length - 1)
+                    if (x == args.Count - 1)
                     {
                         if (currentTextWidth.Height + yoffset > highest)
                         {
@@ -151,7 +167,8 @@ namespace TwitchChatCoroutines.Controls
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
-                    imageList.Add(new Tuple<Point, ImageBox>(new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2), new ImageBox(thing.img)));
+                    var theimage = new ImageBox(thing.img);
+                    imageList.Add(new Tuple<Point, ImageBox>(new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2), theimage));
                     if (yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
                     {
                         highest = yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2;
@@ -164,10 +181,11 @@ namespace TwitchChatCoroutines.Controls
             }
             foreach(var tuple in imageList)
             {
-                var img = tuple.Item2.Image;
-                e.Graphics.DrawImage(img, tuple.Item1.X, tuple.Item1.Y, img.Size.Width, img.Size.Height);
+                Controls.Add(tuple.Item2);
+                tuple.Item2.Location = tuple.Item1;
             }
             Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
+            base.OnPaint(e);
         }
     }
 }

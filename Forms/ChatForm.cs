@@ -737,7 +737,7 @@ namespace TwitchChatCoroutines
             //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
 
             SortedList<int, ImageAndInts> emoteBoxes = new SortedList<int, ImageAndInts>();
-            List<Image> badges = new List<Image>();
+            var badges = new List<Image>();
 
             string[] array = twitchMessage.message.Split(' ');
             int lastLoc = 0;
@@ -829,15 +829,15 @@ namespace TwitchChatCoroutines
                     string[] parts = s.Split('/');
                     if (cachedBadges.ContainsKey(parts[0]))
                     {
-                        badges.Add(cachedBadges[parts[0]].versions[parts[1]].image);
-                        //Controls.ToolTip tip = new Controls.ToolTip(box)
+                        //Controls.ToolTip tip = new Controls.ToolTip()
                         //{
                         //    BackColor = Color.Black,
                         //    ForeColor = Color.White,
-                        //    Image = box.Image,
+                        //    Image = cachedBadges[parts[0]].versions[parts[1]].image,
                         //    Text = cachedBadges[parts[0]].versions[parts[1]].title,
                         //};
-                        //AddTooltip(box, tip, p, tooltips);
+                        //Controls.Add(tip);
+                        badges.Add(cachedBadges[parts[0]].versions[parts[1]].image);
                     }
                 }
             }
@@ -879,7 +879,8 @@ namespace TwitchChatCoroutines
                         ImageAndInts iss = new ImageAndInts
                         {
                             img = image,
-                            ints = ints[i]
+                            ints = ints[i],
+                            tooltip = new Controls.ToolTip() { Text = "Twitch Emote: " + code, Image = image }
                         };
                         try
                         {

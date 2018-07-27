@@ -2,10 +2,16 @@
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TwitchChatCoroutines.Controls
 {
-    public partial class ImageBox : Control
+    public static class CurrentAnimations
+    {
+        public static List<Image> CurrentlyAnimated { get; set; } = new List<Image>();
+    }
+    public class ImageBox : Control
     {
         public Image Image { get; set; }
         public ToolTip ToolTip { get; set; }
@@ -13,11 +19,30 @@ namespace TwitchChatCoroutines.Controls
         public ImageBox(Image image)
         {
             Image = image;
-            if (ImageAnimator.CanAnimate(Image))
-                ImageAnimator.Animate(Image, OnFrameChanged);
-            this.Size = new Size(Image.Size.Width, Image.Size.Height);
+            if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
+                if (ImageAnimator.CanAnimate(Image))
+                {
+                    CurrentAnimations.CurrentlyAnimated.Add(image);
+                    ImageAnimator.Animate(Image, OnFrameChanged);
+                }
+            Size = new Size(Image.Size.Width, Image.Size.Height);
             MouseEnter += ImageBox_MouseEnter;
             MouseLeave += ImageBox_MouseLeave;
+        }
+
+        ~ImageBox()
+        {
+            if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
+                CurrentAnimations.CurrentlyAnimated.Remove(Image);
+            if (ImageAnimator.CanAnimate(Image))
+                ImageAnimator.StopAnimate(Image, OnFrameChanged);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            foreach (Control c in Controls)
+                c.Dispose();
+            base.Dispose(disposing);
         }
 
         private void ImageBox_MouseLeave(object sender, EventArgs e)
