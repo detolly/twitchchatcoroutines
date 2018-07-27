@@ -4,7 +4,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System;
 
-namespace TwitchChatCoroutines.ClassesAndStructs
+using TwitchChatCoroutines.ClassesAndStructs;
+
+namespace TwitchChatCoroutines.Controls
 {
     class MessageControl : Panel
     {
@@ -22,11 +24,13 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public bool IsAction { get; set; }
         public int PanelBorder { get; set; }
 
-        public ColorConverter cc;
+        private ColorConverter cc;
+        private List<Tuple<Point, ImageBox>> imageList;
 
         public void Init()
         {
             cc = new ColorConverter();
+            imageList = new List<Tuple<Point, ImageBox>>();
         }
 
         public MessageControl(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
@@ -40,12 +44,13 @@ namespace TwitchChatCoroutines.ClassesAndStructs
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            imageList.Clear();
             int border = 5;
             int tStart = border;
             int highest = 0;
             int yoffset = 0;
             bool exists = false;
-            e.Graphics.DrawImage(TwitchChatCoroutines.Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
+            e.Graphics.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
             yoffset += 1;
 
             e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
@@ -146,7 +151,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
-                    e.Graphics.DrawImage(thing.img, lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2, thing.img.Size.Width, thing.img.Size.Height);
+                    imageList.Add(new Tuple<Point, ImageBox>(new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2), new ImageBox(thing.img)));
                     if (yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
                     {
                         highest = yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2;
@@ -156,6 +161,11 @@ namespace TwitchChatCoroutines.ClassesAndStructs
                 }
                 else
                     break;
+            }
+            foreach(var tuple in imageList)
+            {
+                var img = tuple.Item2.Image;
+                e.Graphics.DrawImage(img, tuple.Item1.X, tuple.Item1.Y, img.Size.Width, img.Size.Height);
             }
             Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
         }

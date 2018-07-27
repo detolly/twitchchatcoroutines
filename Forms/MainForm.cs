@@ -249,11 +249,12 @@ namespace TwitchChatCoroutines.Forms
         {
             chatFormSettings[selectedIndex].ChatMode.currentIndex = ((ComboBox)sender).SelectedIndex;
         }
-        #endregion
 
         private void BorderstyleBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             chatFormSettings[selectedIndex].BorderStyle = (FormBorderStyle)((ComboBox)sender).SelectedIndex;
         }
+        #endregion
+
     }
 }
