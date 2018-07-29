@@ -20,8 +20,8 @@ A desktop c# twitch chat application, made with Unity Syntax Coroutines for anim
 6. Enjoy your shiny new virus. Kappa.
 
 ## Credit
-Newtonsoft.JSON for the fantastic JSON parse read whatever. It's great. We need people like him to make great things, because some of us don't make great things. And we need that. Great things.
-To you for using the program, although you probably used it once and forgot about it.
++ Newtonsoft.JSON for the fantastic JSON parse read whatever. It's great. We need people like him to make great things, because some of us don't make great things. And we need that. Great things.
++ To you for using the program, although you probably used it once and forgot about it.
 
 ## Contributions
 As long as it's a good and valid contribution I will accept it. (Assuming it actually is relevant to the project, which is making a desktop twitch chat)
