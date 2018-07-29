@@ -4,13 +4,11 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Collections.Generic;
 using System.Linq;
+using TwitchChatCoroutines.ClassesAndStructs;
 
 namespace TwitchChatCoroutines.Controls
 {
-    public static class CurrentAnimations
-    {
-        public static List<Image> CurrentlyAnimated { get; set; } = new List<Image>();
-    }
+
     public class ImageBox : Control
     {
         public Image Image { get; set; }
@@ -19,27 +17,16 @@ namespace TwitchChatCoroutines.Controls
         public ImageBox(Image image)
         {
             Image = image;
-            //if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
-            //    if (ImageAnimator.CanAnimate(Image))
-            //    {
-            //        CurrentAnimations.CurrentlyAnimated.Add(image);
-            //        ImageAnimator.Animate(Image, OnFrameChanged);
-            //    }
             Size = new Size(Image.Size.Width, Image.Size.Height);
             MouseEnter += ImageBox_MouseEnter;
             MouseLeave += ImageBox_MouseLeave;
         }
 
-        ~ImageBox()
-        {
-            try
-            {
-                //if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
-                //    CurrentAnimations.CurrentlyAnimated.Remove(Image);
-                //if (ImageAnimator.CanAnimate(Image))
-                //    ImageAnimator.StopAnimate(Image, OnFrameChanged);
-            } catch { }
-        }
+        //~ImageBox()
+        //{
+        //    if (CurrentAnimations.RegisteredControls.Contains(this))
+        //        CurrentAnimations.RegisteredControls.Remove(this);
+        //}
 
         protected override void Dispose(bool disposing)
         {
@@ -60,15 +47,8 @@ namespace TwitchChatCoroutines.Controls
                 ToolTip.Visible = true;
         }
 
-        private void OnFrameChanged(object o, EventArgs e)
-        {
-            Invalidate();
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (!CurrentAnimations.CurrentlyAnimated.Contains(Image))
-                ImageAnimator.UpdateFrames();
             e.Graphics.DrawImage(Image, 0, 0, Image.Size.Width, Image.Size.Height);
             Size = new Size(Image.Size.Width, Image.Size.Height);
         }

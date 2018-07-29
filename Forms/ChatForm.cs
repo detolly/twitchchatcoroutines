@@ -241,7 +241,7 @@ namespace TwitchChatCoroutines
             if (useBTTV)
             {
                 //Downloading BTTV Channel specific emotes
-                ChangeInformationalLabel("Downloading BTT Channel specific emotes...");
+                ChangeInformationalLabel("Downloading BTTV Channel specific emotes...");
                 yield return new WaitForMilliseconds(1);
                 var temporary2 = JArray.FromObject(bttvChannelEmotesJson);
                 foreach (var entry in temporary2)
@@ -256,6 +256,14 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
+                    //if (ImageAnimator.CanAnimate(image))
+                    //    if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
+                    //        ImageAnimator.Animate(image, (o, e) =>
+                    //        {
+                    //            ImageAnimator.UpdateFrames();
+                    //            foreach (Control c in CurrentAnimations.RegisteredControls)
+                    //                c.Invalidate();
+                    //        });
                     try
                     {
                         cachedBTTVEmotes.Add(code, image);
@@ -445,21 +453,6 @@ namespace TwitchChatCoroutines
 
         IEnumerator enterChatLine(MessageControl greetings)
         {
-            //while (greetings.panel.Location.X < 0)
-            //{
-            //    if (!doAnimations)
-            //        greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-            //    else if (doAnimations)
-            //    {
-            //        if ((greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))) > 0)
-            //        {
-            //            greetings.panel.Location = new Point(0, greetings.panel.Location.Y);
-            //            continue;
-            //        }
-            //        greetings.panel.Location = new Point((int)(greetings.panel.Location.X + (1 + Math.Abs(greetings.panel.Location.X * 0.1f))), greetings.panel.Location.Y);
-            //    }
-            //    yield return new WaitForMilliseconds(5);
-            //}
             if (doAnimations)
                 for (int i = 0; i < enterChatAnimation.StepCount - 1; i++)
                 {
@@ -495,18 +488,6 @@ namespace TwitchChatCoroutines
                     for (int i = 0; i < toRemove.Count; i++)
                     {
                         currentChatMessages.Remove(toRemove[i]);
-                        //for (int x = 0; x < toRemove[i].Controls.Count; x++)
-                        //{
-                        //    toRemove[i].Controls[x].Dispose();
-                        //}
-                        //for (int x = 0; x < toRemove[i].badges.Count; x++)
-                        //{
-                        //    toRemove[i].badges[x].Dispose();
-                        //}
-                        //for (int x = 0; x < toRemove[i].tooltips.Count; x++)
-                        //{
-                        //    toRemove[i].tooltips[x].Dispose();
-                        //}
                         Controls.Remove(toRemove[i]);
                         toRemove[i].Dispose();
                     }
