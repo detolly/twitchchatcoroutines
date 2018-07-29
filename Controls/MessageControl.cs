@@ -90,7 +90,8 @@ namespace TwitchChatCoroutines.Controls
             //int padding = getPadding(Font);
             var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             yoffset = location.Y;
-            e.Graphics.DrawString(usernameText, Font, usernameBrush, location.X, location.Y);
+            //e.Graphics.DrawString(usernameText, Font, usernameBrush, location.X, location.Y);
+            TextRenderer.DrawText(e.Graphics, usernameText, Font, location, UserNameColor, BackColor, TextFormatFlags.NoPadding);
 
             string text = twitchMessage.message;
             Size theTextSize = GetTextSize(text, Font);
@@ -153,7 +154,7 @@ namespace TwitchChatCoroutines.Controls
                                 }
                             }
                         }
-                        e.Graphics.DrawString(old, Font, foreColorBrush, lastX, yoffset);
+                        TextRenderer.DrawText(e.Graphics, old, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                         current = "";
@@ -167,7 +168,7 @@ namespace TwitchChatCoroutines.Controls
                         }
                         if (current != "" && current != " ")
                         {
-                            e.Graphics.DrawString(current, Font, foreColorBrush, lastX, yoffset);
+                            TextRenderer.DrawText(e.Graphics, current, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                             lastX += GetTextSize(current, Font).Width;
                         }
                     }
@@ -195,14 +196,6 @@ namespace TwitchChatCoroutines.Controls
             }
             Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
             base.OnPaint(e);
-        }
-
-        public static int getPadding(Font font)
-        {
-            Size theOg = TextRenderer.MeasureText("asdgreetings", font);
-            Size padSize = TextRenderer.MeasureText(".", font);
-            Size textSize = TextRenderer.MeasureText("asdgreetings" + ".", font);
-            return (theOg.Width+padSize.Width)-textSize.Width;
         }
 
         private Size GetTextSize(string text, Font font)

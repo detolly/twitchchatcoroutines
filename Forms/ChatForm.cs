@@ -852,14 +852,6 @@ namespace TwitchChatCoroutines
                     string[] parts = s.Split('/');
                     if (cachedBadges.ContainsKey(parts[0]))
                     {
-                        //Controls.ToolTip tip = new Controls.ToolTip()
-                        //{
-                        //    BackColor = Color.Black,
-                        //    ForeColor = Color.White,
-                        //    Image = cachedBadges[parts[0]].versions[parts[1]].image,
-                        //    Text = cachedBadges[parts[0]].versions[parts[1]].title,
-                        //};
-                        //Controls.Add(tip);
                         badges.Add(cachedBadges[parts[0]].versions[parts[1]].image);
                     }
                 }
@@ -913,14 +905,13 @@ namespace TwitchChatCoroutines
                     }
                 }
             }
-
             MessageControl m = new MessageControl(twitchMessage, badges, emoteBoxes)
             {
                 Font = font,
                 DoSplitter = doSplitter,
                 ForeColor = textColor,
                 BackColor = backColor,
-                DesiredWidth = Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
+                DesiredWidth = Width - 2 * border - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
                 PanelBorder = panelBorder / 2,
                 EmoteSpacing = emoteSpacing,
             };
