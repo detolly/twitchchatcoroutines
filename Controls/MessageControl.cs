@@ -15,8 +15,6 @@ namespace TwitchChatCoroutines.Controls
         public TwitchMessage twitchMessage;
 
         public Font Font { get; set; }
-        public Color ForeColor { get; set; }
-        public Color BackColor { get; set; }
 
         public int DesiredWidth { get; set; }
         public int EmoteSpacing { get; set; }
@@ -68,7 +66,7 @@ namespace TwitchChatCoroutines.Controls
             int yoffset = 0;
             bool exists = false;
             e.Graphics.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
-            yoffset += 1;
+            //yoffset += 1;
 
             e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
@@ -88,18 +86,19 @@ namespace TwitchChatCoroutines.Controls
             Brush usernameBrush = new SolidBrush(UserNameColor);
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
-            Size s = TextRenderer.MeasureText(usernameText, Font);
+            Size s = GetTextSize(usernameText, Font);
+            //int padding = getPadding(Font);
             var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
-            yoffset += location.Y;
-            e.Graphics.DrawString(usernameText, Font, usernameBrush, location);
+            yoffset = location.Y;
+            e.Graphics.DrawString(usernameText, Font, usernameBrush, location.X, location.Y);
 
             string text = twitchMessage.message;
-            Size theTextSize = TextRenderer.MeasureText(text, Font);
+            Size theTextSize = GetTextSize(text, Font);
 
             int currentOffset = 0;
             int theWidth = DesiredWidth - 2 * border;
 
-            int lastX = location.X + s.Width - border;
+            int lastX = location.X + s.Width;
             //e.Graphics.FillRectangle(foreColorBrush, new Rectangle(new Point(lastX, location.Y), new Size(1,theTextSize.Height)));
 
             bool first = true;
@@ -131,11 +130,11 @@ namespace TwitchChatCoroutines.Controls
                     bool wasInside = false;
                     string old = current;
                     current += args[x];
-                    Size currentTextWidth = TextRenderer.MeasureText(current, Font);
+                    Size currentTextWidth = GetTextSize(current, Font);
                     if (currentTextWidth.Width + lastX > theWidth)
                     {
                         wasInside = true;
-                        Size currentArgsWidth = TextRenderer.MeasureText(args[x], Font);
+                        Size currentArgsWidth = GetTextSize(args[x], Font);
                         if (currentArgsWidth.Width > theWidth)
                         {
                             string gurrent = "";
@@ -143,7 +142,7 @@ namespace TwitchChatCoroutines.Controls
                             {
                                 string anotherold = gurrent;
                                 gurrent += args[x][j];
-                                if (TextRenderer.MeasureText(gurrent + old, Font).Width + lastX > theWidth)
+                                if (GetTextSize(gurrent + old, Font).Width + lastX > theWidth)
                                 {
                                     j = j < 0 ? 0 : j;
                                     args.Insert(x + 1, args[x].Substring(j));
@@ -154,7 +153,7 @@ namespace TwitchChatCoroutines.Controls
                                 }
                             }
                         }
-                        e.Graphics.DrawString(old, Font, foreColorBrush, new Point(lastX, yoffset));
+                        e.Graphics.DrawString(old, Font, foreColorBrush, lastX, yoffset);
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                         current = "";
@@ -168,8 +167,8 @@ namespace TwitchChatCoroutines.Controls
                         }
                         if (current != "" && current != " ")
                         {
-                            e.Graphics.DrawString(current, Font, foreColorBrush, new Point(lastX, yoffset));
-                            lastX += TextRenderer.MeasureText(current, Font).Width;
+                            e.Graphics.DrawString(current, Font, foreColorBrush, lastX, yoffset);
+                            lastX += GetTextSize(current, Font).Width;
                         }
                     }
                     else if (!wasInside)
@@ -196,6 +195,21 @@ namespace TwitchChatCoroutines.Controls
             }
             Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
             base.OnPaint(e);
+        }
+
+        public static int getPadding(Font font)
+        {
+            Size theOg = TextRenderer.MeasureText("asdgreetings", font);
+            Size padSize = TextRenderer.MeasureText(".", font);
+            Size textSize = TextRenderer.MeasureText("asdgreetings" + ".", font);
+            return (theOg.Width+padSize.Width)-textSize.Width;
+        }
+
+        private Size GetTextSize(string text, Font font)
+        {
+            Size padSize = TextRenderer.MeasureText(".", font);
+            Size textSize = TextRenderer.MeasureText(text + ".", font);
+            return new Size(textSize.Width - padSize.Width, textSize.Height);
         }
     }
 }

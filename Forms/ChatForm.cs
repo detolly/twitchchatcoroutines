@@ -93,6 +93,8 @@ namespace TwitchChatCoroutines
         #region Enumerators
         IEnumerator Init()
         {
+            ResizeBegin += ChatForm_ResizeStart;
+            ResizeEnd += ChatForm_ResizeEnd;
             if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
             {
                 panel1.BackColor = chatFormSettings.BackgroundColor;
@@ -158,7 +160,7 @@ namespace TwitchChatCoroutines
             ChangeInformationalLabel("Downloading Twitch Badges Information...");
             yield return new WaitForMilliseconds(1);
             badgeJson = JsonGet("https://badges.twitch.tv/v1/badges/global/display", headers).badge_sets;
-            
+
             //Download BTTV Global Emotes Information
             ChangeInformationalLabel("Download BTTV Global Emotes Information...");
             yield return new WaitForMilliseconds(1);
@@ -659,16 +661,37 @@ namespace TwitchChatCoroutines
 
         private void ChatForm_ResizeEnd(object sender, EventArgs e)
         {
+            coroutineManager.StartCoroutine(doChangeLines());
+        }
+
+        IEnumerator doChangeLines()
+        {
+            if (currentChatMessages.Count == 0) yield break;
+            int totalDiff = 0;
             Size difference = new Size(lastSize.Width - Size.Width, lastSize.Height - Size.Height);
-            foreach (MessageControl m in currentChatMessages)
+            var differences = new Size[currentChatMessages.Count];
+            for (int i = currentChatMessages.Count - 1; i >= 0; i--)
             {
+                var m = currentChatMessages[i];
+                Size oldSize = m.Size;
+                differences[i] = oldSize;
+                m.DesiredWidth = Width - 2 * border;
+                m.Invalidate();
+            }
+            yield return new WaitForMilliseconds(1);
+            for (int i = differences.Length - 1; i >= 0; i--)
+            {
+                var m = currentChatMessages[i];
+                int heightDifference = m.Size.Height - differences[i].Height;
+                totalDiff += heightDifference;
+                for (int x = i; x >= 0; x--)
+                {
+                    currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
+                }
                 m.Location = new Point(m.Location.X, m.Location.Y - difference.Height);
             }
-            foreach (MessageControl m in currentChatMessages)
-            {
-                m.Size = new Size(Width, m.Size.Height);
-            }
             AddEnterLineAnimation();
+            yield break;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -898,7 +921,7 @@ namespace TwitchChatCoroutines
                 ForeColor = textColor,
                 BackColor = backColor,
                 DesiredWidth = Width - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
-                PanelBorder = panelBorder/2,
+                PanelBorder = panelBorder / 2,
                 EmoteSpacing = emoteSpacing,
             };
             Controls.Add(m);

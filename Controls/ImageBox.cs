@@ -19,12 +19,12 @@ namespace TwitchChatCoroutines.Controls
         public ImageBox(Image image)
         {
             Image = image;
-            if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
-                if (ImageAnimator.CanAnimate(Image))
-                {
-                    CurrentAnimations.CurrentlyAnimated.Add(image);
-                    ImageAnimator.Animate(Image, OnFrameChanged);
-                }
+            //if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
+            //    if (ImageAnimator.CanAnimate(Image))
+            //    {
+            //        CurrentAnimations.CurrentlyAnimated.Add(image);
+            //        ImageAnimator.Animate(Image, OnFrameChanged);
+            //    }
             Size = new Size(Image.Size.Width, Image.Size.Height);
             MouseEnter += ImageBox_MouseEnter;
             MouseLeave += ImageBox_MouseLeave;
@@ -34,10 +34,10 @@ namespace TwitchChatCoroutines.Controls
         {
             try
             {
-                if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
-                    CurrentAnimations.CurrentlyAnimated.Remove(Image);
-                if (ImageAnimator.CanAnimate(Image))
-                    ImageAnimator.StopAnimate(Image, OnFrameChanged);
+                //if (CurrentAnimations.CurrentlyAnimated.Contains(Image))
+                //    CurrentAnimations.CurrentlyAnimated.Remove(Image);
+                //if (ImageAnimator.CanAnimate(Image))
+                //    ImageAnimator.StopAnimate(Image, OnFrameChanged);
             } catch { }
         }
 
