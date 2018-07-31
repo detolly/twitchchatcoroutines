@@ -95,13 +95,15 @@ namespace TwitchChatCoroutines
         {
             ResizeBegin += ChatForm_ResizeStart;
             ResizeEnd += ChatForm_ResizeEnd;
+
+            int h = SystemInformation.PrimaryMonitorSize.Height - 150;
+            Height = h;
+
             if ((ChatModes)chatFormSettings.ChatMode.currentIndex == ChatModes.ChatUser)
             {
+                panel1.Visible = true;
                 panel1.BackColor = chatFormSettings.BackgroundColor;
                 panel1.ForeColor = chatFormSettings.ForegroundColor;
-
-                int h = SystemInformation.PrimaryMonitorSize.Height - 150;
-                Height = h;
 
                 panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
                 panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top;
@@ -537,11 +539,6 @@ namespace TwitchChatCoroutines
                     }
                     user.message = extractedMessage;
                     messagesToBeAdded.Enqueue(user);
-
-                    //#if DEBUG
-                    //  if (channelToJoin.ToLower() == "kingkalus" && user.mod == 0)
-                    //    SendMessage(".timeout " + user.display_name + " 1");
-                    //#endif
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
                 {
@@ -714,27 +711,6 @@ namespace TwitchChatCoroutines
             label2.Location = new Point(Size.Width / 2 - label2.Size.Width / 2, label2.Location.Y);
         }
 
-        public void AddTooltip(Control box, Controls.ToolTip tip, Panel p, List<Controls.ToolTip> tips)
-        {
-            box.MouseEnter += (o, e) =>
-            {
-                if (!tip.IsCreated)
-                {
-                    Controls.Add(tip);
-                    tip.BringToFront();
-                    tip.IsCreated = true;
-                }
-                int spacing = TwitchChatCoroutines.Controls.ToolTip.spacing;
-                tip.Location = new Point(Math.Max(tip.CustomParent.Location.X + tip.CustomParent.Size.Width / 2 - tip.Size.Width / 2 + spacing, spacing), p.Location.Y + box.Location.Y - tip.Size.Height);
-                tip.Visible = true;
-            };
-            box.MouseLeave += (o, e) =>
-            {
-                tip.Visible = false;
-            };
-            tips.Add(tip);
-        }
-
         private void MakeAndInsertLabel(TwitchMessage twitchMessage)
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
@@ -776,54 +752,48 @@ namespace TwitchChatCoroutines
                         };
                         emoteBoxes.Add(start, iss);
                     }
-                    //else if (useEmoji)
-                    //{
-                    //    List<string> emojis = new List<string>();
-                    //    string current = "";
-                    //    for (int i = 0; i < a.Length; i++)
-                    //    {
-                    //        char c = a[i];
-                    //        if (!Emojis.codeToEmoji.ContainsKey(current))
-                    //            if (c > 255)
-                    //            {
-                    //                current += c;
-                    //                continue;
-                    //            }
-                    //        if (current.Length > 0)
-                    //        {
-                    //            i--;
-                    //            emojis.Add(current);
-                    //        }
-                    //        current = "";
-                    //    }
-                    //    if (current.Length > 0)
-                    //        emojis.Add(current);
-                    //    foreach (string s in emojis)
-                    //        if (Emojis.codeToEmoji.ContainsKey(s))
-                    //        {
-                    //            int start = twitchMessage.message.IndexOf(s, lastLoc);
-                    //            int stop = start + s.Length - 1;
-                    //            Tuple<int, int> ints = new Tuple<int, int>(start, stop);
-                    //            lastLoc = stop;
-                    //            PictureBoxWithInterpolation box = new PictureBoxWithInterpolation
-                    //            {
-                    //                InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High,
-                    //                Image = Emojis.codeToEmoji[s],
-                    //                SizeMode = PictureBoxSizeMode.StretchImage,
-                    //                Size = new Size(18, 18)
-                    //            };
-                    //            ImageAndInts iss = new ImageAndInts
-                    //            {
-                    //                img = box,
-                    //                ints = ints
-                    //            };
-                    //            try
-                    //            {
-                    //                emoteBoxes.Add(start, iss);
-                    //            }
-                    //            catch { }
-                    //        }
-                    //}
+                    else if (useEmoji)
+                    {
+                        List<string> emojis = new List<string>();
+                        string current = "";
+                        for (int i = 0; i < a.Length; i++)
+                        {
+                            char c = a[i];
+                            if (!Emojis.codeToEmoji.ContainsKey(current))
+                                if (c > 255)
+                                {
+                                    current += c;
+                                    continue;
+                                }
+                            if (current.Length > 0)
+                            {
+                                i--;
+                                emojis.Add(current);
+                            }
+                            current = "";
+                        }
+                        if (current.Length > 0)
+                            emojis.Add(current);
+                        foreach (string s in emojis)
+                            if (Emojis.codeToEmoji.ContainsKey(s))
+                            {
+                                int start = twitchMessage.message.IndexOf(s, lastLoc);
+                                int stop = start + s.Length - 1;
+                                Tuple<int, int> ints = new Tuple<int, int>(start, stop);
+                                lastLoc = stop;
+                                ImageAndInts iss = new ImageAndInts
+                                {
+                                    img = Emojis.codeToEmoji[s],
+                                    ints = ints,
+                                    preferredSize = new Size(18, 18)
+                                };
+                                try
+                                {
+                                    emoteBoxes.Add(start, iss);
+                                }
+                                catch { }
+                            }
+                    }
                 }
             string[] tBadges = twitchMessage.badges.Split(',');
             if (tBadges[0] != null)
@@ -876,7 +846,7 @@ namespace TwitchChatCoroutines
                         {
                             img = image,
                             ints = ints[i],
-                            tooltip = new Controls.ToolTip() { Text = "Twitch Emote: " + code, Image = image }
+                            tooltip = new Controls.ToolTip("Twitch Emote: " + code, image)
                         };
                         try
                         {

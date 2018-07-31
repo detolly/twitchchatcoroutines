@@ -7,6 +7,7 @@ namespace TwitchChatCoroutines.ClassesAndStructs
     struct ImageAndInts
     {
         public Image img;
+        public Size preferredSize;
         public ToolTip tooltip;
         public Tuple<int, int> ints;
     }

@@ -11,10 +11,9 @@ namespace TwitchChatCoroutines.Controls
     class MessageControl : Panel
     {
         public List<Image> badges;
+
         public SortedList<int, ImageAndInts> emotes;
         public TwitchMessage twitchMessage;
-
-        public Font Font { get; set; }
 
         public int DesiredWidth { get; set; }
         public int EmoteSpacing { get; set; }
@@ -25,32 +24,37 @@ namespace TwitchChatCoroutines.Controls
         private ColorConverter cc;
         private bool ready = false;
 
-        private List<ImageBox> badgeControlList = new List<ImageBox>();
-        private List<ImageBox> emoteControlList = new List<ImageBox>();
+        //private List<ImageBox> badgeControlList = new List<ImageBox>();
+        //private List<ImageBox> emoteControlList = new List<ImageBox>();
+
+        private List<Tuple<ImageAndInts, Point>> listOfImagesToDraw = new List<Tuple<ImageAndInts, Point>>();
+        private List<Tuple<string, Point, Color>> listOfTextToDraw = new List<Tuple<string, Point, Color>>();
+
+        List<ImageAndInts> currently = new List<ImageAndInts>();
 
         public void Init()
         {
             cc = new ColorConverter();
-            foreach (var b in badges)
-            {
-                var currentBadge = new ImageBox(b);
-                Controls.Add(currentBadge);
-                badgeControlList.Add(currentBadge);
-            }
-            foreach (var e in emotes)
-            {
-                //var theImage = new ImageBox(e.Value.img);
-                //Controls.Add(theImage);
-                //emoteControlList.Add(theImage);
+            //foreach (var b in badges)
+            //{
+            //    var currentBadge = new ImageBox(b);
+            //    Controls.Add(currentBadge);
+            //    badgeControlList.Add(currentBadge);
+            //}
+            //foreach (var e in emotes)
+            //{
+            //  var theImage = new ImageBox(e.Value.img);
+            //  Controls.Add(theImage);
+            //  emoteControlList.Add(theImage);
 
-                //Two separate functionalities
+            //  Two separate functionalities
 
-                //if (ImageAnimator.CanAnimate(e.Value.img))
-                //    CurrentAnimations.RegisteredControls.Add(theImage);
-            }
+            //  if (ImageAnimator.CanAnimate(e.Value.img))
+            //    CurrentAnimations.RegisteredControls.Add(theImage);
+            //}
             ready = true;
         }
-
+        
         public MessageControl(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
         {
             this.badges = badges;
@@ -64,27 +68,36 @@ namespace TwitchChatCoroutines.Controls
             if (!ready) return;
             e.Graphics.Clear(BackColor);
 
+            listOfImagesToDraw.Clear();
+            listOfTextToDraw.Clear();
+
             int border = 5;
             int tStart = border;
-            int highest = 0;
             int yoffset = 0;
+
+            int highest = 0;
+            int lowest = int.MaxValue;
+
             bool exists = false;
-            e.Graphics.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
+            if (DoSplitter)
+                e.Graphics.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
 
             e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-            foreach (var currentBadge in badgeControlList)
+            foreach (var currentBadge in badges)
             {
                 exists = true;
-                currentBadge.Location = new Point(tStart, PanelBorder);
-                tStart += currentBadge.Image.Size.Width + border;
-                if (currentBadge.Image.Height > highest)
+                var theLocation = new Point(tStart, PanelBorder);
+                listOfImagesToDraw.Add(new Tuple<ImageAndInts, Point>(new ImageAndInts() { img = currentBadge }, theLocation));
+                tStart += currentBadge.Size.Width + border;
+                if (currentBadge.Height > highest)
                 {
-                    highest = currentBadge.Image.Height;
+                    highest = currentBadge.Height;
                 }
             }
 
             var UserNameColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
+            ForeColor = IsAction ? UserNameColor : ForeColor;
             Brush foreColorBrush = new SolidBrush(ForeColor);
             Brush usernameBrush = new SolidBrush(UserNameColor);
 
@@ -92,7 +105,10 @@ namespace TwitchChatCoroutines.Controls
             Size s = GetTextSize(usernameText, Font);
             var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             yoffset = location.Y;
-            TextRenderer.DrawText(e.Graphics, usernameText, Font, location, UserNameColor, BackColor, TextFormatFlags.NoPadding);
+            if (location.Y < lowest)
+                lowest = location.Y;
+            listOfTextToDraw.Add(new Tuple<string, Point, Color>(usernameText, location, UserNameColor));
+            //TextRenderer.DrawText(e.Graphics, usernameText, Font, location, UserNameColor, BackColor, TextFormatFlags.NoPadding);
 
             string text = twitchMessage.message;
             Size theTextSize = GetTextSize(text, Font);
@@ -156,7 +172,8 @@ namespace TwitchChatCoroutines.Controls
                         }
                         if (old != "")
                             x--;
-                        TextRenderer.DrawText(e.Graphics, old, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
+                        listOfTextToDraw.Add(new Tuple<string, Point, Color>(old, new Point(lastX, yoffset), ForeColor));
+                        //TextRenderer.DrawText(e.Graphics, old, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                         lastX = border;
                         current = "";
@@ -169,7 +186,8 @@ namespace TwitchChatCoroutines.Controls
                         }
                         if (current != "" && current != " ")
                         {
-                            TextRenderer.DrawText(e.Graphics, current, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
+                            listOfTextToDraw.Add(new Tuple<string, Point, Color>(current, new Point(lastX, yoffset), ForeColor));
+                            //TextRenderer.DrawText(e.Graphics, current, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                             lastX += GetTextSize(current, Font).Width;
                         }
                     }
@@ -178,28 +196,59 @@ namespace TwitchChatCoroutines.Controls
                 }
                 if (i != emotes.Count)
                 {
+                    if (thing.img == null) return;
                     if (lastX + thing.img.Width + EmoteSpacing > theWidth)
                     {
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
-                    //var theimage = emoteControlList[i];
-                    //theimage.BringToFront();
-                    var pa = new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - thing.img.Size.Height / 2);
-                    //theimage.Location = pa;
-                    e.Graphics.DrawImage(thing.img, pa.X, pa.Y, thing.img.Size.Width, thing.img.Size.Height);
-                    if (yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2 > highest)
+                    Size theSize = thing.preferredSize.Width != 0 && thing.preferredSize.Height != 0 ? thing.preferredSize : new Size(thing.img.Size.Width, thing.img.Size.Height);
+                    var pa = new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - theSize.Height / 2);
+                    if (pa.Y < lowest)
+                        lowest = pa.Y;
+                    listOfImagesToDraw.Add(new Tuple<ImageAndInts, Point>(thing, pa));
+                    //e.Graphics.DrawImage(thing.img, pa.X, pa.Y, theSize.Width, theSize.Height);
+                    if (yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2 > highest)
                     {
-                        highest = yoffset + thing.img.Size.Height + theTextSize.Height / 2 - thing.img.Size.Height / 2;
+                        highest = yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2;
                     }
-                    lastX += thing.img.Size.Width;
+                    lastX += theSize.Width;
                     lastX += 2 * EmoteSpacing;
                 }
                 else
                     break;
             }
-            Size = new Size(DesiredWidth, Math.Max(highest + 2 * PanelBorder, 28));
+            if (lowest < PanelBorder)
+            {
+                List<Tuple<ImageAndInts, Point>> tempList = new List<Tuple<ImageAndInts, Point>>();
+                foreach (var t in listOfImagesToDraw)
+                {
+                    tempList.Add(new Tuple<ImageAndInts, Point>(t.Item1, new Point(t.Item2.X, t.Item2.Y+Math.Abs(lowest)+PanelBorder)));
+                }
+                listOfImagesToDraw = tempList;
+                List<Tuple<string, Point, Color>> tempList2 = new List<Tuple<string, Point, Color>>();
+                foreach (var t in listOfTextToDraw)
+                {
+                    tempList2.Add(new Tuple<string, Point, Color>(t.Item1, new Point(t.Item2.X, t.Item2.Y+Math.Abs(lowest)+PanelBorder), t.Item3));
+                }
+                listOfTextToDraw = tempList2;
+            }
+            DrawContent(e.Graphics);
+            Size = new Size(DesiredWidth, Math.Max(highest-lowest + 2 * PanelBorder, 28));
             base.OnPaint(e);
+        }
+
+        private void DrawContent(Graphics g)
+        {
+            foreach(var t in listOfTextToDraw)
+            {
+                TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
+            }
+            foreach (var t in listOfImagesToDraw)
+            {
+                Size size = t.Item1.preferredSize.Width != 0 && t.Item1.preferredSize.Height != 0 ? t.Item1.preferredSize : new Size(t.Item1.img.Size.Width, t.Item1.img.Size.Height);
+                g.DrawImage(t.Item1.img, t.Item2.X, t.Item2.Y, size.Width, size.Height);
+            }
         }
 
         private Size GetTextSize(string text, Font font)
