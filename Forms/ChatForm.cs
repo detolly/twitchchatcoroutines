@@ -582,6 +582,8 @@ namespace TwitchChatCoroutines
                     AutoFlush = true
                 };
                 var chatMod = (ChatModes)chatFormSettings.ChatMode.currentIndex;
+                writer.WriteLine("CAP REQ :twitch.tv/tags");
+                writer.WriteLine("CAP REQ :twitch.tv/commands");
                 if (chatMod == ChatModes.Anonymous)
                 {
                     botUsername = "justinfan1";
@@ -595,8 +597,6 @@ namespace TwitchChatCoroutines
                 }
 
                 writer.WriteLine("JOIN #" + channelToJoin.ToLower());
-                writer.WriteLine("CAP REQ :twitch.tv/tags");
-                writer.WriteLine("CAP REQ :twitch.tv/commands");
             }
         }
         #endregion
