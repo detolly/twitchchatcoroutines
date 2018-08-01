@@ -453,7 +453,7 @@ namespace TwitchChatCoroutines
             yield break;
         }
 
-        IEnumerator enterChatLine(MessageControl greetings)
+        IEnumerator enterChatLine(TwitchUserMessage greetings)
         {
             if (doAnimations)
                 for (int i = 0; i < enterChatAnimation.StepCount - 1; i++)
@@ -466,19 +466,20 @@ namespace TwitchChatCoroutines
             yield break;
         }
 
-        IEnumerator moveLabels(MessageControl exclude)
+        IEnumerator moveLabels(MessageControl messageToBeEntered)
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
-            exclude.Location = new Point(-Width, Height - exclude.Size.Height - 50);
-            coroutineManager.StartLateCoroutine(enterChatLine(exclude));
-            pixelsToMove = exclude.Size.Height + panelBorder;
+            messageToBeEntered.Location = new Point(-Width, Height - messageToBeEntered.Size.Height - 50);
+            if (messageToBeEntered is TwitchUserMessage userMessage)
+                coroutineManager.StartLateCoroutine(enterChatLine(userMessage));
+            pixelsToMove = messageToBeEntered.Size.Height + panelBorder;
 
             for (int i = 0; i < currentChatMessages.Count; i++)
             {
-                if (currentChatMessages[i] == exclude) continue;
+                if (currentChatMessages[i] == messageToBeEntered) continue;
                 int border = -currentChatMessages[i].Size.Height - 5;
-                pixelsToMove = exclude.Size.Height;
+                pixelsToMove = messageToBeEntered.Size.Height;
                 currentChatMessages[i].Location = new Point(currentChatMessages[i].Location.X, currentChatMessages[i].Location.Y - pixelsToMove);
                 if (currentChatMessages[i].Location.Y < border)
                     toRemove.Add(currentChatMessages[i]);
@@ -547,7 +548,7 @@ namespace TwitchChatCoroutines
                     string user = rawLine.Substring(start, rawLine.Length - start);
                     Font f = font;
                     f = new Font(f, FontStyle.Strikeout);
-                    foreach (MessageControl m in currentChatMessages)
+                    foreach (TwitchUserMessage m in currentChatMessages)
                     {
                         if (m.twitchMessage.display_name.ToLower() == user.ToLower())
                             m.Font = f;
@@ -609,22 +610,25 @@ namespace TwitchChatCoroutines
             font = chatFormSettings.Font;
             doAnimations = chatFormSettings.Animations;
             panelBorder = chatFormSettings.PanelBorder;
+            emoteSpacing = chatFormSettings.EmoteSpacing;
             if (doSplitter != chatFormSettings.Splitter)
             {
                 doSplitter = chatFormSettings.Splitter;
                 if (IsHandleCreated)
-                    Invoke((MethodInvoker)(() =>
-                    {
-                        foreach (MessageControl m in currentChatMessages)
+                        foreach (TwitchUserMessage m in currentChatMessages)
                             m.DoSplitter = doSplitter;
-                    }));
             }
             if (IsHandleCreated)
                 Invoke((MethodInvoker)(() =>
                 {
                     FormBorderStyle = chatFormSettings.BorderStyle;
                 }));
-            emoteSpacing = chatFormSettings.EmoteSpacing;
+            if (IsHandleCreated)
+                Invoke((MethodInvoker)(() =>
+                {
+                    foreach (TwitchUserMessage m in currentChatMessages)
+                        m.DrawContent(m.CreateGraphics());
+                }));
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -653,8 +657,11 @@ namespace TwitchChatCoroutines
                 var m = currentChatMessages[i];
                 Size oldSize = m.Size;
                 differences[i] = oldSize;
-                m.DesiredWidth = Width - 2 * border;
-                m.Invalidate();
+                if (m is TwitchUserMessage me)
+                {
+                    me.DesiredWidth = Width - 2 * border;
+                    me.Invalidate();
+                }
             }
             yield return new WaitForMilliseconds(1);
             for (int i = differences.Length - 1; i >= 0; i--)
@@ -846,7 +853,7 @@ namespace TwitchChatCoroutines
                         {
                             img = image,
                             ints = ints[i],
-                            tooltip = new Controls.ToolTip("Twitch Emote: " + code, image)
+                            //tooltip = new Controls.ToolTip("Twitch Emote: " + code, image)
                         };
                         try
                         {
@@ -856,7 +863,7 @@ namespace TwitchChatCoroutines
                     }
                 }
             }
-            MessageControl m = new MessageControl(twitchMessage, badges, emoteBoxes)
+            TwitchUserMessage m = new TwitchUserMessage(twitchMessage, badges, emoteBoxes)
             {
                 Font = font,
                 DoSplitter = doSplitter,

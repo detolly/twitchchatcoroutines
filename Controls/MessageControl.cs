@@ -8,7 +8,9 @@ using TwitchChatCoroutines.ClassesAndStructs;
 
 namespace TwitchChatCoroutines.Controls
 {
-    class MessageControl : Panel
+    abstract class MessageControl : Panel {}
+
+    class TwitchUserMessage : MessageControl
     {
         public List<Image> badges;
 
@@ -55,7 +57,7 @@ namespace TwitchChatCoroutines.Controls
             ready = true;
         }
         
-        public MessageControl(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
+        public TwitchUserMessage(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
         {
             this.badges = badges;
             this.emotes = emotes;
@@ -79,8 +81,6 @@ namespace TwitchChatCoroutines.Controls
             int lowest = int.MaxValue;
 
             bool exists = false;
-            if (DoSplitter)
-                e.Graphics.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth, 1);
 
             e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
@@ -125,7 +125,7 @@ namespace TwitchChatCoroutines.Controls
                 var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
                 var theTuple = thing.ints;
                 int next = i != emotes.Count ? thing.ints.Item1 : text.Length;
-                string offsetText = text.Substring(currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
+                string offsetText = text.Substring(currentOffset > text.Length-1 ? text.Length - 1 : currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
                 if (first)
                 {
                     first = false;
@@ -197,12 +197,12 @@ namespace TwitchChatCoroutines.Controls
                 if (i != emotes.Count)
                 {
                     if (thing.img == null) return;
-                    if (lastX + thing.img.Width + EmoteSpacing > theWidth)
+                    Size theSize = thing.preferredSize.Width != 0 && thing.preferredSize.Height != 0 ? thing.preferredSize : new Size(thing.img.Size.Width, thing.img.Size.Height);
+                    if (lastX + theSize.Width > theWidth)
                     {
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                     }
-                    Size theSize = thing.preferredSize.Width != 0 && thing.preferredSize.Height != 0 ? thing.preferredSize : new Size(thing.img.Size.Width, thing.img.Size.Height);
                     var pa = new Point(lastX + EmoteSpacing, yoffset + theTextSize.Height / 2 - theSize.Height / 2);
                     if (pa.Y < lowest)
                         lowest = pa.Y;
@@ -234,13 +234,15 @@ namespace TwitchChatCoroutines.Controls
                 listOfTextToDraw = tempList2;
             }
             DrawContent(e.Graphics);
-            Size = new Size(DesiredWidth, Math.Max(highest-lowest + 2 * PanelBorder, 28));
+            Size = new Size(DesiredWidth*2, Math.Max(highest-lowest + 2 * PanelBorder, 28));
             base.OnPaint(e);
         }
 
-        private void DrawContent(Graphics g)
+        public void DrawContent(Graphics g)
         {
-            foreach(var t in listOfTextToDraw)
+            if (DoSplitter)
+                g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth*2, 1);
+            foreach (var t in listOfTextToDraw)
             {
                 TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
             }
