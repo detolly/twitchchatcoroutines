@@ -235,11 +235,12 @@ namespace TwitchChatCoroutines.Controls
             }
             DrawContent(e.Graphics);
             Size = new Size(DesiredWidth*2, Math.Max(highest-lowest + 2 * PanelBorder, 28));
-            base.OnPaint(e);
+            //base.OnPaint(e);
         }
 
         public void DrawContent(Graphics g)
         {
+            g.Clear(BackColor);
             if (DoSplitter)
                 g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth*2, 1);
             foreach (var t in listOfTextToDraw)
