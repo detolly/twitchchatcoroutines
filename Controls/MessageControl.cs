@@ -8,7 +8,7 @@ using TwitchChatCoroutines.ClassesAndStructs;
 
 namespace TwitchChatCoroutines.Controls
 {
-    abstract class MessageControl : Panel {}
+    class MessageControl : UserControl {}
 
     class TwitchUserMessage : MessageControl
     {
@@ -57,19 +57,26 @@ namespace TwitchChatCoroutines.Controls
             ready = true;
         }
         
-        public TwitchUserMessage(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes)
+        public TwitchUserMessage(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes, Font font, bool doSplitter, Color foreColor, Color backColor, int desiredWidth, int panelBorder, int emoteSpacing)
         {
+            twitchMessage = message;
+            Font = font;
+            DoSplitter = doSplitter;
+            ForeColor = foreColor;
+            BackColor = backColor;
+            DesiredWidth = desiredWidth;
+            PanelBorder = panelBorder;
+            EmoteSpacing = emoteSpacing; 
+
             this.badges = badges;
             this.emotes = emotes;
-            twitchMessage = message;
+
             Init();
+            CalculateTextAndEmotes();
         }
 
-        protected override void OnPaint(PaintEventArgs e)
+        public void CalculateTextAndEmotes()
         {
-            if (!ready) return;
-            e.Graphics.Clear(BackColor);
-
             listOfImagesToDraw.Clear();
             listOfTextToDraw.Clear();
 
@@ -81,8 +88,6 @@ namespace TwitchChatCoroutines.Controls
             int lowest = int.MaxValue;
 
             bool exists = false;
-
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
             foreach (var currentBadge in badges)
             {
@@ -125,7 +130,7 @@ namespace TwitchChatCoroutines.Controls
                 var thing = i != emotes.Count ? emotes.Values[i] : new ImageAndInts() /* To avoid errors on compile time */;
                 var theTuple = thing.ints;
                 int next = i != emotes.Count ? thing.ints.Item1 : text.Length;
-                string offsetText = text.Substring(currentOffset > text.Length-1 ? text.Length - 1 : currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
+                string offsetText = text.Substring(currentOffset > text.Length - 1 ? text.Length - 1 : currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
                 if (first)
                 {
                     first = false;
@@ -223,23 +228,31 @@ namespace TwitchChatCoroutines.Controls
                 List<Tuple<ImageAndInts, Point>> tempList = new List<Tuple<ImageAndInts, Point>>();
                 foreach (var t in listOfImagesToDraw)
                 {
-                    tempList.Add(new Tuple<ImageAndInts, Point>(t.Item1, new Point(t.Item2.X, t.Item2.Y+Math.Abs(lowest)+PanelBorder)));
+                    tempList.Add(new Tuple<ImageAndInts, Point>(t.Item1, new Point(t.Item2.X, t.Item2.Y + Math.Abs(lowest) + PanelBorder)));
                 }
                 listOfImagesToDraw = tempList;
                 List<Tuple<string, Point, Color>> tempList2 = new List<Tuple<string, Point, Color>>();
                 foreach (var t in listOfTextToDraw)
                 {
-                    tempList2.Add(new Tuple<string, Point, Color>(t.Item1, new Point(t.Item2.X, t.Item2.Y+Math.Abs(lowest)+PanelBorder), t.Item3));
+                    tempList2.Add(new Tuple<string, Point, Color>(t.Item1, new Point(t.Item2.X, t.Item2.Y + Math.Abs(lowest) + PanelBorder), t.Item3));
                 }
                 listOfTextToDraw = tempList2;
             }
+            DrawContent(CreateGraphics());
+            Size = new Size(DesiredWidth * 2, Math.Max(highest - lowest + 2 * PanelBorder, 28));
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (!ready) return;
+
             DrawContent(e.Graphics);
-            Size = new Size(DesiredWidth*2, Math.Max(highest-lowest + 2 * PanelBorder, 28));
             //base.OnPaint(e);
         }
 
         public void DrawContent(Graphics g)
         {
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.Clear(BackColor);
             if (DoSplitter)
                 g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth*2, 1);

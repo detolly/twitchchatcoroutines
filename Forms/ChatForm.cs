@@ -95,6 +95,7 @@ namespace TwitchChatCoroutines
         {
             ResizeBegin += ChatForm_ResizeStart;
             ResizeEnd += ChatForm_ResizeEnd;
+            Resize += ChatForm_ResizeEnd;
 
             int h = SystemInformation.PrimaryMonitorSize.Height - 150;
             Height = h;
@@ -108,6 +109,14 @@ namespace TwitchChatCoroutines
                 panel1.Location = new Point(Width / 2 - panel1.Size.Width / 2, Height);
                 panel1.Anchor = AnchorStyles.Left & AnchorStyles.Right & AnchorStyles.Top;
                 panel1.BringToFront();
+
+                richTextBox1.Visible = true;
+                richTextBox1.EnableAutoDragDrop = true;
+                richTextBox1.KeyUp += (o, e) =>
+                {
+                    if (e.KeyData == Keys.Enter)
+                        sendCurrentMessageToChat();
+                };
 
                 comboBox1.Items.Clear();
                 foreach (string s in Authentication.GetLogins())
@@ -470,7 +479,6 @@ namespace TwitchChatCoroutines
         {
             List<MessageControl> toRemove = new List<MessageControl>();
 
-            messageToBeEntered.Location = new Point(-Width, Height - messageToBeEntered.Size.Height - 50);
             if (messageToBeEntered is TwitchUserMessage userMessage)
                 coroutineManager.StartLateCoroutine(enterChatLine(userMessage));
             pixelsToMove = messageToBeEntered.Size.Height + panelBorder;
@@ -557,7 +565,7 @@ namespace TwitchChatCoroutines
             }
             if (messagesToBeAdded.Count > 0)
             {
-                MakeAndInsertLabel(messagesToBeAdded.Dequeue());
+                ProcessMessage(messagesToBeAdded.Dequeue());
             }
         }
 
@@ -615,14 +623,15 @@ namespace TwitchChatCoroutines
             {
                 doSplitter = chatFormSettings.Splitter;
                 if (IsHandleCreated)
-                        foreach (TwitchUserMessage m in currentChatMessages)
-                            m.DoSplitter = doSplitter;
+                    foreach (TwitchUserMessage m in currentChatMessages)
+                        m.DoSplitter = doSplitter;
             }
-            if (IsHandleCreated)
-                Invoke((MethodInvoker)(() =>
-                {
-                    FormBorderStyle = chatFormSettings.BorderStyle;
-                }));
+            if (FormBorderStyle != chatFormSettings.BorderStyle)
+                if (IsHandleCreated)
+                    Invoke((MethodInvoker)(() =>
+                    {
+                        FormBorderStyle = chatFormSettings.BorderStyle;
+                    }));
             if (IsHandleCreated)
                 Invoke((MethodInvoker)(() =>
                 {
@@ -643,12 +652,12 @@ namespace TwitchChatCoroutines
 
         private void ChatForm_ResizeEnd(object sender, EventArgs e)
         {
-            coroutineManager.StartCoroutine(doChangeLines());
+            doChangeLines();
         }
 
-        IEnumerator doChangeLines()
+        void doChangeLines()
         {
-            if (currentChatMessages.Count == 0) yield break;
+            if (currentChatMessages.Count == 0) return;
             int totalDiff = 0;
             Size difference = new Size(lastSize.Width - Size.Width, lastSize.Height - Size.Height);
             var differences = new Size[currentChatMessages.Count];
@@ -660,10 +669,10 @@ namespace TwitchChatCoroutines
                 if (m is TwitchUserMessage me)
                 {
                     me.DesiredWidth = Width - 2 * border;
-                    me.Invalidate();
+                    me.CalculateTextAndEmotes();
                 }
             }
-            yield return new WaitForMilliseconds(1);
+            Application.DoEvents();
             for (int i = differences.Length - 1; i >= 0; i--)
             {
                 var m = currentChatMessages[i];
@@ -675,8 +684,6 @@ namespace TwitchChatCoroutines
                 }
                 m.Location = new Point(m.Location.X, m.Location.Y - difference.Height);
             }
-            AddEnterLineAnimation();
-            yield break;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -712,13 +719,20 @@ namespace TwitchChatCoroutines
         #endregion
 
         #region Visual
+        private void sendCurrentMessageToChat()
+        {
+            string textToSend = richTextBox1.Text;
+            richTextBox1.Clear();
+            writer.WriteLine("PRIVMSG #" + channelToJoin + " :" + textToSend);
+        }
+
         private void ChangeInformationalLabel(string newText)
         {
             label2.Text = newText;
             label2.Location = new Point(Size.Width / 2 - label2.Size.Width / 2, label2.Location.Y);
         }
 
-        private void MakeAndInsertLabel(TwitchMessage twitchMessage)
+        private void ProcessMessage(TwitchMessage twitchMessage)
         {
             // http://static-cdn.jtvnw.net/emoticons/v1/:<emote ID>/1.0
             //<emote ID>:<first index>-<last index>,<another first index>-<another last index>/<another emote ID>:<first index>-<last index>...
@@ -863,18 +877,11 @@ namespace TwitchChatCoroutines
                     }
                 }
             }
-            TwitchUserMessage m = new TwitchUserMessage(twitchMessage, badges, emoteBoxes)
-            {
-                Font = font,
-                DoSplitter = doSplitter,
-                ForeColor = textColor,
-                BackColor = backColor,
-                DesiredWidth = Width - 2 * border - (vScrollBar1.Visible ? vScrollBar1.Width : 0),
-                PanelBorder = panelBorder / 2,
-                EmoteSpacing = emoteSpacing,
-            };
+            TwitchUserMessage m = new TwitchUserMessage(twitchMessage, badges, emoteBoxes, font, doSplitter, textColor, backColor, Width - 2 * border - (vScrollBar1.Visible ? vScrollBar1.Width : 0), panelBorder / 2, emoteSpacing);
             Controls.Add(m);
             currentChatMessages.Add(m);
+            Application.DoEvents();
+            m.Location = new Point(-m.Width, Height - m.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
             coroutineManager.StartCoroutine(moveLabels(m));
         }
 
