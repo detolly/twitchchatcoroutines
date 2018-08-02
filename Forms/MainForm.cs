@@ -255,6 +255,5 @@ namespace TwitchChatCoroutines.Forms
             chatFormSettings[selectedIndex].BorderStyle = (FormBorderStyle)((ComboBox)sender).SelectedIndex;
         }
         #endregion
-
     }
 }
