@@ -1,0 +1,12 @@
+Plan for chat application:
+
+Features that are necessary:
+	- Chat if you're logged in
+	- Host and Raid notifications
+	- Sub, resub, and sub gift notification
+
+How to make these, it should be simple.
+
+Host and Raid notifications is just parsing things, and then I can make a custom messagecontrol with a different font or animation or something that just makes it cool.
+
+Sub, Resub, And sub gift, I'm thinking of nudging the chat over, and displaying a huge panel with the name of the sub, and a celebration. This should have to be toggleable for obvious reasons.

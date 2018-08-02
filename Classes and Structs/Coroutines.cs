@@ -20,10 +20,6 @@ namespace CoroutineSystem
         #endregion
         #region Properties
         #region Private
-        private static string exampleProperty
-        {
-            get; set;
-        }
         #endregion
         #endregion
         #endregion
