@@ -95,7 +95,7 @@ namespace TwitchChatCoroutines
         {
             ResizeBegin += ChatForm_ResizeStart;
             ResizeEnd += ChatForm_ResizeEnd;
-            Resize += ChatForm_ResizeEnd;
+            Resize += ChatForm_Resize;
 
             int h = SystemInformation.PrimaryMonitorSize.Height - 150;
             Height = h;
@@ -267,14 +267,6 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
-                    //if (ImageAnimator.CanAnimate(image))
-                    //    if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
-                    //        ImageAnimator.Animate(image, (o, e) =>
-                    //        {
-                    //            ImageAnimator.UpdateFrames();
-                    //            foreach (Control c in CurrentAnimations.RegisteredControls)
-                    //                c.Invalidate();
-                    //        });
                     try
                     {
                         cachedBTTVEmotes.Add(code, image);
@@ -665,6 +657,19 @@ namespace TwitchChatCoroutines
             doChangeLines();
         }
 
+        private void ChatForm_Resize(object s, EventArgs e)
+        {
+            for (int i = currentChatMessages.Count - 1; i >= 0; i--)
+            {
+                var m = currentChatMessages[i];
+                if (m is TwitchUserMessage me)
+                {
+                    me.DesiredWidth = Width - 2 * border;
+                    me.CalculateTextAndEmotes();
+                }
+            }
+        }
+
         void doChangeLines()
         {
             if (currentChatMessages.Count == 0) return;
@@ -676,11 +681,6 @@ namespace TwitchChatCoroutines
                 var m = currentChatMessages[i];
                 Size oldSize = m.Size;
                 differences[i] = oldSize;
-                if (m is TwitchUserMessage me)
-                {
-                    me.DesiredWidth = Width - 2 * border;
-                    me.CalculateTextAndEmotes();
-                }
             }
             Application.DoEvents();
             for (int i = differences.Length - 1; i >= 0; i--)
@@ -901,8 +901,8 @@ namespace TwitchChatCoroutines
             TwitchUserMessage m = new TwitchUserMessage(twitchMessage, badges, emoteBoxes, font, doSplitter, textColor, backColor, Width - 2 * border - (vScrollBar1.Visible ? vScrollBar1.Width : 0), panelBorder / 2, emoteSpacing);
             Controls.Add(m);
             currentChatMessages.Add(m);
-            Application.DoEvents();
             m.Location = new Point(-m.Width, Height - m.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
+            Application.DoEvents();
             coroutineManager.StartCoroutine(moveLabels(m));
         }
 
