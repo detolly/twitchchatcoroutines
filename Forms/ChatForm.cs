@@ -659,13 +659,28 @@ namespace TwitchChatCoroutines
 
         private void ChatForm_Resize(object s, EventArgs e)
         {
+            int totalDiff = 0;
+            var differences = new Size[currentChatMessages.Count];
             for (int i = currentChatMessages.Count - 1; i >= 0; i--)
             {
                 var m = currentChatMessages[i];
+                Size oldSize = m.Size;
+                differences[i] = oldSize;
                 if (m is TwitchUserMessage me)
                 {
                     me.DesiredWidth = Width - 2 * border;
                     me.CalculateTextAndEmotes();
+                }
+            }
+            Application.DoEvents();
+            for (int i = differences.Length - 1; i >= 0; i--)
+            {
+                var m = currentChatMessages[i];
+                int heightDifference = m.Size.Height - differences[i].Height;
+                totalDiff += heightDifference;
+                for (int x = i; x >= 0; x--)
+                {
+                    currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
                 }
             }
         }
