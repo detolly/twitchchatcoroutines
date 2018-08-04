@@ -611,33 +611,51 @@ namespace TwitchChatCoroutines
             doAnimations = chatFormSettings.Animations;
             panelBorder = chatFormSettings.PanelBorder;
             emoteSpacing = chatFormSettings.EmoteSpacing;
-            
+
             if (FormBorderStyle != chatFormSettings.BorderStyle)
                 if (IsHandleCreated)
                     Invoke((MethodInvoker)(() =>
                     {
                         FormBorderStyle = chatFormSettings.BorderStyle;
                     }));
+            
+            var differences = new Size[currentChatMessages.Count];
             if (IsHandleCreated)
                 Invoke((MethodInvoker)(() =>
                 {
                     if (doSplitter != chatFormSettings.Splitter)
-                    {
                         doSplitter = chatFormSettings.Splitter;
-                    }
-                    foreach (TwitchUserMessage m in currentChatMessages)
+                    for (int i = differences.Length - 1; i >= 0; i--)
                     {
+                        TwitchUserMessage m = (TwitchUserMessage)currentChatMessages[i];
+                        Size oldSize = m.Size;
+                        differences[i] = oldSize;
                         m.DoSplitter = doSplitter;
                         m.ForeColor = textColor;
                         m.BackColor = backColor;
                         m.PanelBorder = panelBorder;
                         if (m.EmoteSpacing != emoteSpacing)
-                            m.Invalidate();
-                        if (m.Font != font)
-                            m.Invalidate();
-                        m.Font = font;
+                            m.CalculateTextAndEmotes();
+                        if (m.Font != font) {
+                            m.Font = font;
+                            m.CalculateTextAndEmotes();
+                        }
                         m.EmoteSpacing = emoteSpacing;
                         m.DrawContent(m.CreateGraphics());
+                    }
+                }));
+            Application.DoEvents();
+            if (IsHandleCreated)
+                Invoke((MethodInvoker)(() =>
+                {
+                    for (int i = differences.Length - 1; i >= 0; i--)
+                    {
+                        var m = currentChatMessages[i];
+                        int heightDifference = m.Size.Height - differences[i].Height;
+                        for (int x = i; x >= 0; x--)
+                        {
+                            currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
+                        }
                     }
                 }));
         }
@@ -659,7 +677,6 @@ namespace TwitchChatCoroutines
 
         private void ChatForm_Resize(object s, EventArgs e)
         {
-            int totalDiff = 0;
             var differences = new Size[currentChatMessages.Count];
             for (int i = currentChatMessages.Count - 1; i >= 0; i--)
             {
@@ -677,7 +694,6 @@ namespace TwitchChatCoroutines
             {
                 var m = currentChatMessages[i];
                 int heightDifference = m.Size.Height - differences[i].Height;
-                totalDiff += heightDifference;
                 for (int x = i; x >= 0; x--)
                 {
                     currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
