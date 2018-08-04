@@ -20,23 +20,24 @@ namespace TwitchChatCoroutines.Controls
             set
             {
                 text = value;
-                UpdateSizeAndLocation();
             }
         }
 
         public Image Image { get; set; }
-        public Control CustomParent { get; set; }
+
         public bool IsCreated { get; set; }
 
         public ToolTip() { }
 
-        public ToolTip(Control parent) {
-            CustomParent = parent;
+        public ToolTip(string text, Image image) {
+            Text = text;
+            Image = image;
+            Visible = false;
+            UpdateSize();
         }
 
-        private void UpdateSizeAndLocation()
+        private void UpdateSize()
         {
-            int middleOfParentX = CustomParent.Location.X + CustomParent.Width / 2;
             PictureBox b = new PictureBox
             {
                 Image = Image,

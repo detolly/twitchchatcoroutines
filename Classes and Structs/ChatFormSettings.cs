@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace TwitchChatCoroutines.ClassesAndStructs
 {
     public class ChatFormSettings
     {
         public event EventHandler Changed;
-        public static ColorConverter cc = new ColorConverter();
 
         private ChatForm current = null;
         public ChatForm Current { get { return current; } set { current = value; Changed?.Invoke(this, new EventArgs()); } }
@@ -28,24 +28,26 @@ namespace TwitchChatCoroutines.ClassesAndStructs
         public Color ForegroundColor { get { return foregroundColor; } set { foregroundColor = value; Changed?.Invoke(this, new EventArgs()); } }
         private ChatMode chatMode;
         public ChatMode ChatMode { get { return chatMode; } set { chatMode = value; Changed?.Invoke(this, new EventArgs()); } }
+        private FormBorderStyle borderStyle;
+        public FormBorderStyle BorderStyle { get { return borderStyle; } set { borderStyle = value; Changed?.Invoke(this, new EventArgs()); } }
 
         public static ChatFormSettings Default()
         {
             ChatFormSettings settings = new ChatFormSettings
             {
-                ForegroundColor = (Color)cc.ConvertFromString("#FFFFFF"),
-                BackgroundColor = (Color)cc.ConvertFromString("#111111"),
+                ForegroundColor = Color.White,
+                BackgroundColor = Color.FromArgb(255, 40, 40, 50),
                 Animations = false,
-                ChatMode = new ChatMode(),
-                Font = new Font("Segoe UI Semibold", 11.25f),
+                Font = new Font("Segoe UI", 9.75f),
                 EmoteSpacing = 3,
                 PanelBorder = 6,
                 Channel = "forsen",
                 Splitter = true,
-                chatMode = new ChatMode()
+                ChatMode = new ChatMode()
                 {
                     currentIndex = 0
-                }
+                },
+                BorderStyle = FormBorderStyle.Sizable
             };
             return settings;
         }
