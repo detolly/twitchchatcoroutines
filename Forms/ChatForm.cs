@@ -619,13 +619,7 @@ namespace TwitchChatCoroutines
             doAnimations = chatFormSettings.Animations;
             panelBorder = chatFormSettings.PanelBorder;
             emoteSpacing = chatFormSettings.EmoteSpacing;
-            if (doSplitter != chatFormSettings.Splitter)
-            {
-                doSplitter = chatFormSettings.Splitter;
-                if (IsHandleCreated)
-                    foreach (TwitchUserMessage m in currentChatMessages)
-                        m.DoSplitter = doSplitter;
-            }
+            
             if (FormBorderStyle != chatFormSettings.BorderStyle)
                 if (IsHandleCreated)
                     Invoke((MethodInvoker)(() =>
@@ -635,8 +629,24 @@ namespace TwitchChatCoroutines
             if (IsHandleCreated)
                 Invoke((MethodInvoker)(() =>
                 {
+                    if (doSplitter != chatFormSettings.Splitter)
+                    {
+                        doSplitter = chatFormSettings.Splitter;
+                    }
                     foreach (TwitchUserMessage m in currentChatMessages)
+                    {
+                        m.DoSplitter = doSplitter;
+                        m.ForeColor = textColor;
+                        m.BackColor = backColor;
+                        m.PanelBorder = panelBorder;
+                        if (m.EmoteSpacing != emoteSpacing)
+                            m.Invalidate();
+                        if (m.Font != font)
+                            m.Invalidate();
+                        m.Font = font;
+                        m.EmoteSpacing = emoteSpacing;
                         m.DrawContent(m.CreateGraphics());
+                    }
                 }));
         }
 

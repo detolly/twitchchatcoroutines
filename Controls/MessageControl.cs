@@ -29,7 +29,7 @@ namespace TwitchChatCoroutines.Controls
         {
             string theMessage = twitchMessage.username + ": " + twitchMessage.message;
             e.Graphics.DrawString(theMessage, Font, new SolidBrush((Color)new ColorConverter().ConvertFromString(twitchMessage.color)), new Point(border, panelBorder));
-            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theMessage, Font).Height, 28));
+            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theMessage, Font).Height + 2*panelBorder, 28));
             base.OnPaint(e);
         }
     }
@@ -50,9 +50,6 @@ namespace TwitchChatCoroutines.Controls
         private ColorConverter cc;
         private bool ready = false;
 
-        //private List<ImageBox> badgeControlList = new List<ImageBox>();
-        //private List<ImageBox> emoteControlList = new List<ImageBox>();
-
         private List<Tuple<ImageAndInts, Point>> listOfImagesToDraw = new List<Tuple<ImageAndInts, Point>>();
         private List<Tuple<string, Point, Color>> listOfTextToDraw = new List<Tuple<string, Point, Color>>();
 
@@ -61,23 +58,6 @@ namespace TwitchChatCoroutines.Controls
         public void Init()
         {
             cc = new ColorConverter();
-            //foreach (var b in badges)
-            //{
-            //    var currentBadge = new ImageBox(b);
-            //    Controls.Add(currentBadge);
-            //    badgeControlList.Add(currentBadge);
-            //}
-            //foreach (var e in emotes)
-            //{
-            //  var theImage = new ImageBox(e.Value.img);
-            //  Controls.Add(theImage);
-            //  emoteControlList.Add(theImage);
-
-            //  Two separate functionalities
-
-            //  if (ImageAnimator.CanAnimate(e.Value.img))
-            //    CurrentAnimations.RegisteredControls.Add(theImage);
-            //}
             ready = true;
         }
         
@@ -137,8 +117,7 @@ namespace TwitchChatCoroutines.Controls
             if (location.Y < lowest)
                 lowest = location.Y;
             listOfTextToDraw.Add(new Tuple<string, Point, Color>(usernameText, location, UserNameColor));
-            //TextRenderer.DrawText(e.Graphics, usernameText, Font, location, UserNameColor, BackColor, TextFormatFlags.NoPadding);
-
+            
             string text = twitchMessage.message;
             Size theTextSize = GetTextSize(text, Font);
 
@@ -202,7 +181,6 @@ namespace TwitchChatCoroutines.Controls
                         if (old != "")
                             x--;
                         listOfTextToDraw.Add(new Tuple<string, Point, Color>(old, new Point(lastX, yoffset), ForeColor));
-                        //TextRenderer.DrawText(e.Graphics, old, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                         lastX = border;
                         current = "";
@@ -216,7 +194,6 @@ namespace TwitchChatCoroutines.Controls
                         if (current != "" && current != " ")
                         {
                             listOfTextToDraw.Add(new Tuple<string, Point, Color>(current, new Point(lastX, yoffset), ForeColor));
-                            //TextRenderer.DrawText(e.Graphics, current, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                             lastX += GetTextSize(current, Font).Width;
                         }
                     }
@@ -236,7 +213,6 @@ namespace TwitchChatCoroutines.Controls
                     if (pa.Y < lowest)
                         lowest = pa.Y;
                     listOfImagesToDraw.Add(new Tuple<ImageAndInts, Point>(thing, pa));
-                    //e.Graphics.DrawImage(thing.img, pa.X, pa.Y, theSize.Width, theSize.Height);
                     if (yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2 > highest)
                     {
                         highest = yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2;
