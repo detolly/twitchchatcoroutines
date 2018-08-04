@@ -10,6 +10,30 @@ namespace TwitchChatCoroutines.Controls
 {
     class MessageControl : UserControl {}
 
+    class SentUserMessage : MessageControl
+    {
+        private TwitchMessage twitchMessage;
+        private int panelBorder;
+        private int border;
+        private int desiredWidth;
+
+        public SentUserMessage(TwitchMessage TwitchMessage, int PanelBorder, int border, int desiredWidth)
+        {
+            twitchMessage = TwitchMessage;
+            panelBorder = PanelBorder;
+            this.border = border;
+            this.desiredWidth = desiredWidth;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            string theMessage = twitchMessage.username + ": " + twitchMessage.message;
+            e.Graphics.DrawString(theMessage, Font, new SolidBrush((Color)new ColorConverter().ConvertFromString(twitchMessage.color)), new Point(border, panelBorder));
+            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theMessage, Font).Height, 28));
+            base.OnPaint(e);
+        }
+    }
+
     class TwitchUserMessage : MessageControl
     {
         public List<Image> badges;

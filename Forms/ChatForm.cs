@@ -724,6 +724,17 @@ namespace TwitchChatCoroutines
             string textToSend = richTextBox1.Text;
             richTextBox1.Clear();
             writer.WriteLine("PRIVMSG #" + channelToJoin + " :" + textToSend);
+            TwitchMessage m = new TwitchMessage();
+            m.username = botUsername;
+            m.message = textToSend;
+            m.color = "#FFFFFF";
+            SentUserMessage m2 = new SentUserMessage(m, panelBorder, border, Width);
+            Controls.Add(m2);
+            currentChatMessages.Add(m2);
+            Application.DoEvents();
+            m2.Location = new Point(-m2.Width, Height - m2.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
+            coroutineManager.StartCoroutine(moveLabels(m2));
+
         }
 
         private void ChangeInformationalLabel(string newText)
