@@ -70,7 +70,8 @@ namespace TwitchChatCoroutines.Controls
             BackColor = backColor;
             DesiredWidth = desiredWidth;
             PanelBorder = panelBorder;
-            EmoteSpacing = emoteSpacing; 
+            EmoteSpacing = emoteSpacing;
+            IsAction = message.isAction;
 
             this.badges = badges;
             this.emotes = emotes;
@@ -183,7 +184,6 @@ namespace TwitchChatCoroutines.Controls
                         listOfTextToDraw.Add(new Tuple<string, Point, Color>(old, new Point(lastX, yoffset), ForeColor));
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
                         lastX = border;
-                        current = "";
                     }
                     if (x == args.Count - 1)
                     {
@@ -199,6 +199,8 @@ namespace TwitchChatCoroutines.Controls
                     }
                     else if (!wasInside)
                         current += " ";
+                    else
+                        current = "";
                 }
                 if (i != emotes.Count)
                 {

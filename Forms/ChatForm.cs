@@ -539,6 +539,7 @@ namespace TwitchChatCoroutines
                         isAction = true;
                     }
                     user.message = extractedMessage;
+                    user.isAction = isAction;
                     messagesToBeAdded.Enqueue(user);
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
@@ -553,6 +554,10 @@ namespace TwitchChatCoroutines
                         if (m.twitchMessage.display_name.ToLower() == user.ToLower())
                             m.Font = f;
                     }
+                }
+                else
+                {
+                    string v = "";
                 }
             }
             if (messagesToBeAdded.Count > 0)
