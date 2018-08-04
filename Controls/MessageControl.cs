@@ -247,7 +247,6 @@ namespace TwitchChatCoroutines.Controls
             if (!ready) return;
 
             DrawContent(e.Graphics);
-            //base.OnPaint(e);
         }
 
         public void DrawContent(Graphics g)
