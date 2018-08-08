@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System;
 
 using TwitchChatCoroutines.ClassesAndStructs;
+using System.Diagnostics;
 
 namespace TwitchChatCoroutines.Controls
 {
@@ -49,6 +50,8 @@ namespace TwitchChatCoroutines.Controls
 
         private ColorConverter cc;
         private bool ready = false;
+        private int maxFurthestRight = int.MaxValue;
+        private int minFurthestLeft = 0;
 
         private List<Tuple<ImageAndInts, Point>> listOfImagesToDraw = new List<Tuple<ImageAndInts, Point>>();
         private List<Tuple<string, Point, Color>> listOfTextToDraw = new List<Tuple<string, Point, Color>>();
@@ -108,8 +111,6 @@ namespace TwitchChatCoroutines.Controls
 
             var UserNameColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
             ForeColor = IsAction ? UserNameColor : ForeColor;
-            Brush foreColorBrush = new SolidBrush(ForeColor);
-            Brush usernameBrush = new SolidBrush(UserNameColor);
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
             Size s = GetTextSize(usernameText, Font);
@@ -135,17 +136,19 @@ namespace TwitchChatCoroutines.Controls
                 var theTuple = thing.ints;
                 int next = i != emotes.Count ? thing.ints.Item1 : text.Length;
                 string offsetText = text.Substring(currentOffset > text.Length - 1 ? text.Length - 1 : currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
-                if (first)
-                {
-                    first = false;
-                    offsetText = ": " + offsetText;
-                }
                 if (offsetText.Length > 0)
                     if (offsetText[0] == ' ')
                         offsetText = offsetText.Substring(1);
                 if (offsetText.Length > 0)
                     if (offsetText[offsetText.Length - 1] == ' ')
                         offsetText = offsetText.Substring(0, offsetText.Length - 1);
+                if (first && !IsAction)
+                {
+                    first = false;
+                    offsetText = ": " + offsetText;
+                }
+                else if (IsAction)
+                    offsetText = " " + offsetText;
                 currentOffset = i != emotes.Count ? thing.ints.Item2 + 1 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
                 List<string> args = new List<string>(offsetText.Split(' '));
@@ -206,7 +209,7 @@ namespace TwitchChatCoroutines.Controls
                 {
                     if (thing.img == null) return;
                     Size theSize = thing.preferredSize.Width != 0 && thing.preferredSize.Height != 0 ? thing.preferredSize : new Size(thing.img.Size.Width, thing.img.Size.Height);
-                    if (lastX + theSize.Width > theWidth)
+                    if (lastX + theSize.Width + EmoteSpacing > theWidth)
                     {
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
@@ -253,18 +256,24 @@ namespace TwitchChatCoroutines.Controls
 
         public void DrawContent(Graphics g)
         {
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.Clear(BackColor);
-            if (DoSplitter)
-                g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth*2, 1);
-            foreach (var t in listOfTextToDraw)
+            try
             {
-                TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
-            }
-            foreach (var t in listOfImagesToDraw)
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.Clear(BackColor);
+                if (DoSplitter)
+                    g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth * 2, 1);
+                foreach (var t in listOfTextToDraw)
+                {
+                    TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
+                }
+                foreach (var t in listOfImagesToDraw)
+                {
+                    Size size = t.Item1.preferredSize.Width != 0 && t.Item1.preferredSize.Height != 0 ? t.Item1.preferredSize : new Size(t.Item1.img.Size.Width, t.Item1.img.Size.Height);
+                    g.DrawImage(t.Item1.img, t.Item2.X, t.Item2.Y, size.Width, size.Height);
+                }
+            } catch
             {
-                Size size = t.Item1.preferredSize.Width != 0 && t.Item1.preferredSize.Height != 0 ? t.Item1.preferredSize : new Size(t.Item1.img.Size.Width, t.Item1.img.Size.Height);
-                g.DrawImage(t.Item1.img, t.Item2.X, t.Item2.Y, size.Width, size.Height);
+                Console.WriteLine("GDI+ Error, function: DrawContent");
             }
         }
 

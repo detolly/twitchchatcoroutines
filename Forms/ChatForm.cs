@@ -552,11 +552,15 @@ namespace TwitchChatCoroutines
                     foreach (TwitchUserMessage m in currentChatMessages)
                     {
                         if (m.twitchMessage.display_name.ToLower() == user.ToLower())
+                        {
                             m.Font = f;
+                            m.ForeColor = Color.Gray;
+                        }
                     }
                 }
                 else
                 {
+                    //To be added: notifications
                     string v = "";
                 }
             }
@@ -632,6 +636,7 @@ namespace TwitchChatCoroutines
                         doSplitter = chatFormSettings.Splitter;
                     for (int i = differences.Length - 1; i >= 0; i--)
                     {
+                        bool should = false;
                         TwitchUserMessage m = (TwitchUserMessage)currentChatMessages[i];
                         Size oldSize = m.Size;
                         differences[i] = oldSize;
@@ -640,12 +645,16 @@ namespace TwitchChatCoroutines
                         m.BackColor = backColor;
                         m.PanelBorder = panelBorder;
                         if (m.EmoteSpacing != emoteSpacing)
-                            m.CalculateTextAndEmotes();
+                        {
+                            m.EmoteSpacing = emoteSpacing;
+                            should = true;
+                        }
                         if (m.Font != font) {
                             m.Font = font;
-                            m.CalculateTextAndEmotes();
+                            should = true;
                         }
-                        m.EmoteSpacing = emoteSpacing;
+                        if (should)
+                            m.CalculateTextAndEmotes();
                         m.DrawContent(m.CreateGraphics());
                     }
                 }));
