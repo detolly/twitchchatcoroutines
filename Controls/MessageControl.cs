@@ -128,7 +128,7 @@ namespace TwitchChatCoroutines.Controls
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
             Size s = GetTextSize(usernameText, Font);
-            var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
+            var location = new Point(tStart, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             yoffset = location.Y;
             if (location.Y < lowest)
                 lowest = location.Y;
