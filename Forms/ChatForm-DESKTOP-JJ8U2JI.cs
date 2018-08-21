@@ -95,7 +95,7 @@ namespace TwitchChatCoroutines
         {
             ResizeBegin += ChatForm_ResizeStart;
             ResizeEnd += ChatForm_ResizeEnd;
-            Resize += ChatForm_Resize;
+            Resize += ChatForm_ResizeEnd;
 
             int h = SystemInformation.PrimaryMonitorSize.Height - 150;
             Height = h;
@@ -267,6 +267,14 @@ namespace TwitchChatCoroutines
                     if (!File.Exists(path))
                         client.DownloadFile(new Uri("http://cdn.betterttv.net/emote/" + emote + "/1x"), path);
                     Image image = Image.FromFile(path);
+                    //if (ImageAnimator.CanAnimate(image))
+                    //    if (!CurrentAnimations.CurrentlyAnimated.Contains(image))
+                    //        ImageAnimator.Animate(image, (o, e) =>
+                    //        {
+                    //            ImageAnimator.UpdateFrames();
+                    //            foreach (Control c in CurrentAnimations.RegisteredControls)
+                    //                c.Invalidate();
+                    //        });
                     try
                     {
                         cachedBTTVEmotes.Add(code, image);
@@ -485,7 +493,7 @@ namespace TwitchChatCoroutines
                     toRemove.Add(currentChatMessages[i]);
             }
 
-            if (IsHandleCreated && toRemove.Count > 0 && toRemove[0].IsHandleCreated)
+            if (toRemove.Count > 0 && IsHandleCreated)
                 toRemove[0].Invoke((MethodInvoker)(() =>
                 {
                     for (int i = 0; i < toRemove.Count; i++)
@@ -539,7 +547,6 @@ namespace TwitchChatCoroutines
                         isAction = true;
                     }
                     user.message = extractedMessage;
-                    user.isAction = isAction;
                     messagesToBeAdded.Enqueue(user);
                 }
                 else if (rawLine.Contains("CLEARCHAT"))
@@ -549,33 +556,11 @@ namespace TwitchChatCoroutines
                     string user = rawLine.Substring(start, rawLine.Length - start);
                     Font f = font;
                     f = new Font(f, FontStyle.Strikeout);
-                    foreach (MessageControl m in currentChatMessages)
+                    foreach (TwitchUserMessage m in currentChatMessages)
                     {
-                        if (m is TwitchUserMessage u)
-                            if (u.twitchMessage.display_name.ToLower() == user.ToLower())
-                            {
-                                u.Font = f;
-                                u.ForeColor = Color.Gray;
-                                u.DrawContent(u.CreateGraphics());
-                            }
+                        if (m.twitchMessage.display_name.ToLower() == user.ToLower())
+                            m.Font = f;
                     }
-                }
-                else if (rawLine.Contains("USERNOTICE"))
-                {
-                    //To be added: notifications
-                    int start = rawLine.IndexOf("system-msg=")+"system-msg=".Length;
-                    int stop = rawLine.IndexOf(";tmi") -1;
-                    string theString = rawLine.Substring(start, stop - start);
-                    theString.Replace("\\s", " ");
-                    MessageControl m = new HighlightedNotification(theString, panelBorder, border, Width - 2 * border);
-                    currentChatMessages.Add(m);
-                    m.Font = font;
-                    m.ForeColor = textColor;
-                    m.BackColor = backColor;
-                    Controls.Add(m);
-                    Application.DoEvents();
-                    m.Location = new Point(-m.Width, Height - m.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
-                    coroutineManager.StartLateCoroutine(moveLabels(m));
                 }
             }
             if (messagesToBeAdded.Count > 0)
@@ -634,61 +619,24 @@ namespace TwitchChatCoroutines
             doAnimations = chatFormSettings.Animations;
             panelBorder = chatFormSettings.PanelBorder;
             emoteSpacing = chatFormSettings.EmoteSpacing;
-
+            if (doSplitter != chatFormSettings.Splitter)
+            {
+                doSplitter = chatFormSettings.Splitter;
+                if (IsHandleCreated)
+                    foreach (TwitchUserMessage m in currentChatMessages)
+                        m.DoSplitter = doSplitter;
+            }
             if (FormBorderStyle != chatFormSettings.BorderStyle)
                 if (IsHandleCreated)
                     Invoke((MethodInvoker)(() =>
                     {
                         FormBorderStyle = chatFormSettings.BorderStyle;
                     }));
-
-            var differences = new Size[currentChatMessages.Count];
             if (IsHandleCreated)
                 Invoke((MethodInvoker)(() =>
                 {
-                    if (doSplitter != chatFormSettings.Splitter)
-                        doSplitter = chatFormSettings.Splitter;
-                    for (int i = differences.Length - 1; i >= 0; i--)
-                    {
-                        bool should = false;
-                        MessageControl m = currentChatMessages[i];
-                        Size oldSize = m.Size;
-                        differences[i] = oldSize;
-                        if (m is TwitchUserMessage u)
-                        {
-                            u.DoSplitter = doSplitter;
-                            u.ForeColor = textColor;
-                            u.BackColor = backColor;
-                            u.PanelBorder = panelBorder;
-                            if (u.EmoteSpacing != emoteSpacing)
-                            {
-                                u.EmoteSpacing = emoteSpacing;
-                                should = true;
-                            }
-                            if (m.Font != font)
-                            {
-                                m.Font = font;
-                                should = true;
-                            }
-                            if (should)
-                                u.CalculateTextAndEmotes();
-                            u.DrawContent(m.CreateGraphics());
-                        }
-                    }
-                }));
-            Application.DoEvents();
-            if (IsHandleCreated)
-                Invoke((MethodInvoker)(() =>
-                {
-                    for (int i = differences.Length - 1; i >= 0; i--)
-                    {
-                        var m = currentChatMessages[i];
-                        int heightDifference = m.Size.Height - differences[i].Height;
-                        for (int x = i; x >= 0; x--)
-                        {
-                            currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
-                        }
-                    }
+                    foreach (TwitchUserMessage m in currentChatMessages)
+                        m.DrawContent(m.CreateGraphics());
                 }));
         }
 
@@ -707,32 +655,6 @@ namespace TwitchChatCoroutines
             doChangeLines();
         }
 
-        private void ChatForm_Resize(object s, EventArgs e)
-        {
-            var differences = new Size[currentChatMessages.Count];
-            for (int i = currentChatMessages.Count - 1; i >= 0; i--)
-            {
-                var m = currentChatMessages[i];
-                Size oldSize = m.Size;
-                differences[i] = oldSize;
-                if (m is TwitchUserMessage me)
-                {
-                    me.DesiredWidth = Width - 2 * border;
-                    me.CalculateTextAndEmotes();
-                }
-            }
-            Application.DoEvents();
-            for (int i = differences.Length - 1; i >= 0; i--)
-            {
-                var m = currentChatMessages[i];
-                int heightDifference = m.Size.Height - differences[i].Height;
-                for (int x = i; x >= 0; x--)
-                {
-                    currentChatMessages[x].Location = new Point(currentChatMessages[x].Location.X, currentChatMessages[x].Location.Y - heightDifference);
-                }
-            }
-        }
-
         void doChangeLines()
         {
             if (currentChatMessages.Count == 0) return;
@@ -744,6 +666,11 @@ namespace TwitchChatCoroutines
                 var m = currentChatMessages[i];
                 Size oldSize = m.Size;
                 differences[i] = oldSize;
+                if (m is TwitchUserMessage me)
+                {
+                    me.DesiredWidth = Width - 2 * border;
+                    me.CalculateTextAndEmotes();
+                }
             }
             Application.DoEvents();
             for (int i = differences.Length - 1; i >= 0; i--)
@@ -964,8 +891,8 @@ namespace TwitchChatCoroutines
             TwitchUserMessage m = new TwitchUserMessage(twitchMessage, badges, emoteBoxes, font, doSplitter, textColor, backColor, Width - 2 * border - (vScrollBar1.Visible ? vScrollBar1.Width : 0), panelBorder / 2, emoteSpacing);
             Controls.Add(m);
             currentChatMessages.Add(m);
-            m.Location = new Point(-m.Width, Height - m.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
             Application.DoEvents();
+            m.Location = new Point(-m.Width, Height - m.Size.Height - 50 - (richTextBox1.Visible ? richTextBox1.Size.Height : 0));
             coroutineManager.StartCoroutine(moveLabels(m));
         }
 

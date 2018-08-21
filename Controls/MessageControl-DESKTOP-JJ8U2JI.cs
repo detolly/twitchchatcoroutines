@@ -5,37 +5,10 @@ using System.Drawing.Drawing2D;
 using System;
 
 using TwitchChatCoroutines.ClassesAndStructs;
-using System.Diagnostics;
 
 namespace TwitchChatCoroutines.Controls
 {
-    class MessageControl : UserControl { }
-
-    class HighlightedNotification : MessageControl
-    {
-        private string theStringToDisplay;
-
-        private int panelBorder;
-        private int border;
-        private int desiredWidth;
-
-        public HighlightedNotification(string theMessage, int PanelBorder, int border, int desiredWidth)
-        {
-            theStringToDisplay = theMessage;
-            panelBorder = PanelBorder;
-            this.border = border;
-            this.desiredWidth = desiredWidth;
-            Invalidate();
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theStringToDisplay, Font, new Size(desiredWidth - 2 * border, 0)).Height + 2 * panelBorder, 28));
-            e.Graphics.DrawString(theStringToDisplay, Font, new SolidBrush(Color.White), new Rectangle(new Point(border, panelBorder), new Size(desiredWidth-2*border, Height)));
-            e.Graphics.FillRectangle(new SolidBrush(Color.Purple), new RectangleF(0, 0, border, Size.Height));
-            base.OnPaint(e);
-        }
-    }
+    class MessageControl : UserControl {}
 
     class SentUserMessage : MessageControl
     {
@@ -56,7 +29,7 @@ namespace TwitchChatCoroutines.Controls
         {
             string theMessage = twitchMessage.username + ": " + twitchMessage.message;
             e.Graphics.DrawString(theMessage, Font, new SolidBrush((Color)new ColorConverter().ConvertFromString(twitchMessage.color)), new Point(border, panelBorder));
-            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theMessage, Font).Height + 2 * panelBorder, 28));
+            Size = new Size(desiredWidth, Math.Max(TextRenderer.MeasureText(theMessage, Font).Height, 28));
             base.OnPaint(e);
         }
     }
@@ -76,14 +49,9 @@ namespace TwitchChatCoroutines.Controls
 
         private ColorConverter cc;
         private bool ready = false;
-        private int maxFurthestRight = int.MaxValue;
-        private int minFurthestLeft = 0;
 
-        private int MaxFurthestRight { get { return maxFurthestRight; } set { justChanged = false; maxFurthestRight = value; } }
-        private int MinFurthestLeft { get { return minFurthestLeft; } set { justChanged = true; minFurthestLeft = value; } }
-
-        private bool justChanged = false;
-        private bool calculatedInitially;
+        //private List<ImageBox> badgeControlList = new List<ImageBox>();
+        //private List<ImageBox> emoteControlList = new List<ImageBox>();
 
         private List<Tuple<ImageAndInts, Point>> listOfImagesToDraw = new List<Tuple<ImageAndInts, Point>>();
         private List<Tuple<string, Point, Color>> listOfTextToDraw = new List<Tuple<string, Point, Color>>();
@@ -93,9 +61,26 @@ namespace TwitchChatCoroutines.Controls
         public void Init()
         {
             cc = new ColorConverter();
+            //foreach (var b in badges)
+            //{
+            //    var currentBadge = new ImageBox(b);
+            //    Controls.Add(currentBadge);
+            //    badgeControlList.Add(currentBadge);
+            //}
+            //foreach (var e in emotes)
+            //{
+            //  var theImage = new ImageBox(e.Value.img);
+            //  Controls.Add(theImage);
+            //  emoteControlList.Add(theImage);
+
+            //  Two separate functionalities
+
+            //  if (ImageAnimator.CanAnimate(e.Value.img))
+            //    CurrentAnimations.RegisteredControls.Add(theImage);
+            //}
             ready = true;
         }
-
+        
         public TwitchUserMessage(TwitchMessage message, List<Image> badges, SortedList<int, ImageAndInts> emotes, Font font, bool doSplitter, Color foreColor, Color backColor, int desiredWidth, int panelBorder, int emoteSpacing)
         {
             twitchMessage = message;
@@ -105,8 +90,7 @@ namespace TwitchChatCoroutines.Controls
             BackColor = backColor;
             DesiredWidth = desiredWidth;
             PanelBorder = panelBorder;
-            EmoteSpacing = emoteSpacing;
-            IsAction = message.isAction;
+            EmoteSpacing = emoteSpacing; 
 
             this.badges = badges;
             this.emotes = emotes;
@@ -117,14 +101,6 @@ namespace TwitchChatCoroutines.Controls
 
         public void CalculateTextAndEmotes()
         {
-            if (calculatedInitially && DesiredWidth > MinFurthestLeft && DesiredWidth < MaxFurthestRight)
-            {
-                //DrawContent(CreateGraphics());
-                return;
-            }
-            calculatedInitially = true;
-            MinFurthestLeft = 0;
-            MaxFurthestRight = 0;
             listOfImagesToDraw.Clear();
             listOfTextToDraw.Clear();
 
@@ -151,14 +127,17 @@ namespace TwitchChatCoroutines.Controls
 
             var UserNameColor = (Color)cc.ConvertFromString(twitchMessage.color == "" ? ChatForm.getRandomColor() : twitchMessage.color);
             ForeColor = IsAction ? UserNameColor : ForeColor;
+            Brush foreColorBrush = new SolidBrush(ForeColor);
+            Brush usernameBrush = new SolidBrush(UserNameColor);
 
             string usernameText = twitchMessage.display_name + (twitchMessage.username != twitchMessage.display_name.ToLower() ? " (" + twitchMessage.username + ")" : "");
             Size s = GetTextSize(usernameText, Font);
-            var location = new Point(tStart, (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
+            var location = new Point(tStart, PanelBorder + (exists ? badges[0].Size.Height / 2 - s.Height / 2 : 0));
             yoffset = location.Y;
             if (location.Y < lowest)
                 lowest = location.Y;
             listOfTextToDraw.Add(new Tuple<string, Point, Color>(usernameText, location, UserNameColor));
+            //TextRenderer.DrawText(e.Graphics, usernameText, Font, location, UserNameColor, BackColor, TextFormatFlags.NoPadding);
 
             string text = twitchMessage.message;
             Size theTextSize = GetTextSize(text, Font);
@@ -176,19 +155,17 @@ namespace TwitchChatCoroutines.Controls
                 var theTuple = thing.ints;
                 int next = i != emotes.Count ? thing.ints.Item1 : text.Length;
                 string offsetText = text.Substring(currentOffset > text.Length - 1 ? text.Length - 1 : currentOffset, (next - currentOffset < 0 ? 0 : next - currentOffset));
+                if (first)
+                {
+                    first = false;
+                    offsetText = ": " + offsetText;
+                }
                 if (offsetText.Length > 0)
                     if (offsetText[0] == ' ')
                         offsetText = offsetText.Substring(1);
                 if (offsetText.Length > 0)
                     if (offsetText[offsetText.Length - 1] == ' ')
                         offsetText = offsetText.Substring(0, offsetText.Length - 1);
-                if (first && !IsAction)
-                {
-                    first = false;
-                    offsetText = ": " + offsetText;
-                }
-                else if (IsAction)
-                    offsetText = " " + offsetText;
                 currentOffset = i != emotes.Count ? thing.ints.Item2 + 1 : 0 /* this 0 shouldn't matter beacuse we're exiting the loop */;
 
                 List<string> args = new List<string>(offsetText.Split(' '));
@@ -200,9 +177,6 @@ namespace TwitchChatCoroutines.Controls
                     string old = current;
                     current += args[x];
                     Size currentTextWidth = GetTextSize(current, Font);
-                    if (justChanged)
-                        if (MinFurthestLeft + currentTextWidth.Width + 3 * border > (MaxFurthestRight = MaxFurthestRight))
-                            MaxFurthestRight = MinFurthestLeft + currentTextWidth.Width + 3 * border;
                     if (currentTextWidth.Width + lastX > theWidth)
                     {
                         wasInside = true;
@@ -228,10 +202,10 @@ namespace TwitchChatCoroutines.Controls
                         if (old != "")
                             x--;
                         listOfTextToDraw.Add(new Tuple<string, Point, Color>(old, new Point(lastX, yoffset), ForeColor));
+                        //TextRenderer.DrawText(e.Graphics, old, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
-                        if (lastX + 3*border > MinFurthestLeft)
-                            MinFurthestLeft = lastX + 3*border;
                         lastX = border;
+                        current = "";
                     }
                     if (x == args.Count - 1)
                     {
@@ -241,28 +215,19 @@ namespace TwitchChatCoroutines.Controls
                         }
                         if (current != "" && current != " ")
                         {
-                            if (justChanged)
-                                if (MinFurthestLeft + currentTextWidth.Width + 3 * border > (MaxFurthestRight = MaxFurthestRight))
-                                    MaxFurthestRight = MinFurthestLeft + currentTextWidth.Width + 3 * border;
                             listOfTextToDraw.Add(new Tuple<string, Point, Color>(current, new Point(lastX, yoffset), ForeColor));
+                            //TextRenderer.DrawText(e.Graphics, current, Font, new Point(lastX, yoffset), ForeColor, BackColor, TextFormatFlags.NoPadding);
                             lastX += GetTextSize(current, Font).Width;
                         }
-                        if (lastX + 3 * border > MinFurthestLeft)
-                            MinFurthestLeft = lastX + 3 * border;
                     }
                     else if (!wasInside)
                         current += " ";
-                    else
-                        current = "";
                 }
                 if (i != emotes.Count)
                 {
                     if (thing.img == null) return;
                     Size theSize = thing.preferredSize.Width != 0 && thing.preferredSize.Height != 0 ? thing.preferredSize : new Size(thing.img.Size.Width, thing.img.Size.Height);
-                    if (justChanged)
-                        if (MinFurthestLeft + theSize.Width + 3 * border > (MaxFurthestRight = MaxFurthestRight))
-                            MaxFurthestRight = MinFurthestLeft + theSize.Width + 3 * border;
-                    if (lastX + theSize.Width + EmoteSpacing > theWidth)
+                    if (lastX + theSize.Width > theWidth)
                     {
                         lastX = border;
                         yoffset += theTextSize.Height + (28 / 2 - theTextSize.Height / 2);
@@ -271,14 +236,13 @@ namespace TwitchChatCoroutines.Controls
                     if (pa.Y < lowest)
                         lowest = pa.Y;
                     listOfImagesToDraw.Add(new Tuple<ImageAndInts, Point>(thing, pa));
+                    //e.Graphics.DrawImage(thing.img, pa.X, pa.Y, theSize.Width, theSize.Height);
                     if (yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2 > highest)
                     {
                         highest = yoffset + theSize.Height + theTextSize.Height / 2 - theSize.Height / 2;
                     }
                     lastX += theSize.Width;
                     lastX += 2 * EmoteSpacing;
-                    if (lastX + 3 * border > MinFurthestLeft)
-                        MinFurthestLeft = lastX + 3 * border;
                 }
                 else
                     break;
@@ -300,7 +264,6 @@ namespace TwitchChatCoroutines.Controls
             }
             DrawContent(CreateGraphics());
             Size = new Size(DesiredWidth * 2, Math.Max(highest - lowest + 2 * PanelBorder, 28));
-            if (yoffset == location.Y) MaxFurthestRight = int.MaxValue;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -308,29 +271,23 @@ namespace TwitchChatCoroutines.Controls
             if (!ready) return;
 
             DrawContent(e.Graphics);
+            //base.OnPaint(e);
         }
 
         public void DrawContent(Graphics g)
         {
-            try
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.Clear(BackColor);
+            if (DoSplitter)
+                g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth*2, 1);
+            foreach (var t in listOfTextToDraw)
             {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.Clear(BackColor);
-                if (DoSplitter)
-                    g.DrawImage(Properties.Resources.splitter2, 0, 0, DesiredWidth * 2, 1);
-                foreach (var t in listOfTextToDraw)
-                {
-                    TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
-                }
-                foreach (var t in listOfImagesToDraw)
-                {
-                    Size size = t.Item1.preferredSize.Width != 0 && t.Item1.preferredSize.Height != 0 ? t.Item1.preferredSize : new Size(t.Item1.img.Size.Width, t.Item1.img.Size.Height);
-                    g.DrawImage(t.Item1.img, t.Item2.X, t.Item2.Y, size.Width, size.Height);
-                }
+                TextRenderer.DrawText(g, t.Item1, Font, t.Item2, t.Item3, BackColor, TextFormatFlags.NoPadding);
             }
-            catch
+            foreach (var t in listOfImagesToDraw)
             {
-                Console.WriteLine("GDI+ Error, function: DrawContent");
+                Size size = t.Item1.preferredSize.Width != 0 && t.Item1.preferredSize.Height != 0 ? t.Item1.preferredSize : new Size(t.Item1.img.Size.Width, t.Item1.img.Size.Height);
+                g.DrawImage(t.Item1.img, t.Item2.X, t.Item2.Y, size.Width, size.Height);
             }
         }
 
